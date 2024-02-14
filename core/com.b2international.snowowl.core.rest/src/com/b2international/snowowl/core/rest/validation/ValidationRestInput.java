@@ -17,7 +17,7 @@ package com.b2international.snowowl.core.rest.validation;
 
 import java.util.Set;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 /**
  * @since 6.13

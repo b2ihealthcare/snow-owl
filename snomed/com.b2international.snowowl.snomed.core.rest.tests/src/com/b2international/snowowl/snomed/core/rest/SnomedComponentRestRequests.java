@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.core.domain.AssociationTarget;
 import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.ImmutableMap;
 
 import io.restassured.response.ValidatableResponse;
@@ -103,16 +104,9 @@ public abstract class SnomedComponentRestRequests {
 	
 	public static ValidatableResponse getComponent(String path, SnomedComponentType type, String id, String... expand) {
 		assertNotNull(id);
-
-		final String url;
-		if (expand.length > 0) {
-			url = "/{path}/{componentType}/{id}?expand=" + COMMA_JOINER.join(expand);
-		} else {
-			url = "/{path}/{componentType}/{id}";
-		}
-
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-				.get(url, path, type.toLowerCasePlural(), id)
+				.queryParam("expand", RestExtensions.encodeQueryParameter(COMMA_JOINER.join(expand)))
+				.get("/{path}/{componentType}/{id}", path, type.toLowerCasePlural(), id)
 				.then();
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,7 @@ import com.google.common.collect.MapMaker;
 
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
-import io.github.bucket4j.Bucket4j;
 import io.github.bucket4j.ConsumptionProbe;
-import io.github.bucket4j.Refill;
 
 /**
  * @since 7.2
@@ -54,9 +52,8 @@ final class Bucket4jRateLimiter implements RateLimiter {
 
 	private Bucket createNewBucket() {
 		long overdraft = configuration.getOverdraft();
-		Refill refill = Refill.greedy(configuration.getRefillRate(), Duration.ofSeconds(1));
-		Bandwidth limit = Bandwidth.classic(overdraft, refill);
-		return Bucket4j.builder().addLimit(limit).build();
+		Bandwidth bandwidth = Bandwidth.builder().capacity(overdraft).refillGreedy(configuration.getRefillRate(), Duration.ofSeconds(1)).build();
+		return Bucket.builder().addLimit(bandwidth).build();
 	}
 
 }

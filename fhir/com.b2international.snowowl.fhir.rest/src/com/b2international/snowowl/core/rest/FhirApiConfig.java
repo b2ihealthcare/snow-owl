@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
  */
 package com.b2international.snowowl.core.rest;
 
-import org.elasticsearch.core.List;
-import org.springdoc.core.GroupedOpenApi;
+import java.util.List;
+
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -47,14 +48,14 @@ public class FhirApiConfig extends BaseApiConfig {
 		return docs(
 			getApiBaseUrl(), 
 			"fhir", 
-			"4.0.1", 
+			"R5", 
 			"FHIR API", 
 			B2I_SITE, 
 			"support@b2i.sg", 
 			"API License", 
 			B2I_SITE, 
 			"This describes the resources that make up the official Snow Owl® Snow Owl® <a href=\\\"http://hl7.org/fhir/\\\">FHIR®</a> API.\r\n" + 
-			"Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/fhir).",
+			"Detailed documentation is available at the [official documentation site](https://docs.b2ihealthcare.com/snow-owl/rest-apis/fhir).",
 			List.of(CAPABILITY_STATEMENT, CODESYSTEM, VALUESET, CONCEPTMAP, BUNDLE, STRUCTURE_DEFINITION)
 		);
 	}

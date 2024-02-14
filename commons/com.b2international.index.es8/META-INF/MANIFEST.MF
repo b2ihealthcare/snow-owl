@@ -8,17 +8,19 @@ Automatic-Module-Name: com.b2international.index.es8
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
- org.apache.commons.codec;bundle-version="1.11.0",
  com.b2international.commons;visibility:=reexport,
- org.apache.httpcomponents.httpasyncclient;bundle-version="[4.1.4,4.1.5)",
- org.apache.httpcomponents.httpclient;bundle-version="[4.5.10,4.5.11)",
- org.apache.httpcomponents.httpcore;bundle-version="[4.4.12,4.4.13)"
+ org.apache.httpcomponents.httpasyncclient;bundle-version="[4.1.5,4.1.6)",
+ org.apache.httpcomponents.httpclient;bundle-version="[4.5.14,4.5.15)",
+ org.apache.httpcomponents.httpcore;bundle-version="[4.4.16,4.4.17)",
+ org.apache.commons.commons-codec;bundle-version="1.16.0"
 Bundle-ClassPath: .,
- lib/elasticsearch-java-8.3.2.jar,
- lib/elasticsearch-rest-client-8.3.2.jar,
- lib/jakarta.json-api-2.0.1.jar,
+ lib/elasticsearch-java-8.12.1.jar,
+ lib/elasticsearch-rest-client-8.12.1.jar,
+ lib/jakarta.json-api-2.0.2.jar,
  lib/jsr305-3.0.2.jar,
- lib/parsson-1.0.0.jar
+ lib/opentelemetry-api-1.29.0.jar,
+ lib/opentelemetry-context-1.29.0.jar,
+ lib/parsson-1.0.5.jar
 Export-Package: co.elastic.clients,
  co.elastic.clients.elasticsearch,
  co.elastic.clients.elasticsearch._types,
@@ -205,4 +207,4 @@ Export-Package: co.elastic.clients,
  com.b2international.index.es,
  com.b2international.index.es8
 Import-Package: org.apache.commons.logging;version="1.2.0",
- org.slf4j;version="1.7.2"
+ org.slf4j;version="2.0.0"

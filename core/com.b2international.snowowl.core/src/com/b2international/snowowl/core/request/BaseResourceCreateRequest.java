@@ -21,7 +21,7 @@ import java.util.Optional;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;

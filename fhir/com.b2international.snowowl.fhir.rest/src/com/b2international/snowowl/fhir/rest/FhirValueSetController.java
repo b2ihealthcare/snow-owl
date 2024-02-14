@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.Map;
 
-import org.springdoc.api.annotations.ParameterObject;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.ResponseEntity;
@@ -301,4 +301,63 @@ public class FhirValueSetController extends AbstractFhirController {
 				.execute(getBus());
 	}
 	
+<<<<<<< HEAD
+=======
+	/**
+	 * <code><b>DELETE /ValueSet/{id}</b></code>
+	 * <p>
+	 * Deletes a single value set using the specified identifier.
+	 * 
+	 * @param id
+	 * @return
+	 */
+	@Operation(
+		summary = "Delete the value set specified by the id",
+		description = "Delete the value set specified by its logical id.",
+		extensions = {
+			@Extension(name = B2I_OPENAPI_X_INTERACTION, properties = {
+				@ExtensionProperty(name = B2I_OPENAPI_INTERACTION_DELETE, value = "Delete a value set"),
+			}),
+		}
+	)
+	@ApiResponse(responseCode = "204", description = "Deletion successful")
+	@ApiResponse(responseCode = "404", description = "Not found")
+	@ApiResponse(responseCode = "409", description = "Value set cannot be deleted")
+	@DeleteMapping(value = "/{id:**}")
+	public ResponseEntity<Void> deleteValueSet(
+			
+		@Parameter(description = """
+			The identifier of the Code System resource""")
+		@PathVariable(value = "id") 
+		final String id,
+			
+		@Parameter(description = """
+			Force deletion flag""")
+		@RequestParam(value = "force", defaultValue="false", required=false)
+		final Boolean force,
+
+		@Parameter(description = """
+			The user identifier used for committing the change""")
+		@RequestHeader(value = X_AUTHOR, required = true)
+		final String author
+		
+	) {
+		
+		try {
+			
+			FhirRequests.valueSets()
+				.prepareDelete(id)
+				.force(force)
+				.build(author, String.format("Deleting value set %s", id))
+				.execute(getBus())
+				.getSync();
+			
+			return ResponseEntity.noContent().build();
+		} catch (NotFoundException e) {
+			return ResponseEntity.notFound().build();
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.CONFLICT).build();
+		}
+	}
+>>>>>>> 7c58d2b4ef (Merge pull request #1240 from b2ihealthcare/bump/eclipse-tycho-build)
 }

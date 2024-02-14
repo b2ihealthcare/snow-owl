@@ -19,7 +19,7 @@ import java.io.File;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 

@@ -17,8 +17,8 @@ package com.b2international.snowowl.fhir.core.request.valueset;
 
 import java.util.Date;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import org.elasticsearch.common.Strings;
 

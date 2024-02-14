@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.domain.TransactionContext;

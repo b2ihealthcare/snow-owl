@@ -18,7 +18,7 @@ package com.b2international.snowowl.core.attachments.request;
 import java.util.Arrays;
 import java.util.UUID;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;

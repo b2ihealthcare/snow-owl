@@ -20,7 +20,7 @@ import static com.b2international.snowowl.core.rest.OpenAPIExtensions.*;
 import java.net.URI;
 import java.time.LocalDate;
 
-import org.springdoc.api.annotations.ParameterObject;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpHeaders;
@@ -360,12 +360,14 @@ public class FhirCodeSystemController extends AbstractFhirController {
 	})
 	@DeleteMapping(value="/{id:**}")
 	public ResponseEntity<Void> deleteCodeSystem(
-			@Parameter(description = "The identifier of the Code System resource")
+			@Parameter(description = """
+					The identifier of the Code System resource""")
 			@PathVariable(value = "id") 
 			final String id,
-			
-			@Parameter(description = "Force deletion flag")
-			@RequestParam(defaultValue="false", required=false)
+				
+			@Parameter(description = """
+					Force deletion flag""")
+			@RequestParam(value = "force", defaultValue="false", required=false)
 			final Boolean force,
 
 			@RequestHeader(value = X_AUTHOR, required = true)

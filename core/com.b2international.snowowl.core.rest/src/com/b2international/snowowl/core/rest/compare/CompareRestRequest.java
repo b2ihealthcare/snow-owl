@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.rest.compare;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import io.swagger.v3.oas.annotations.Parameter;
 

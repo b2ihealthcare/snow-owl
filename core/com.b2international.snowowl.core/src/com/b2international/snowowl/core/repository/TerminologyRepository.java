@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,8 +45,8 @@ import com.b2international.snowowl.core.setup.Plugins;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import net.jodah.failsafe.Failsafe;
-import net.jodah.failsafe.RetryPolicy;
+import dev.failsafe.Failsafe;
+import dev.failsafe.RetryPolicy;
 
 /**
  * @since 4.1
@@ -125,11 +125,12 @@ public final class TerminologyRepository extends ServiceContext implements Repos
 	}
 
 	public void waitForHealth(RepositoryInfo.Health desiredHealth, long seconds) {
-		final RetryPolicy<Health> retryPolicy = new RetryPolicy<Health>()
+		final RetryPolicy<Health> retryPolicy = RetryPolicy.<Health>builder()
 				.handleResult(Health.RED)
 				.withMaxAttempts(-1)
 				.withMaxDuration(Duration.of(seconds, ChronoUnit.SECONDS))
-				.withBackoff(1, Math.max(2, seconds / 3), ChronoUnit.SECONDS);
+				.withBackoff(1, Math.max(2, seconds / 3), ChronoUnit.SECONDS)
+				.build();
 		final Health finalHealth = Failsafe.with(retryPolicy).get(() -> status().health());
 		if (finalHealth != desiredHealth) {
 			throw new RequestTimeoutException("Repository health status couldn't reach '%s' in '%s' seconds.", desiredHealth, seconds);

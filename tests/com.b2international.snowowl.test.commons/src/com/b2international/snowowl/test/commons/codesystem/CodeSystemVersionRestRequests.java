@@ -65,7 +65,7 @@ public abstract class CodeSystemVersionRestRequests {
 		return givenAuthenticatedRequest(ApiTestConstants.VERSIONS_API)
 				.when()
 				.queryParams(Map.of(
-					"id", String.join(Branch.SEPARATOR, codeSystemId, version),
+					"id", Branch.get(codeSystemId, version),
 					"expand", expand,
 					"limit", Integer.MAX_VALUE
 				))
@@ -81,7 +81,7 @@ public abstract class CodeSystemVersionRestRequests {
 				.accept(ContentType.JSON)
 				.when()
 				.body(Json.object(
-					"id", Json.array(String.join(Branch.SEPARATOR, codeSystemId, version)),
+					"id", Json.array(Branch.get(codeSystemId, version)),
 					"expand", Json.array(expand),
 					"limit", Integer.MAX_VALUE
 				))
@@ -93,7 +93,7 @@ public abstract class CodeSystemVersionRestRequests {
 	
 	public static ValidatableResponse assertGetVersion(String codeSystemId, String version) {
 		return givenAuthenticatedRequest(ApiTestConstants.VERSIONS_API)
-				.get("/{id}", String.join(Branch.SEPARATOR, codeSystemId, version))
+				.get("/{id}/{version}", codeSystemId, version)
 				.then();
 	}
 
