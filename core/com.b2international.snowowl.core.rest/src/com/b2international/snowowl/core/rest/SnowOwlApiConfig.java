@@ -96,6 +96,9 @@ import com.google.inject.Provider;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
+import jakarta.servlet.MultipartConfigElement;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
@@ -132,6 +135,23 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 			return mapper;
 		}
 	});
+	
+	@Override
+	public void setServletContext(ServletContext servletContext) {
+		// XXX we only need the servlet context to inject multi-part configuration from snowowl.yml into the multipart config element
+		// web.xml can only support static values, other configuration methods are not working in our case so we rely on this method to inject the config values
+		ServletRegistration reg = servletContext.getServletRegistration("restServlet");
+		if (reg instanceof ServletRegistration.Dynamic) {
+			final HttpConfig httpConfig = ApplicationContext.getInstance().getService(SnowOwlConfiguration.class).getModuleConfig(ApiConfiguration.class).getHttp();
+			final long maxFileSize = httpConfig.getMaxFileSizeBytes();
+			final long maxRequestSize = httpConfig.getMaxRequestSizeBytes();
+			final int fileSizeThreshold = httpConfig.getMaxInMemorySizeBytes();
+			// location value should not be set, servlet request handler will set the location to the current tmp directory instead
+			((ServletRegistration.Dynamic) reg).setMultipartConfig(new MultipartConfigElement("", maxFileSize, maxRequestSize, fileSizeThreshold));
+		}
+		// important to call super here at the end after setting the multipart config otherwise Spring won't boot due to missing servlet context
+		super.setServletContext(servletContext);
+	}
 	
 	@Bean
 	public OpenAPI openAPI() {
@@ -211,14 +231,7 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	
 	@Bean
 	public MultipartResolver multipartResolver() {
-		// TODO add back max file size restrictions somehow
 		return new StandardServletMultipartResolver();
-//		final HttpConfig httpConfig = ApplicationContext.getInstance().getService(SnowOwlConfiguration.class).getModuleConfig(ApiConfiguration.class).getHttp();
-//	    final CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
-//	    multipartResolver.setMaxUploadSizePerFile(httpConfig.getMaxFileSizeBytes());
-//	    multipartResolver.setMaxUploadSize(httpConfig.getMaxRequestSizeBytes());
-//	    multipartResolver.setMaxInMemorySize(httpConfig.getMaxInMemorySizeBytes());
-//	    return multipartResolver;
 	}
 	
 	@Bean

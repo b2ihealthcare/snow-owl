@@ -29,9 +29,7 @@
     	<load-on-startup>1</load-on-startup>
     	<async-supported>true</async-supported>
     	
-		<multipart-config>
-	        <location>/tmp</location>
-    	</multipart-config>
+		<multipart-config />
 	</servlet>
 
 	<filter>
