@@ -67,7 +67,6 @@
 				<configuration>
 					<strictBinIncludes>false</strictBinIncludes>
 					<strictVersions>false</strictVersions>
-					<skipPomGeneration>true</skipPomGeneration>
 				</configuration>
 			</plugin>
 			<plugin>
