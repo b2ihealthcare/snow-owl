@@ -13,8 +13,8 @@
 	<packaging>eclipse-plugin</packaging>
 
 	<properties>
-		<java.jwt.version>3.18.1</java.jwt.version>
-		<jwks.rsa.version>0.20.0</jwks.rsa.version>
+		<java.jwt.version>4.4.0</java.jwt.version>
+		<jwks.rsa.version>0.22.1</jwks.rsa.version>
 	</properties>
 
 	<dependencies>
@@ -40,6 +40,7 @@
 				<version>3.1.1</version>
 				<executions>
 					<execution>
+						<?m2e execute onConfiguration?>
 						<id>copy</id>
 						<phase>generate-resources</phase>
 						<goals>
@@ -57,43 +58,6 @@
 				</executions>
 			</plugin>
 		</plugins>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											org.apache.maven.plugins
-										</groupId>
-										<artifactId>
-											maven-dependency-plugin
-										</artifactId>
-										<versionRange>
-											[3.1.1,)
-										</versionRange>
-										<goals>
-											<goal>
-												copy-dependencies
-											</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<execute>
-										</execute>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
 
 </project>

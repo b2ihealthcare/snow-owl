@@ -22,8 +22,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.options.Options;

@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.rest.branch;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

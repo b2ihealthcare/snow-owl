@@ -18,9 +18,9 @@ package com.b2international.snowowl.core.branch.compare;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.b2international.index.revision.*;
 import com.b2international.snowowl.core.ComponentIdentifier;

@@ -16,14 +16,20 @@
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>testcontainers</artifactId>
-			<version>1.17.3</version>
+			<version>1.19.4</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>elasticsearch</artifactId>
-			<version>1.17.3</version>
+			<version>1.19.4</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+    		<groupId>com.github.stefanbirkner</groupId>
+    		<artifactId>system-rules</artifactId>
+    		<version>1.19.0</version>
+    		<scope>test</scope>
 		</dependency>
 	</dependencies>
 
@@ -35,6 +41,7 @@
 				<version>3.1.1</version>
 				<executions>
 					<execution>
+						<?m2e execute onConfiguration?>
 						<id>copy-runtime-dependencies</id>
 						<phase>generate-sources</phase>
 						<goals>
@@ -51,7 +58,8 @@
 								duct-tape,
 								elasticsearch,
 								jna,
-								testcontainers
+								testcontainers,
+								system-rules
 							</includeArtifactIds>
 							<outputDirectory>lib</outputDirectory>
 						</configuration>
@@ -59,38 +67,6 @@
 				</executions>
 			</plugin>
 		</plugins>
-		
-		<pluginManagement>
-			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.apache.maven.plugins</groupId>
-										<artifactId>maven-dependency-plugin</artifactId>
-										<versionRange>[3.0.2,)</versionRange>
-										<goals>
-											<goal>copy-dependencies</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<execute>
-											<runOnIncremental>false</runOnIncremental>
-										</execute>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
 	
 </project>

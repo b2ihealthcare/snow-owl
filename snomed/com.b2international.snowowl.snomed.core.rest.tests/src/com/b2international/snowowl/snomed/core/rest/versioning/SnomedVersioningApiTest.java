@@ -47,7 +47,7 @@ import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
-import com.google.common.collect.ImmutableMap;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 import io.restassured.http.ContentType;
 
@@ -95,7 +95,7 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 		String commitComment = "Version 'codesystems/SNOMEDCT' as of 'version-with-author'";
 		CommitInfos commits = givenAuthenticatedRequest("/resources/commits")
 			.contentType(ContentType.JSON)
-			.params(ImmutableMap.of("comment", commitComment))
+			.queryParams(RestExtensions.encodeQueryParameters(Map.of("comment", commitComment)))
 			.get()
 			.as(CommitInfos.class);
 		assertEquals(author, commits.first().get().getAuthor());

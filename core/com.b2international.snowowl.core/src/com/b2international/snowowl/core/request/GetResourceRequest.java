@@ -19,7 +19,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Optional;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.NotFoundException;

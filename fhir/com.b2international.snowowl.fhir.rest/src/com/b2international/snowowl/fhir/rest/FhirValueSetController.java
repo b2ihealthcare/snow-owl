@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.time.LocalDate;
 
-import org.springdoc.api.annotations.ParameterObject;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpHeaders;
@@ -521,7 +521,7 @@ public class FhirValueSetController extends AbstractFhirController {
 			
 		@Parameter(description = """
 			Force deletion flag""")
-		@RequestParam(defaultValue="false", required=false)
+		@RequestParam(value = "force", defaultValue="false", required=false)
 		final Boolean force,
 
 		@Parameter(description = """

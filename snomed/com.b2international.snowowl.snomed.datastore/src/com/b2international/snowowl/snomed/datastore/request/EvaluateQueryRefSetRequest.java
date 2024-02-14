@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collection;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.authorization.AccessControl;

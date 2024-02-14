@@ -17,7 +17,7 @@ package com.b2international.snowowl.fhir.core.model;
 
 import java.util.Set;
 
-import javax.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolation;
 
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.fhir.core.exceptions.ValidationException;

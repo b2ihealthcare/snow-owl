@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,6 @@ import com.b2international.snowowl.snomed.core.rest.perf.SnomedConceptCreatePerf
 import com.b2international.snowowl.snomed.core.rest.perf.SnomedMergePerformanceTest;
 import com.b2international.snowowl.snomed.core.rest.suggest.SnomedSuggestApiTest;
 import com.b2international.snowowl.snomed.core.rest.versioning.SnomedVersioningApiTest;
-import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.Resources;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.SnowOwlAppRule;
@@ -67,8 +66,6 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	EclSerializerTest.class,
 	SnomedCommitApiTest.class,
 	SnomedCommitApiAuthorizationTest.class,
-	// Optimization Java API Test
-	SnomedOptimizationApiTest.class,
 	// RESTful API test cases
 	// Branching API
 	SnomedBranchRequestTest.class,
@@ -94,6 +91,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedRefSetBulkApiTest.class,
 	// ECL Labeler API
 	SnomedEclLabelerApiTest.class,
+	// Optimization Java API Test
+	SnomedOptimizationApiTest.class,
 	// Generic API
 	ConceptSearchRequestSnomedTest.class,
 	ValueSetMemberSearchSnomedReferenceSetTest.class,
@@ -131,9 +130,7 @@ public class AllSnomedApiTests {
 
 	@ClassRule
 	public static final RuleChain appRule = RuleChain
-			.outerRule(SnowOwlAppRule.snowOwl(AllSnomedApiTests.class))
-			.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
-			.around(new BundleStartRule("com.b2international.snowowl.core.rest"))
+			.outerRule(SnowOwlAppRule.snowOwl(AllSnomedApiTests.class).bootRestApi())
 			// import the 20210731 Full Release up until 20210131, the last Delta will be imported via the SnomedRf2NextReleaseImportTest
 			.around(new SnomedContentRule(SnomedContentRule.SNOMEDCT, Resources.Snomed.MINI_RF2_INT_20210731, Rf2ReleaseType.FULL)
 					.importUntil("20210131"))

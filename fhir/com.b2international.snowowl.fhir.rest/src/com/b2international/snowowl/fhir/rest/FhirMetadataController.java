@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,8 @@ import java.lang.Boolean;
 import java.lang.String;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.util.Collection;
-import java.util.Comparator;
+import java.util.*;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -41,7 +38,6 @@ import org.linuxforhealth.fhir.model.r5.resource.TerminologyCapabilities;
 import org.linuxforhealth.fhir.model.r5.type.*;
 import org.linuxforhealth.fhir.model.r5.type.code.*;
 import org.osgi.framework.Version;
-import org.springdoc.webmvc.api.OpenApiWebMvcResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -80,7 +76,7 @@ import io.swagger.v3.oas.models.Paths;
 public class FhirMetadataController extends AbstractFhirController {
 	
 	@Autowired
-	private OpenApiWebMvcResource openApiWebMvcResource;
+	private SnowOwlOpenApiWebMvcResource openApiResource;
 	
 	@Autowired
 	private FhirApiConfig config; 
@@ -226,8 +222,8 @@ public class FhirMetadataController extends AbstractFhirController {
 	}
 	
 	private Metadata initMetadata() {
-		// XXX: we know that the subclass is instantiated (in SnowOwlApiConfig)
-		final OpenAPI openAPI = ((SnowOwlOpenApiWebMvcResource) openApiWebMvcResource).getOpenApi();
+		// get the ENGLISH version of the OpenAPI and use it to populate the FHIR metadata
+		final OpenAPI openAPI = openApiResource.getOpenApi(Locale.ENGLISH);
 		final Collection<CapabilityStatement.Rest.Resource> resources = collectResources(openAPI);
 		final Collection<OperationDefinition> operationDefinitions = collectOperationDefinitions(openAPI);
 		

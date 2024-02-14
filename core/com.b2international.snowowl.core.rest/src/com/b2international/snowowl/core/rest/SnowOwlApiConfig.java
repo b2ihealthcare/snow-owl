@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,13 +25,14 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.springdoc.core.*;
-import org.springdoc.core.customizers.OpenApiCustomiser;
-import org.springdoc.core.customizers.OperationCustomizer;
-import org.springdoc.webmvc.api.OpenApiWebMvcResource;
-import org.springdoc.webmvc.core.RouterFunctionProvider;
+import org.springdoc.core.customizers.SpringDocCustomizers;
+import org.springdoc.core.properties.SpringDocConfigProperties;
+import org.springdoc.core.providers.SpringDocProviders;
+import org.springdoc.core.service.AbstractRequestService;
+import org.springdoc.core.service.GenericResponseService;
+import org.springdoc.core.service.OpenAPIService;
+import org.springdoc.core.service.OperationService;
+import org.springdoc.core.utils.SpringDocUtils;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
@@ -52,7 +53,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.method.HandlerTypePredicate;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.multipart.MultipartResolver;
-import org.springframework.web.multipart.commons.CommonsMultipartResolver;
+import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
@@ -60,7 +61,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
 import org.springframework.web.servlet.mvc.condition.RequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo.BuilderConfiguration;
-import org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -96,6 +96,10 @@ import com.google.inject.Provider;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
+import jakarta.servlet.MultipartConfigElement;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * The Spring configuration class for Snow Owl's internal REST services module.
@@ -132,39 +136,46 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 		}
 	});
 	
+	@Override
+	public void setServletContext(ServletContext servletContext) {
+		// XXX we only need the servlet context to inject multi-part configuration from snowowl.yml into the multipart config element
+		// web.xml can only support static values, other configuration methods are not working in our case so we rely on this method to inject the config values
+		ServletRegistration reg = servletContext.getServletRegistration("restServlet");
+		if (reg instanceof ServletRegistration.Dynamic) {
+			final HttpConfig httpConfig = ApplicationContext.getInstance().getService(SnowOwlConfiguration.class).getModuleConfig(ApiConfiguration.class).getHttp();
+			final long maxFileSize = httpConfig.getMaxFileSizeBytes();
+			final long maxRequestSize = httpConfig.getMaxRequestSizeBytes();
+			final int fileSizeThreshold = httpConfig.getMaxInMemorySizeBytes();
+			// location value should not be set, servlet request handler will set the location to the current tmp directory instead
+			((ServletRegistration.Dynamic) reg).setMultipartConfig(new MultipartConfigElement("", maxFileSize, maxRequestSize, fileSizeThreshold));
+		}
+		// important to call super here at the end after setting the multipart config otherwise Spring won't boot due to missing servlet context
+		super.setServletContext(servletContext);
+	}
+	
 	@Bean
 	public OpenAPI openAPI() {
 		return new OpenAPI();
 	}
 	
 	@Bean
-	public OpenApiWebMvcResource openApiWebMvcResource(
+	public SnowOwlOpenApiWebMvcResource openApiWebMvcResource(
 			@Autowired ObjectFactory<OpenAPIService> openAPIBuilderObjectFactory, 
 			@Autowired AbstractRequestService requestBuilder, 
 			@Autowired GenericResponseService responseBuilder, 
 			@Autowired OperationService operationParser, 
-			@Autowired RequestMappingInfoHandlerMapping requestMappingHandlerMapping, 
-			@Autowired Optional<ActuatorProvider> actuatorProvider, 
-			@Autowired Optional<List<OperationCustomizer>> operationCustomizers, 
-			@Autowired Optional<List<OpenApiCustomiser>> openApiCustomisers, 
-			@Autowired SpringDocConfigProperties springDocConfigProperties, 
-			@Autowired Optional<SecurityOAuth2Provider> springSecurityOAuth2Provider, 
-			@Autowired Optional<RouterFunctionProvider> routerFunctionProvider, 
-			@Autowired Optional<RepositoryRestResourceProvider> repositoryRestResourceProvider) {
+			@Autowired SpringDocConfigProperties springDocConfigProperties,
+			@Autowired SpringDocProviders springDocProviders,
+			@Autowired SpringDocCustomizers springDocCustomizers) {
 		
 		return new SnowOwlOpenApiWebMvcResource(
 			openAPIBuilderObjectFactory, 
 			requestBuilder, 
 			responseBuilder, 
 			operationParser, 
-			requestMappingHandlerMapping, 
-			actuatorProvider, 
-			operationCustomizers, 
-			openApiCustomisers, 
-			springDocConfigProperties, 
-			springSecurityOAuth2Provider, 
-			routerFunctionProvider, 
-			repositoryRestResourceProvider);
+			springDocConfigProperties,
+			springDocProviders,
+			springDocCustomizers);
 	}
 	
 	@Bean
@@ -214,18 +225,13 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	}
 	
 	@Bean
-	public MethodValidationPostProcessor methodValidationPostProcessor() {
+	public static MethodValidationPostProcessor methodValidationPostProcessor() {
 		return new MethodValidationPostProcessor();
 	}
 	
 	@Bean
 	public MultipartResolver multipartResolver() {
-		final HttpConfig httpConfig = ApplicationContext.getInstance().getService(SnowOwlConfiguration.class).getModuleConfig(ApiConfiguration.class).getHttp();
-	    final CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
-	    multipartResolver.setMaxUploadSizePerFile(httpConfig.getMaxFileSizeBytes());
-	    multipartResolver.setMaxUploadSize(httpConfig.getMaxRequestSizeBytes());
-	    multipartResolver.setMaxInMemorySize(httpConfig.getMaxInMemorySizeBytes());
-	    return multipartResolver;
+		return new StandardServletMultipartResolver();
 	}
 	
 	@Bean

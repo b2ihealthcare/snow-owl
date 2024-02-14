@@ -5,7 +5,7 @@ Bundle-SymbolicName: com.b2international.snowowl.snomed.reasoner;singleton:=true
 Bundle-Version: 9.0.1.qualifier
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
- org.semanticweb.owl.owlapi;bundle-version="[4.5.10,5.0.0)",
+ org.semanticweb.owl.owlapi;bundle-version="[4.5.26,5.0.0)",
  org.protege.editor.owl,
  org.protege.editor.core.application,
  org.protege.common,
@@ -20,4 +20,6 @@ Export-Package: com.b2international.snowowl.snomed.reasoner.classification,
  com.b2international.snowowl.snomed.reasoner.exceptions,
  com.b2international.snowowl.snomed.reasoner.ontology,
  com.b2international.snowowl.snomed.reasoner.request
-Import-Package: org.slf4j;version="1.7.25"
+Import-Package: jakarta.validation;version="3.0.2",
+ jakarta.validation.constraints;version="3.0.2",
+ org.slf4j;version="2.0.0"

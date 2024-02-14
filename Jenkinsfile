@@ -1,12 +1,36 @@
 @Library('jenkins-shared-library') _
 
-/**
-* Job Parameters:
-*	skipTests - whether to skip unit tests during the build process or not
-*	skipDeploy - whether to deploy build artifacts in case of successful maven build or not (should be false by default)
-*	skipDownstreamBuilds - whether to skip execution of downstream builds
-*	downstreamBuild - name of downstream build
-**/
+properties(
+	[
+		disableConcurrentBuilds(),
+		parameters(
+			[
+				booleanParam(
+					name: 'skipTests',
+					description: 'Skip running the entire test suite'
+				),
+				booleanParam(
+					name: 'skipDeploy',
+					description: 'Skip deploying artifacts at the end'
+				),
+				booleanParam(
+					name: 'skipDownstreamBuilds',
+					description: 'Skip execution of downstream builds'
+				),
+				hidden(
+					name: 'downstreamBuild',
+					defaultValue: 'snow-owl-ext'
+				),
+				hidden(
+					name: 'custom_maven_global_settings',
+					defaultValue: '895dc1f0-42a1-4b7d-8b6c-20f93e45e9b8'
+				)
+			]
+		),
+		buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '3'))
+	]
+)
+
 try {
 
 	def currentVersion
@@ -34,14 +58,8 @@ try {
 
 		stage('Build') {
 
-			if (!custom_maven_settings.isEmpty()) {
-				withMaven(jdk: 'OpenJDK_17', maven: 'Maven_3.8.4', mavenSettingsConfig: custom_maven_settings, options: [artifactsPublisher(disabled: true)],  publisherStrategy: 'EXPLICIT') {
-					sh "mvn clean ${mavenPhase} -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
-				}
-			} else {
-				withMaven(jdk: 'OpenJDK_17', maven: 'Maven_3.8.4', options: [artifactsPublisher(disabled: true)], publisherStrategy: 'EXPLICIT') {
-					sh "mvn clean ${mavenPhase} -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
-				}
+			withMaven(globalMavenSettingsConfig: custom_maven_global_settings, publisherStrategy: 'EXPLICIT', traceability: true) {
+				sh "./mvnw clean ${mavenPhase} -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true"
 			}
 
 		}

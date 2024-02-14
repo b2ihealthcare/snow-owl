@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.fasterxml.jackson.annotation.JsonCreator;

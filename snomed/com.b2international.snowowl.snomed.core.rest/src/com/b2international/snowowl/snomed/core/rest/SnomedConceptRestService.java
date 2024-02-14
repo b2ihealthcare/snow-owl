@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.springdoc.api.annotations.ParameterObject;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -273,7 +273,7 @@ public class SnomedConceptRestService extends AbstractRestService {
 			final SnomedResourceRequest<SnomedConceptRestUpdate> body,
 			
 			@Parameter(description = "Force update flag")
-			@RequestParam(defaultValue="false", required=false)
+			@RequestParam(value = "force", defaultValue="false", required=false)
 			final Boolean force,
 
 			@RequestHeader(value = X_AUTHOR, required = false)
@@ -320,7 +320,7 @@ public class SnomedConceptRestService extends AbstractRestService {
 			final String conceptId,
 
 			@Parameter(description = "Force deletion flag")
-			@RequestParam(defaultValue="false", required=false)
+			@RequestParam(value = "force", defaultValue="false", required=false)
 			final Boolean force,
 
 			@RequestHeader(value = X_AUTHOR, required = false)

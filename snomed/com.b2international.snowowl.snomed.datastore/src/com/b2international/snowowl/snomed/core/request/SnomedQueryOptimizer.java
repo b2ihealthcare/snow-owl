@@ -394,7 +394,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		try {
 			conceptSet = evaluateConceptSet(context, locales, inclusions, exclusions);
 		} catch (SyntaxException e) {
-			log.error("Clause evaluation resulted in syntax error, returning empty diff", e);
+			log.error("Clause evaluation resulted in syntax errors ({}), returning empty diff", e.getAdditionalInfo(), e);
 			return QueryExpressionDiffs.EMPTY;
 		}
 		

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2019-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,9 +49,10 @@ import com.b2international.index.IndexException;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
-import net.jodah.failsafe.Failsafe;
-import net.jodah.failsafe.RetryPolicy;
-import net.jodah.failsafe.function.CheckedSupplier;
+import dev.failsafe.Failsafe;
+import dev.failsafe.RetryPolicy;
+import dev.failsafe.function.CheckedPredicate;
+import dev.failsafe.function.CheckedSupplier;
 
 /**
  * @since 7.2
@@ -190,12 +191,13 @@ public abstract class EsClientBase implements EsClient {
 	 */
 	protected abstract boolean ping() throws IOException;
 
-	private static final <T> T waitFor(long seconds, Predicate<T> handleIf, CheckedSupplier<T> onCheck) {
-		final RetryPolicy<T> retryPolicy = new RetryPolicy<T>()
+	private static final <T> T waitFor(long seconds, CheckedPredicate<T> handleIf, CheckedSupplier<T> onCheck) {
+		final RetryPolicy<T> retryPolicy = RetryPolicy.<T>builder()
 				.handleResultIf(handleIf)
 				.withMaxAttempts(-1)
 				.withMaxDuration(Duration.of(seconds, ChronoUnit.SECONDS))
-				.withBackoff(1, Math.max(2, seconds / 3), ChronoUnit.SECONDS);
+				.withBackoff(1, Math.max(2, seconds / 3), ChronoUnit.SECONDS)
+				.build();
 		return Failsafe.with(retryPolicy).get(onCheck);
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public class ResourceApiAssert {
 	
 	public static ValidatableResponse assertResourceSearch(final Map<String, Object> filters) {
 		return givenAuthenticatedRequest(RESOURCES_API)
-				.queryParams(filters)
+				.queryParams(RestExtensions.encodeQueryParameters(filters))
 				.get()
 				.then();
 	}

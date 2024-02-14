@@ -26,27 +26,22 @@
 						<extraRequirements>
 							<requirement>
 								<type>eclipse-plugin</type>
-								<id>org.eclipse.jetty.osgi.boot</id>
+								<id>org.eclipse.jetty.osgi</id>
 								<versionRange>0.0.0</versionRange>
 							</requirement>
 							<requirement>
 								<type>eclipse-plugin</type>
-								<id>org.eclipse.jetty.annotations</id>
+								<id>org.eclipse.jetty.ee10.annotations</id>
 								<versionRange>0.0.0</versionRange>
 							</requirement>
 							<requirement>
 								<type>eclipse-plugin</type>
-								<id>org.eclipse.jetty.plus</id>
+								<id>org.eclipse.jetty.ee10.plus</id>
 								<versionRange>0.0.0</versionRange>
 							</requirement>
 							<requirement>
 								<type>eclipse-plugin</type>
-								<id>org.eclipse.jetty.websocket.server</id>
-								<versionRange>0.0.0</versionRange>
-							</requirement>
-							<requirement>
-								<type>eclipse-plugin</type>
-								<id>org.eclipse.jetty.websocket.javax.server</id>
+								<id>org.eclipse.jetty.ee10.osgi.boot</id>
 								<versionRange>0.0.0</versionRange>
 							</requirement>
 							<requirement>
@@ -72,6 +67,23 @@
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<configuration>
+					<bundleStartLevel>
+						<bundle>
+						    <id>org.apache.aries.spifly.dynamic.bundle</id>
+					    	<level>2</level>
+						    <autoStart>true</autoStart>
+						</bundle>
+						<bundle>
+						    <id>ch.qos.logback.classic</id>
+					    	<level>2</level>
+						    <autoStart>true</autoStart>
+						</bundle>
+						<bundle>
+						    <id>ch.qos.logback.core</id>
+					    	<level>2</level>
+						    <autoStart>true</autoStart>
+						</bundle>
+					</bundleStartLevel>
 					<includes>
 						<include>**/AllSnomedApiTests.java</include>
 					</includes>

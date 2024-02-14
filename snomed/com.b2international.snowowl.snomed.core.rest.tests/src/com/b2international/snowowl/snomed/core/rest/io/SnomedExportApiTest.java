@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,6 +85,7 @@ import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
 /**
@@ -214,7 +215,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		
 		String transientEffectiveTime = "20170301";
 
-		Map<String, ?> config = ImmutableMap.<String, Object>builder()
+		Map<String, Object> config = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
 				.put("transientEffectiveTime", transientEffectiveTime)
 				.build();
@@ -350,7 +351,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		createVersion("SNOMEDCT-DELTA", "v1", EffectiveTimes.parse(versionEffectiveTime, DateFormats.SHORT)).statusCode(201);
 		IBranchPath versionPath = BranchPathUtils.createPath(branchPath, "v1");
 
-		Map<String, ?> config = ImmutableMap.<String, Object>builder()
+		Map<String, Object> config = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
 				.put("startEffectiveTime", versionEffectiveTime)
 				.put("endEffectiveTime", versionEffectiveTime)
@@ -421,7 +422,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		String descriptionId = createNewDescription(branchPath, conceptId);
 		// do not version description
 
-		Map<String, ?> config = ImmutableMap.<String, Object>builder()
+		Map<String, Object> config = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
 				.put("startEffectiveTime", relationshipEffectiveTime)
 				.put("endEffectiveTime", relationshipEffectiveTime)
@@ -531,7 +532,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		final Map<String, Object> config = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.SNAPSHOT.name())
 				.put("startEffectiveTime", versionEffectiveTime)
-				.put("componentTypes", List.of(SnomedReferenceSetMember.TYPE))
+				.put("componentTypes", SnomedReferenceSetMember.TYPE)
 				.build();
 			
 		final File exportArchive = doExport(taskBranch, config);
@@ -1448,7 +1449,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		
 		CodeSystem codeSystem = CodeSystemRestRequests.getCodeSystem(codeSystemId);
 		
-		final File exportArchive = doExport(codeSystemId, codeSystem.getSettings());
+		final File exportArchive = doExport(codeSystemId, Maps.filterEntries(codeSystem.getSettings(), entry -> !entry.getKey().equals("languages")));
 		
 		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
 				.put("der2_sssssssRefset_MRCMDomainSnapshot_INT", true)
@@ -1610,7 +1611,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			.statusCode(204);
 
 		// perform export from the HEAD of the CodeSystem
-		var exportConfig = Map.of(
+		var exportConfig = Map.<String, Object>of(
 			"type", Rf2ReleaseType.SNAPSHOT,
 			"includeUnpublished", false
 		);

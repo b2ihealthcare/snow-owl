@@ -17,7 +17,7 @@ package com.b2international.snowowl.core.config;
 
 import java.util.concurrent.TimeUnit;
 
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 
 /**
  * @since 8.10.1

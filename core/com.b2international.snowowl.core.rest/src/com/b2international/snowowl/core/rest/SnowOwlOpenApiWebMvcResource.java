@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,57 +15,43 @@
  */
 package com.b2international.snowowl.core.rest;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.Locale;
 
-import org.springdoc.core.*;
-import org.springdoc.core.customizers.OpenApiCustomiser;
-import org.springdoc.core.customizers.OperationCustomizer;
+import org.springdoc.core.customizers.SpringDocCustomizers;
+import org.springdoc.core.properties.SpringDocConfigProperties;
+import org.springdoc.core.providers.SpringDocProviders;
+import org.springdoc.core.service.AbstractRequestService;
+import org.springdoc.core.service.GenericResponseService;
+import org.springdoc.core.service.OpenAPIService;
+import org.springdoc.core.service.OperationService;
 import org.springdoc.webmvc.api.OpenApiWebMvcResource;
-import org.springdoc.webmvc.core.RouterFunctionProvider;
 import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping;
 
 import io.swagger.v3.oas.models.OpenAPI;
 
 /**
- * Exposes the {@link OpenApiWebMvcResource#getOpenApi getOpenApi()} method on the superclass for programmatic
- * access to generated OpenAPI metadata within Snow Owl.
+ * Exposes the {@link OpenApiWebMvcResource#getOpenApi(Locale) getOpenApi(Locale)} method on the superclass for programmatic access to generated
+ * OpenAPI metadata within Snow Owl.
  * 
  * @since 8.0
  */
 public class SnowOwlOpenApiWebMvcResource extends OpenApiWebMvcResource {
 
 	public SnowOwlOpenApiWebMvcResource(
-			final ObjectFactory<OpenAPIService> openAPIBuilderObjectFactory,
-			final AbstractRequestService requestBuilder, 
-			final GenericResponseService responseBuilder,
-			final OperationService operationParser, 
-			final RequestMappingInfoHandlerMapping requestMappingHandlerMapping,
-			final Optional<ActuatorProvider> actuatorProvider, 
-			final Optional<List<OperationCustomizer>> operationCustomizers,
-			final Optional<List<OpenApiCustomiser>> openApiCustomisers,
-			final SpringDocConfigProperties springDocConfigProperties,
-			final Optional<SecurityOAuth2Provider> springSecurityOAuth2Provider,
-			final Optional<RouterFunctionProvider> routerFunctionProvider,
-			final Optional<RepositoryRestResourceProvider> repositoryRestResourceProvider) {
-
-		super(openAPIBuilderObjectFactory, 
-			requestBuilder, 
-			responseBuilder, 
-			operationParser, 
-			requestMappingHandlerMapping,
-			actuatorProvider, 
-			operationCustomizers, 
-			openApiCustomisers, 
-			springDocConfigProperties,
-			springSecurityOAuth2Provider, 
-			routerFunctionProvider, 
-			repositoryRestResourceProvider);
+			ObjectFactory<OpenAPIService> openAPIBuilderObjectFactory, 
+			AbstractRequestService requestBuilder,
+			GenericResponseService responseBuilder, 
+			OperationService operationParser, 
+			SpringDocConfigProperties springDocConfigProperties,
+			SpringDocProviders springDocProviders, 
+			SpringDocCustomizers springDocCustomizers) {
+		super(openAPIBuilderObjectFactory, requestBuilder, responseBuilder, operationParser, springDocConfigProperties, springDocProviders,
+				springDocCustomizers);
 	}
 
 	@Override
-	public OpenAPI getOpenApi() {
-		return super.getOpenApi();
+	public OpenAPI getOpenApi(Locale locale) {
+		return super.getOpenApi(locale);
 	}
+
 }

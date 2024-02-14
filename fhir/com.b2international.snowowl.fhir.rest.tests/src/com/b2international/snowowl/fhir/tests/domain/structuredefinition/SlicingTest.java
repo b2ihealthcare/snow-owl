@@ -62,7 +62,7 @@ public class SlicingTest extends FhirTest {
 				.severity(IssueSeverity.ERROR)
 				.diagnostics("1 validation error")
 				.addLocation("Slicing.rules")
-				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'rules' content is invalid [null]. Violation: may not be null.")
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'rules' content is invalid [null]. Violation: must not be null.")
 				.build();
 			
 		exception.expect(ValidationException.class);

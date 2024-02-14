@@ -84,6 +84,7 @@ import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdProvider;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.Iterables;
 
 import io.restassured.http.ContentType;
@@ -850,7 +851,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	public void issue_SO_2158_termFilter_throws_NPE() throws Exception {
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 			.accept(ContentType.JSON)
-			.queryParam("term", "<<")
+			.queryParam("term", RestExtensions.encodeQueryParameter("<<"))
 			.get("/{path:**}/descriptions", branchPath.getPath())
 			.then()
 			.statusCode(200);

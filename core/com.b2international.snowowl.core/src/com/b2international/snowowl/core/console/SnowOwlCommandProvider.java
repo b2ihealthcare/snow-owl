@@ -49,7 +49,8 @@ public final class SnowOwlCommandProvider implements CommandProvider {
 
 	public SnowOwlCommandProvider() {
 		this.usage = Suppliers.memoize(() -> {
-			return getHelp(cli(ApplicationContext.getServiceForClass(Environment.class)));
+			Environment env = ApplicationContext.getServiceForClass(Environment.class);
+			return env != null ? getHelp(cli(env)) : "N/A";
 		});
 	}
 	

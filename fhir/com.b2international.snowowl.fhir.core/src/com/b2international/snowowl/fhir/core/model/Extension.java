@@ -17,9 +17,9 @@ package com.b2international.snowowl.fhir.core.model;
 
 import java.util.List;
 
-import javax.validation.Valid;
-import javax.validation.constraints.AssertTrue;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.codesystems.ExtensionType;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;

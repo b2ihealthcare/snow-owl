@@ -18,10 +18,10 @@ package com.b2international.snowowl.fhir.core.model.codesystem;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.b2international.snowowl.fhir.core.codesystems.FilterOperator;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;

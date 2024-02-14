@@ -18,9 +18,9 @@ package com.b2international.snowowl.fhir.core.model.valueset;
 import java.util.Collection;
 import java.util.Date;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.fasterxml.jackson.annotation.JsonFormat;

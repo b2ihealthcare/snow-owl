@@ -64,7 +64,9 @@
 						</goals>
 						<configuration>
 							<workDirectory>${project.build.directory}/assembly/oss</workDirectory>
-							<descriptor>${basedir}/assembly/oss.xml</descriptor>
+							<descriptors>
+								<descriptor>${basedir}/assembly/oss.xml</descriptor>
+							</descriptors>
 							<tarLongFileMode>gnu</tarLongFileMode>
 						</configuration>
 					</execution>
@@ -76,7 +78,9 @@
 						</goals>
 						<configuration>
 							<workDirectory>${project.build.directory}/assembly/oss</workDirectory>
-							<descriptor>${basedir}/assembly/oss-win.xml</descriptor>
+							<descriptors>
+								<descriptor>${basedir}/assembly/oss-win.xml</descriptor>
+							</descriptors>
 						</configuration>
 					</execution>
 				</executions>

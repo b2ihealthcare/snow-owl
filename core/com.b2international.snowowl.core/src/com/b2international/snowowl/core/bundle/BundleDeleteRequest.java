@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.bundle;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.domain.TransactionContext;

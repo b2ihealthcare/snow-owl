@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.identity.ldap;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.b2international.commons.TokenReplacer;
 import com.b2international.snowowl.core.identity.IdentityProviderConfig;

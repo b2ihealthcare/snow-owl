@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.core.rest;
 
 import java.util.concurrent.TimeUnit;
 
-import org.springdoc.api.annotations.ParameterObject;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -239,7 +239,7 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 			final SnomedResourceRequest<SnomedRelationshipRestUpdate> body,
 			
 			@Parameter(description = "Force update flag")
-			@RequestParam(defaultValue="false", required=false)
+			@RequestParam(value = "force", defaultValue="false", required=false)
 			final Boolean force,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
@@ -286,7 +286,7 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 			final String relationshipId,
 
 			@Parameter(description = "Force deletion flag")
-			@RequestParam(defaultValue="false", required=false)
+			@RequestParam(value = "force", defaultValue="false", required=false)
 			final Boolean force,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)

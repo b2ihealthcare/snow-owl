@@ -17,7 +17,7 @@ package com.b2international.snowowl.fhir.core.model.codesystem;
 
 import java.util.Date;
 
-import javax.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.AssertTrue;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.fhir.core.FhirDates;

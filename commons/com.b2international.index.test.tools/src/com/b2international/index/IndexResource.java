@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2018-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,12 @@
  */
 package com.b2international.index;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.junit.Assume.assumeTrue;
 
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
@@ -24,7 +28,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.eclipse.core.runtime.FileLocator;
 import org.junit.rules.ExternalResource;
+import org.osgi.framework.FrameworkUtil;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.utility.MountableFile;
 
@@ -51,7 +57,7 @@ public final class IndexResource extends ExternalResource {
 	 */
 	public static final String ES_USE_TEST_CONTAINER_VARIABLE = "so.index.es.useDocker";
 	
-	public static final String DEFAULT_ES_DOCKER_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:8.10.3";
+	public static final String DEFAULT_ES_DOCKER_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:8.12.0";
 
 	private static final AtomicBoolean INIT = new AtomicBoolean(false);
 	
@@ -85,6 +91,12 @@ public final class IndexResource extends ExternalResource {
 					testElasticsearchContainer = DEFAULT_ES_DOCKER_IMAGE;
 				}
 				container = new ElasticsearchContainer(testElasticsearchContainer);
+				// XXX elasticsearch-default-memory-vm.options is a classpath resource in the testcontainers:elasticsearch jar since 7.17.4
+				// loading it from the classpath won't work because testcontainers is not ready to handle bundleresource URLs specific to Eclipse OSGi 
+				// remove the entry and replace it with ours
+				container.getCopyToFileContainerPathMap().keySet().removeIf(file -> file.getFilesystemPath().startsWith("bundleresource://") && file.getFilesystemPath().contains("elasticsearch-default-memory-vm.options"));
+				container.withCopyFileToContainer(MountableFile.forHostPath(toAbsolutePathBundleEntry(IndexResource.class, "elasticsearch-default-memory-vm.options")), "/usr/share/elasticsearch/config/jvm.options.d/elasticsearch-default-memory-vm.options");
+				
 				container.withEnv("rest.action.multi.allow_explicit_index", "false");
 				container.start();
 				
@@ -125,6 +137,12 @@ public final class IndexResource extends ExternalResource {
 		
 		// then make sure we have all indexes ready for tests
 		revisionIndex.admin().create();
+	}
+
+	private static Path toAbsolutePathBundleEntry(Class<?> contextClass, String path) throws Exception {
+		var bundle = checkNotNull(FrameworkUtil.getBundle(contextClass), "Bundle not found for %s", contextClass);
+		var fileURL = new URL(FileLocator.toFileURL(bundle.getEntry(path)).toString().replaceAll(" ", "%20"));
+		return Paths.get(fileURL.toURI());
 	}
 	
 	@Override

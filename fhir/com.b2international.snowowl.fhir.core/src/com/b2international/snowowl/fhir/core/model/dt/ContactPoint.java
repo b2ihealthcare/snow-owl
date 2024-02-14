@@ -17,7 +17,7 @@ package com.b2international.snowowl.fhir.core.model.dt;
 
 import java.util.List;
 
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 
 import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;

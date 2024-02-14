@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2019-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,17 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.config.LogConfig.logConfig;
 import static io.restassured.config.ObjectMapperConfig.objectMapperConfig;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang.text.StrSubstitutor;
+import org.apache.commons.text.StringSubstitutor;
 import org.hamcrest.CoreMatchers;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -36,6 +39,7 @@ import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.util.PlatformUtil;
 import com.google.common.base.*;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 
 import io.restassured.RestAssured;
 import io.restassured.common.mapper.resolver.ObjectMapperResolver;
@@ -103,6 +107,8 @@ public class RestExtensions {
 			if (!Strings.isNullOrEmpty(serverLocation)) {
 				RestAssured.baseURI = serverLocation;
 			}
+			
+			RestAssured.urlEncodingEnabled = false;
 			
 			RestAssured.config = RestAssuredConfig.config()
 				.objectMapperConfig(objectMapperConfig().defaultObjectMapper(new Jackson2Mapper(new CustomJackson2ObjectMapperFactory())))
@@ -178,7 +184,7 @@ public class RestExtensions {
 	}
 
 	public static String render(String it, Map<String, Object> fieldValueMap) {
-		return new StrSubstitutor(fieldValueMap).replace(it);
+		return new StringSubstitutor(fieldValueMap).replace(it);
 	}
 
 	/**
@@ -240,6 +246,22 @@ public class RestExtensions {
 	
 	public static String generateToken(String userId, Permission...permissions) {
 		return ApplicationContext.getServiceForClass(JWTSupport.class).generate(new User(userId, List.of(permissions)));
+	}
+	
+	public static Map<String, Object> encodeQueryParameters(Map<String, Object> queryParams) {
+		return Maps.transformValues(queryParams, RestExtensions::encodeQueryParameter);
+	}
+
+	public static <T> T encodeQueryParameter(T parameter) {
+		if (parameter instanceof String) {
+			try {
+				return (T) URLEncoder.encode((String) parameter, StandardCharsets.UTF_8.toString());
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException(e);
+			}
+		} else {
+			return parameter;
+		}
 	}
 
 }

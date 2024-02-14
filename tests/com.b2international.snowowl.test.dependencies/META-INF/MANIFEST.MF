@@ -7,16 +7,16 @@ Bundle-Vendor: B2iHealthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ClassPath: .,
  lib/annotations-17.0.0.jar,
- lib/commons-compress-1.21.jar,
+ lib/commons-compress-1.25.0.jar,
  lib/contiperf-2.3.2.jar,
- lib/docker-java-api-3.2.13.jar,
- lib/docker-java-transport-3.2.13.jar,
- lib/docker-java-transport-zerodep-3.2.13.jar,
+ lib/docker-java-api-3.3.4.jar,
+ lib/docker-java-transport-3.3.4.jar,
+ lib/docker-java-transport-zerodep-3.3.4.jar,
  lib/duct-tape-1.0.8.jar,
- lib/elasticsearch-1.17.3.jar,
- lib/jna-5.8.0.jar,
- lib/system-rules-1.18.0.jar,
- lib/testcontainers-1.17.3.jar
+ lib/elasticsearch-1.19.4.jar,
+ lib/jna-5.13.0.jar,
+ lib/system-rules-1.19.0.jar,
+ lib/testcontainers-1.19.4.jar
 Export-Package: com.b2international.snowowl.rules,
  com.github.dockerjava.api.command,
  org.databene.contiperf,
@@ -48,4 +48,4 @@ Export-Package: com.b2international.snowowl.rules,
 Require-Bundle: org.junit;bundle-version="4.11.0",
  com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.10.5"
 Bundle-ActivationPolicy: lazy
-Import-Package: org.slf4j;version="1.7.30"
+Import-Package: org.slf4j;version="2.0.0"

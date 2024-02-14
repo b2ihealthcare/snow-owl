@@ -17,8 +17,8 @@ package com.b2international.snowowl.fhir.core.model.structuredefinition;
 
 import java.util.List;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.codesystems.DiscriminatorType;
 import com.b2international.snowowl.fhir.core.model.Element;

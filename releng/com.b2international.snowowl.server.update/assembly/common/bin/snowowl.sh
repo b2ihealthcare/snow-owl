@@ -73,6 +73,6 @@ exec $JAVA_EXECUTABLE $SO_JAVA_OPTS \
   -Djava.io.tmpdir="$TMP_DIR" \
   -Dosgi.install.area="$KERNEL_HOME" \
   -Dosgi.configuration.area="$CONFIG_AREA" \
-  -jar plugins/org.eclipse.equinox.launcher_1.6.300.v20210813-1054.jar
+  -jar plugins/org.eclipse.equinox.launcher_1.6.600.v20231106-1826.jar
 
 popd

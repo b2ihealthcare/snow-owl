@@ -18,9 +18,9 @@ package com.b2international.snowowl.snomed.reasoner.request;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.authorization.AccessControl;

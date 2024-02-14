@@ -17,7 +17,7 @@ package com.b2international.snowowl.fhir.core.model;
 
 import java.util.Collection;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;

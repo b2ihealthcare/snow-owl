@@ -1,16 +1,18 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl LDAP Identity Module
-Bundle-SymbolicName: com.b2international.snowowl.identity.ldap
+Bundle-SymbolicName: com.b2international.snowowl.identity.ldap;singleton:=true
 Bundle-Version: 9.0.1.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-17
-Import-Package: javax.naming,
+Import-Package: jakarta.validation;version="3.0.2",
+ jakarta.validation.constraints;version="3.0.2",
+ javax.naming,
  javax.naming.directory,
  javax.naming.ldap,
- org.slf4j;version="1.7.25"
+ org.slf4j;version="2.0.0"
 Automatic-Module-Name: com.b2international.snowowl.identity.ldap
+Bundle-ActivationPolicy: lazy
 Export-Package: com.b2international.snowowl.identity.ldap;x-internal:=true
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
- com.b2international.snowowl.core,
- com.b2international.commons
+ com.b2international.snowowl.core;visibility:=reexport
 Bundle-Vendor: B2i Healthcare
