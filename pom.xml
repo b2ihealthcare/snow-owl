@@ -67,6 +67,7 @@
 				<configuration>
 					<strictBinIncludes>false</strictBinIncludes>
 					<strictVersions>false</strictVersions>
+					<skipPomGeneration>true</skipPomGeneration>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -308,6 +309,7 @@
 					<configuration>
 						<timestampProvider>jgit</timestampProvider>
 						<jgit.ignore>pom.xml</jgit.ignore>
+						<skipPomGeneration>true</skipPomGeneration>
 					</configuration>
 				</plugin>
 				<plugin>
