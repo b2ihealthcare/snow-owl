@@ -82,7 +82,7 @@ These instructions will get Snow Owl up and running on your local machine for de
 ## Prerequisites
 
 Snow Owl is an Equinox-OSGi based server. To develop plug-ins for Snow Owl you need to use Eclipse as IDE: 
-* Download Eclipse IDE for Eclipse Committers 2023-09 package from here: https://www.eclipse.org/downloads/packages/release/2023-12/r/eclipse-ide-eclipse-committers
+* Download Eclipse IDE for Eclipse Committers 2023-12 package from here: https://www.eclipse.org/downloads/packages/release/2023-12/r/eclipse-ide-eclipse-committers
 
 Required Eclipse plug-ins in order (install the listed features via `Help` &rarr; `Install New Software...`):
 
