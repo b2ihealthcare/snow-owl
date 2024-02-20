@@ -88,8 +88,8 @@ Required Eclipse plug-ins in order (install the listed features via `Help` &rarr
 
 *Note: you may have to untick the `Show only the latest versions of the available software` checkbox to get older versions of a feature. Please use the exact version specified below, not the latest point release.*
 
-* Groovy Development Tools (https://groovy.jfrog.io/ui/native/plugins-release/e4.30)
-  * Eclipse Groovy Development Tools - 5.1.0 (in category "Main Package")
+* Groovy Development Tools (https://groovy.jfrog.io/ui/native/plugins-release/e4.30 or https://groovy.jfrog.io/artifactory/plugins-release-local/org/codehaus/groovy/groovy-eclipse-integration/5.2.0/e4.30)
+  * Eclipse Groovy Development Tools - 5.2.0 (in category "Main Package")
 * MWE2 (https://download.eclipse.org/modeling/emft/mwe/updates/releases/2.16.0/)
   * MWE SDK 1.10.0 (MWE)
 * Xtext/Xtend (https://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.33.0/)
