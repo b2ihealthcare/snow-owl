@@ -162,7 +162,7 @@
 							<type>p2-installable-unit</type>
 							<id>com.fasterxml.jackson.core.jackson-databind</id>
 							<restrictTo>
-								<version>${jackson.databind.version}</version>
+								<version>${jackson.version}</version>
 							</restrictTo>
 						</filter>
 						<filter>
