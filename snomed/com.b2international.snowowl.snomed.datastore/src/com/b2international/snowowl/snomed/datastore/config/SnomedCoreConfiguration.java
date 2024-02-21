@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.config;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-
-import jakarta.validation.constraints.NotEmpty;
-
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
 
 /**
  * SNOMED CT related application level configuration parameters.
@@ -33,8 +32,8 @@ public class SnomedCoreConfiguration {
 	public static final String ELK_REASONER_ID = "org.semanticweb.elk.elk.reasoner.factory"; //$NON-NLS-1$
 	public static final String DEFAULT_REASONER = ELK_REASONER_ID;
 	public static final int DEFAULT_MAXIMUM_REASONER_COUNT = 2;
-	public static final int DEFAULT_MAXIMUM_REASONER_RESULTS = 10;
 	public static final int DEFAULT_MAXIMUM_REASONER_RUNS = 1000;
+	public static final long DEFAULT_CLASSIFICATION_CLEANUP_INTERVAL = 30L;
 	
 	@Min(1)
 	@Max(3)
@@ -43,6 +42,10 @@ public class SnomedCoreConfiguration {
 	@Min(1)
 	@Max(1_000_000)
 	private int maxReasonerRuns = DEFAULT_MAXIMUM_REASONER_RUNS;
+	
+	@Min(5)
+	@Max(60)
+	private long classificationCleanUpInterval = DEFAULT_CLASSIFICATION_CLEANUP_INTERVAL;
 	
 	@NotEmpty
 	private String concreteDomainTypeRefsetIdentifier = Concepts.REFSET_CONCRETE_DOMAIN_TYPE;
@@ -237,6 +240,10 @@ public class SnomedCoreConfiguration {
 	@JsonProperty("datetimeDataTypeRefsetIdentifier")
 	public void setDatetimeDatatypeRefsetIdentifier(String datetimeDatatypeRefsetIdentifier) {
 		this.datetimeDatatypeRefsetIdentifier = datetimeDatatypeRefsetIdentifier;
+	}
+
+	public long getClassificationCleanUpInterval() {
+		return classificationCleanUpInterval;
 	}
 	
 }

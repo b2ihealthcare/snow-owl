@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2018-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.reasoner;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.b2international.index.Index;
@@ -29,7 +30,6 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationTracker;
 import com.b2international.snowowl.snomed.reasoner.index.*;
-import com.google.common.collect.ImmutableList;
 
 /**
  * @since 7.0
@@ -43,8 +43,8 @@ public final class SnomedReasonerPlugin extends Plugin implements TerminologyRep
 			final Index repositoryIndex = env.service(RepositoryManager.class).get(getToolingId()).service(Index.class);
 			final SnomedCoreConfiguration snomedConfig = configuration.getModuleConfig(SnomedCoreConfiguration.class);
 			final int maximumReasonerRuns = snomedConfig.getMaxReasonerRuns();
-			final long cleanUpInterval = TimeUnit.MINUTES.toMillis(5L); // TODO: make this configurable
-			final ClassificationTracker classificationTracker = new ClassificationTracker(repositoryIndex, maximumReasonerRuns, cleanUpInterval);
+			final long classificationCleanUpInterval = snomedConfig.getClassificationCleanUpInterval();
+			final ClassificationTracker classificationTracker = new ClassificationTracker(repositoryIndex, maximumReasonerRuns, TimeUnit.MINUTES.toMillis(classificationCleanUpInterval));
 			
 			env.services().registerService(ClassificationTracker.class, classificationTracker);
 		}
@@ -52,7 +52,7 @@ public final class SnomedReasonerPlugin extends Plugin implements TerminologyRep
 	
 	@Override
 	public Collection<Class<?>> getAdditionalMappings() {
-		return ImmutableList.<Class<?>>of(
+		return List.of(
 			ClassificationTaskDocument.class,
 			EquivalentConceptSetDocument.class,
 			ConceptChangeDocument.class,

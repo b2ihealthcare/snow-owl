@@ -162,19 +162,19 @@ public final class ClassificationTracker implements IDisposableService {
 	private final ClassificationJobListener listener;
 	private final CleanUpTask cleanUp;
 
-	public ClassificationTracker(final Index index, final int maximumReasonerRuns, final long cleanUpInterval) {
+	public ClassificationTracker(final Index index, final int maximumReasonerRuns, final long cleanUpIntervalMs) {
 		this.index = index;
 
 		this.index.write(writer -> {
 			// Set classification statuses where a process was interrupted by a shutdown to FAILED
 			updateTasksByStatus(writer, 
 					Set.of(ClassificationStatus.RUNNING, ClassificationStatus.SCHEDULED),	// from 
-					ClassificationTaskDocument.Scripts.FAILED,										// to
+					ClassificationTaskDocument.Scripts.FAILED,								// to
 					Map.of("completionDate", System.currentTimeMillis()));
 
 			updateTasksByStatus(writer, 
 					Set.of(ClassificationStatus.SAVING_IN_PROGRESS),						// from 
-					ClassificationTaskDocument.Scripts.SAVE_FAILED,									// to
+					ClassificationTaskDocument.Scripts.SAVE_FAILED,							// to
 					Map.of());
 			
 			writer.commit();
@@ -184,7 +184,7 @@ public final class ClassificationTracker implements IDisposableService {
 		this.listener = new ClassificationJobListener();
 		Job.getJobManager().addJobChangeListener(listener);
 		this.cleanUp = new CleanUpTask(maximumReasonerRuns);
-		Holder.CLEANUP_TIMER.schedule(cleanUp, cleanUpInterval, cleanUpInterval);
+		Holder.CLEANUP_TIMER.schedule(cleanUp, cleanUpIntervalMs, cleanUpIntervalMs);
 	}
 
 	private void updateTasksByStatus(final Writer writer, 
