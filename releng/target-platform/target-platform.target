@@ -689,6 +689,13 @@
     			<version>1.11.0</version>
 			    <type>jar</type>
 			</dependency>
+			<!-- Commons Compress required by test.dependencies -->
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-compress</artifactId>
+				<version>1.25.0</version>
+				<type>jar</type>
+			</dependency>
 		</dependencies>
 		<repositories>
 			<repository>
