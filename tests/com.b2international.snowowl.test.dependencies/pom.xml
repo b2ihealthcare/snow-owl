@@ -51,7 +51,6 @@
 							<!-- Copying only the necessary JARs from the dependencies and their transitive stuff -->
 							<includeArtifactIds>
 								annotations,
-								commons-compress,
 								docker-java-api,
 								docker-java-transport,
 								docker-java-transport-zerodep,
