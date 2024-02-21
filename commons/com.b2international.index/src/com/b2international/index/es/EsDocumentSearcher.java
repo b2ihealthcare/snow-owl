@@ -584,9 +584,9 @@ public class EsDocumentSearcher implements Searcher {
 		co.elastic.clients.elasticsearch._types.query_dsl.Query esQuery = q.build(knn.getFilter());
 		
 		FloatIterator it = knn.getQueryVector().iterator();
-		final List<Double> queryVector = new ArrayList<>(knn.getQueryVector().size());
+		final List<Float> queryVector = new ArrayList<>(knn.getQueryVector().size());
 		while (it.hasNext()) {
-			queryVector.add((double) it.next());
+			queryVector.add(it.next());
 		}
 		
 		KnnSearchResponse<T> response = client.knnSearch(KnnSearchRequest.of(search -> 

@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.elasticsearch.common.Strings;
-import org.springdoc.api.annotations.ParameterObject;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
