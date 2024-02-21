@@ -5,7 +5,7 @@
       version="8.12.2.qualifier"
       provider-name="B2i Healthcare">
 
-   <description url="http://b2i.sg">
+   <description url="https://b2ihealthcare.com">
       Snow Owl Core dependencies feature.
 Visit us at https://b2ihealthcare.com
    </description>
@@ -457,13 +457,6 @@ Visit us at https://b2ihealthcare.com
 
    <plugin
          id="com.fasterxml.jackson.dataformat.jackson-dataformat-xml"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="com.fasterxml.jackson.module.jackson-module-jaxb-annotations"
          download-size="0"
          install-size="0"
          version="0.0.0"
