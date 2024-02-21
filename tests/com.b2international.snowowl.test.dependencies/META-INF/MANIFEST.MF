@@ -7,7 +7,6 @@ Bundle-Vendor: B2iHealthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ClassPath: .,
  lib/annotations-17.0.0.jar,
- lib/commons-compress-1.25.0.jar,
  lib/contiperf-2.3.2.jar,
  lib/docker-java-api-3.3.4.jar,
  lib/docker-java-transport-3.3.4.jar,
@@ -46,6 +45,7 @@ Export-Package: com.b2international.snowowl.rules,
  org.testcontainers.lifecycle,
  org.testcontainers.utility
 Require-Bundle: org.junit;bundle-version="4.11.0",
- com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.10.5"
+ com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.10.5",
+ org.apache.commons.commons-compress;bundle-version="1.25.0"
 Bundle-ActivationPolicy: lazy
 Import-Package: org.slf4j;version="2.0.0"

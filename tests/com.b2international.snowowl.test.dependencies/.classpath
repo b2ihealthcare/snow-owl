@@ -13,7 +13,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="lib/annotations-17.0.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/commons-compress-1.25.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/contiperf-2.3.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/docker-java-api-3.3.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/docker-java-transport-3.3.4.jar"/>
