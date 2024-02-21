@@ -66,6 +66,7 @@
         <setEntry value="io.netty.common@default:default"/>
         <setEntry value="io.netty.handler@default:default"/>
         <setEntry value="io.netty.resolver@default:default"/>
+        <setEntry value="io.netty.transport-native-unix-common@default:default"/>
         <setEntry value="io.netty.transport@default:default"/>
         <setEntry value="it.unimi.dsi.fastutil@default:default"/>
         <setEntry value="jakarta.el-api@default:default"/>
