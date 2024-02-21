@@ -55,7 +55,6 @@
         <setEntry value="com.fasterxml.jackson.dataformat.jackson-dataformat-yaml@default:default"/>
         <setEntry value="com.fasterxml.jackson.datatype.jackson-datatype-jsr310@default:default"/>
         <setEntry value="com.fasterxml.jackson.module.jackson-module-afterburner@default:default"/>
-        <setEntry value="com.fasterxml.jackson.module.jackson-module-jaxb-annotations@default:default"/>
         <setEntry value="com.fasterxml.woodstox.woodstox-core@default:default"/>
         <setEntry value="com.github.f4b6a3.uuid@default:default"/>
         <setEntry value="com.google.guava.failureaccess@default:default"/>
@@ -72,6 +71,7 @@
         <setEntry value="io.netty.common@default:default"/>
         <setEntry value="io.netty.handler@default:default"/>
         <setEntry value="io.netty.resolver@default:default"/>
+        <setEntry value="io.netty.transport-native-unix-common@default:default"/>
         <setEntry value="io.netty.transport@default:default"/>
         <setEntry value="io.reactivex.rxjava2.rxjava@default:default"/>
         <setEntry value="io.rest-assured.common@default:default"/>
@@ -102,6 +102,7 @@
         <setEntry value="org.apache.aries.spifly.dynamic.bundle@2:true"/>
         <setEntry value="org.apache.commons.commons-codec@default:default"/>
         <setEntry value="org.apache.commons.commons-collections4@default:default"/>
+        <setEntry value="org.apache.commons.commons-compress@default:default"/>
         <setEntry value="org.apache.commons.commons-io@default:default"/>
         <setEntry value="org.apache.commons.jxpath@default:default"/>
         <setEntry value="org.apache.commons.lang3@default:default"/>

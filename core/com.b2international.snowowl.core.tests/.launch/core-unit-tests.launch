@@ -69,6 +69,7 @@
         <setEntry value="io.netty.common@default:default"/>
         <setEntry value="io.netty.handler@default:default"/>
         <setEntry value="io.netty.resolver@default:default"/>
+        <setEntry value="io.netty.transport-native-unix-common@default:default"/>
         <setEntry value="io.netty.transport@default:default"/>
         <setEntry value="io.reactivex.rxjava2.rxjava@default:default"/>
         <setEntry value="it.unimi.dsi.fastutil@default:default"/>
@@ -88,6 +89,7 @@
         <setEntry value="org.apache.aries.spifly.dynamic.bundle@2:true"/>
         <setEntry value="org.apache.commons.commons-codec@default:default"/>
         <setEntry value="org.apache.commons.commons-collections4@default:default"/>
+        <setEntry value="org.apache.commons.commons-compress@default:default"/>
         <setEntry value="org.apache.commons.commons-io@default:default"/>
         <setEntry value="org.apache.commons.logging@default:default"/>
         <setEntry value="org.apache.httpcomponents.httpasyncclient@default:default"/>
