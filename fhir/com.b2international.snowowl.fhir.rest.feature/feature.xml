@@ -18,7 +18,7 @@
    </license>
 
    <requires>
-      <import feature="com.b2international.snowowl.core.rest.feature" version="9.0.0" match="compatible"/>
+      <import feature="com.b2international.snowowl.core.rest.feature" version="8.12.0" match="compatible"/>
    </requires>
 
    <plugin
