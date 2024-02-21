@@ -336,13 +336,11 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		);
 		
 		// Check that the default module is honored
-		final SnomedReferenceSetMembers refSetMembers = response.extract()
+		response.extract()
 			.body()
-			.jsonPath()
-			.getObject("members", SnomedReferenceSetMembers.class);
-		
-		refSetMembers.forEach(m -> assertEquals(
-				"Reference set member should be placed in the default module", "449081005", m.getModuleId()));
+			.as(SnomedConcept.class)
+			.getMembers()
+			.forEach(m -> assertEquals("Reference set member should be placed in the default module", "449081005", m.getModuleId()));
 	}
 	
 	@Test
@@ -380,7 +378,8 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 			.body("inactivationProperties.associationTargets.referenceSetId", equalTo(List.of(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION)))
 			.body("inactivationProperties.associationTargets.targetComponentId", equalTo(List.of(Concepts.ROOT_CONCEPT)))
 			.extract()
-			.jsonPath().getObject("members", SnomedReferenceSetMembers.class);
+			.as(SnomedConcept.class)
+			.getMembers();
 		
 		Map<?, ?> updateReq = Json.object(
 			"inactivationProperties", new InactivationProperties(Concepts.PENDING_MOVE, List.of(new AssociationTarget(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION, Concepts.ROOT_CONCEPT))),

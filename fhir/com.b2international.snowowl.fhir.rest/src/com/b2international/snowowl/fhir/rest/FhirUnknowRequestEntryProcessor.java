@@ -15,14 +15,14 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
-import javax.servlet.http.HttpServletRequest;
-
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;
 import com.b2international.snowowl.fhir.core.model.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * {@link FhirBatchRequestProcessor} to process an unknown requests in a batch

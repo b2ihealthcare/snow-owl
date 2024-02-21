@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@ package com.b2international.snowowl.core.rest.resource;
 
 import java.util.concurrent.TimeUnit;
 
-import org.elasticsearch.common.Strings;
-import org.springdoc.api.annotations.ParameterObject;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +29,7 @@ import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.domain.ResourceRequest;
 import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
+import com.google.common.base.Strings;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -112,6 +112,7 @@ public class ResourceRestService extends AbstractRestService {
 		final String resourceId,
 		
 		@Parameter(description = "The timestamp to use for historical ('as of') queries")
+		@RequestParam(value = "timestamp", required = false)
 		final Long timestamp,
 		
 		@ParameterObject

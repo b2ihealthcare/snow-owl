@@ -80,8 +80,8 @@ public class LongOpenHashSetTest {
 	}
 	
 	@Test
-	public void create_one_fill_factor() {
-		LongSet longSet = PrimitiveSets.newLongOpenHashSetWithExpectedSize(10, 1.0d);
+	public void create_with_fill_factor() {
+		LongSet longSet = PrimitiveSets.newLongOpenHashSetWithExpectedSize(10, 0.9d);
 		assertTrue("Long set should be empty.", longSet.isEmpty());
 	}
 	

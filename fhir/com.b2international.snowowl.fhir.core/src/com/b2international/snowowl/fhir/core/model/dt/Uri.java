@@ -17,7 +17,7 @@ package com.b2international.snowowl.fhir.core.model.dt;
 
 import java.util.Objects;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;

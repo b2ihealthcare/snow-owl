@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@ package com.b2international.snowowl.core.rest.codesystem;
 
 import java.util.concurrent.TimeUnit;
 
-import org.elasticsearch.common.Strings;
-import org.springdoc.api.annotations.ParameterObject;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +34,7 @@ import com.b2international.snowowl.core.rest.CoreApiConfig;
 import com.b2international.snowowl.core.rest.domain.ResourceRequest;
 import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
 import com.b2international.snowowl.core.rest.resource.TerminologyResourceRestSearch;
+import com.google.common.base.Strings;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -118,6 +118,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		final String codeSystemId,
 		
 		@Parameter(description = "The timestamp to use for historical ('as of') queries", deprecated = true)
+		@RequestParam(value = "timestamp", required = false)
 		final Long timestamp,
 		
 		@ParameterObject

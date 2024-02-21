@@ -72,7 +72,7 @@ public class PropertySerializationTest extends FhirTest {
 				.diagnostics("1 validation error");
 		
 		Issue expectedIssue = builder.addLocation("Property.code")
-				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'code' content is invalid [null]. Violation: may not be null.")
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'code' content is invalid [null]. Violation: must not be null.")
 				.build();
 		
 		exception.expect(ValidationException.class);
@@ -185,7 +185,7 @@ public class PropertySerializationTest extends FhirTest {
 				.diagnostics("1 validation error");
 		
 		Issue expectedIssue = builder.addLocation("SubProperty.code")
-				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'code' content is invalid [null]. Violation: may not be null.")
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'code' content is invalid [null]. Violation: must not be null.")
 				.build();
 		
 		exception.expect(ValidationException.class);

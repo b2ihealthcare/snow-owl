@@ -17,7 +17,7 @@ package com.b2international.snowowl.core.codesystem;
 
 import java.util.*;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.BadRequestException;

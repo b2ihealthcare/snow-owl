@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.core.rest;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import org.springdoc.api.annotations.ParameterObject;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -236,7 +236,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 			final String memberId,
 			
 			@Parameter(description = "Force deletion flag")
-			@RequestParam(defaultValue="false", required=false)
+			@RequestParam(value = "force", defaultValue="false", required=false)
 			final Boolean force,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
@@ -279,7 +279,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 			final SnomedResourceRequest<SnomedMemberRestUpdate> body,
 			
 			@Parameter(description = "Force update flag")
-			@RequestParam(defaultValue="false", required=false)
+			@RequestParam(value = "force", defaultValue="false", required=false)
 			final Boolean force,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)

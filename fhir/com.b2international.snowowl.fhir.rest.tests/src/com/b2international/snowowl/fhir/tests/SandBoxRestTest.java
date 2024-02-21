@@ -48,7 +48,6 @@ import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
 import com.b2international.snowowl.fhir.rest.tests.AllFhirRestTests;
-import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
@@ -69,9 +68,7 @@ public class SandBoxRestTest extends FhirRestTest {
 	@ClassRule
 	public static final RuleChain appRule = RuleChain
 		.outerRule(SnowOwlAppRule.snowOwl(AllFhirRestTests.class)
-				.clearResources(true))
-		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
-		.around(new BundleStartRule("com.b2international.snowowl.core.rest"));
+				.clearResources(true).bootRestApi());
 	
 	
 	@Test

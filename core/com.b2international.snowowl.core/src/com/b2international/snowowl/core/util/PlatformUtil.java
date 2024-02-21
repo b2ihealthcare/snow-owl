@@ -23,7 +23,6 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;
@@ -87,22 +86,6 @@ public class PlatformUtil {
 			return (PreferencesService) bundleContext.getService(serviceReference);
 		}
 		throw new IllegalStateException("PreferencesService not found in OSGI service registry.");
-	}
-
-	/**
-	 * Enables the native system proxies on the client. Since Eclipse uses SOCKS
-	 * proxy before HTTP, and client does not have a SOCKS proxy provider, we
-	 * have to enable system proxies instead. See:
-	 * https://github.com/b2ihealthcare/mohh/issues/188
-	 */
-	public static void enableSystemProxies(BundleContext context) {
-		final ServiceReference<IProxyService> proxyServiceReference = context
-				.getServiceReference(org.eclipse.core.net.proxy.IProxyService.class);
-		checkNotNull(proxyServiceReference,
-				"Error while enabling system proxies. Reason: proxy service reference was null.");
-		final IProxyService proxyService = context.getService(proxyServiceReference);
-		checkNotNull(proxyService, "Error while enabling system proxies. Reason: proxy service was null.");
-		proxyService.setSystemProxiesEnabled(true);
 	}
 
 	/**

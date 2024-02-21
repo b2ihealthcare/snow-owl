@@ -17,7 +17,7 @@ package com.b2international.snowowl.fhir.core.model.conceptmap;
 
 import java.util.Collection;
 
-import javax.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.AssertTrue;
 
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;

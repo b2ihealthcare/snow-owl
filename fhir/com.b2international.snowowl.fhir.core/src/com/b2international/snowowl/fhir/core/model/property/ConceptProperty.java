@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.model.property;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.codesystems.PropertyType;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;

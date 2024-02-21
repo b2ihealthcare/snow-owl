@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -30,6 +28,8 @@ import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * {@link FhirBatchRequestProcessor} to process GET requests in a batch

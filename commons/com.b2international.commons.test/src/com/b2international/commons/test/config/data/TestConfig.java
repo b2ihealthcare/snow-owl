@@ -15,7 +15,7 @@
  */
 package com.b2international.commons.test.config.data;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 /**
  * @since 3.4

@@ -17,6 +17,10 @@
       [Enter License Description here.]
    </license>
 
+   <requires>
+      <import feature="com.b2international.snowowl.core.rest.feature" version="8.12.0" match="compatible"/>
+   </requires>
+
    <plugin
          id="com.b2international.snowowl.fhir.core"
          download-size="0"

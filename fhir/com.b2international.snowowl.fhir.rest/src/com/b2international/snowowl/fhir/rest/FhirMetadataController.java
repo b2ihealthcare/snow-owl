@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,15 +21,11 @@ import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAP
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_X_NAME;
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.Platform;
-import org.springdoc.webmvc.api.OpenApiWebMvcResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -82,7 +78,7 @@ import io.swagger.v3.oas.models.media.Schema;
 public class FhirMetadataController extends AbstractFhirController {
 	
 	@Autowired
-	private OpenApiWebMvcResource openApiWebMvcResource;
+	private SnowOwlOpenApiWebMvcResource openApiResource;
 	
 	@Autowired
 	private FhirApiConfig config; 
@@ -139,8 +135,8 @@ public class FhirMetadataController extends AbstractFhirController {
 	
 	private Holder initCache() {
 		final Holder holder = new Holder();
-		// XXX: we know that the subclass is instantiated (in SnowOwlApiConfig)
-		final OpenAPI openAPI = ((SnowOwlOpenApiWebMvcResource) openApiWebMvcResource).getOpenApi();
+		// get the ENGLISH version of the OpenAPI and use it to populate the FHIR metadata
+		final OpenAPI openAPI = openApiResource.getOpenApi(Locale.ENGLISH);
 		final Collection<Resource> resources = collectResources(openAPI);
 		final Collection<OperationDefinition> operationDefinitions = collectOperationDefinitions(openAPI);
 		

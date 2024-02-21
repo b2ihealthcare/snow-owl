@@ -26,6 +26,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.ValidateCodeReques
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
  * CodeSystem $validate-code operation for SNOMED CT REST end-point test cases
@@ -54,7 +55,7 @@ public class FhirCodeSystemValidateCodeOperationTest extends FhirRestTest {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.queryParam("url", SNOMEDCT_URL)
 			.queryParam("code", Concepts.ROOT_CONCEPT)
-			.queryParam("display", "Unknown display")
+			.queryParam("display", RestExtensions.encodeQueryParameter("Unknown display"))
 			.when().get(CODESYSTEM_VALIDATE_CODE)
 			.then().assertThat()
 			.statusCode(200)

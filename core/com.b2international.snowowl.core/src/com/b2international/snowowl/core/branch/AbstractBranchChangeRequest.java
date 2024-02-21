@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.ApiException;

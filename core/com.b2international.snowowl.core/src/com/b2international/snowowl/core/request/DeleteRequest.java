@@ -17,7 +17,7 @@ package com.b2international.snowowl.core.request;
 
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.AccessControl;

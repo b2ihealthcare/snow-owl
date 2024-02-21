@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
 
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.elasticsearch.common.UUIDs;
 import org.junit.Test;
 

@@ -21,7 +21,7 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.model.Element;

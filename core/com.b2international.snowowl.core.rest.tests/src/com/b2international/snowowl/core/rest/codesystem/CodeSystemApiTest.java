@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,7 +86,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 			Json.object(
 					ResourceDocument.Fields.ID, ""
 			)
-		).statusCode(400).body("violations", hasItem("'id' may not be empty (was '')"));
+		).statusCode(400).body("violations", hasItem("'id' must not be empty (was '')"));
 	}
 	
 	@Test
@@ -95,7 +95,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 			Json.object(
 				ResourceDocument.Fields.ID, "SNOMEDCT"
 			)
-		).statusCode(400).body("violations", hasItem("'title' may not be empty (was 'null')"));
+		).statusCode(400).body("violations", hasItem("'title' must not be empty (was 'null')"));
 	}
 	
 	@Test
@@ -105,7 +105,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 				ResourceDocument.Fields.ID, "SNOMEDCT",
 				ResourceDocument.Fields.TITLE, "SNOMED CT"
 			)
-		).statusCode(400).body("violations", hasItem("'url' may not be empty (was 'null')"));
+		).statusCode(400).body("violations", hasItem("'url' must not be empty (was 'null')"));
 	}
 	
 	@Test
@@ -116,7 +116,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 				ResourceDocument.Fields.TITLE, "SNOMED CT",
 				ResourceDocument.Fields.URL, "http://snomed.info/sct"
 			)
-		).statusCode(400).body("violations", hasItem("'toolingId' may not be empty (was 'null')"));
+		).statusCode(400).body("violations", hasItem("'toolingId' must not be empty (was 'null')"));
 	}
 	
 	@Test
@@ -473,7 +473,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		assertCodeSystemUpdated(codeSystemId, Json.object("copyright", "Updated copyright after versioning"));
 
 		// get the versioned state
-		final CodeSystem v1CodeSystemState = assertCodeSystemGet(codeSystemId + "/v1")
+		final CodeSystem v1CodeSystemState = assertCodeSystemVersionedGet(codeSystemId, "v1")
 				.statusCode(200)
 				.extract()
 				.as(CodeSystem.class);

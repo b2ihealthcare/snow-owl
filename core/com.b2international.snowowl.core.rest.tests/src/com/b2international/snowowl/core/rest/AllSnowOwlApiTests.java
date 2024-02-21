@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 package com.b2international.snowowl.core.rest;
 
 import org.junit.ClassRule;
-import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -29,7 +29,6 @@ import com.b2international.snowowl.core.rest.codesystem.CodeSystemApiDependencyT
 import com.b2international.snowowl.core.rest.codesystem.CodeSystemApiTest;
 import com.b2international.snowowl.core.rest.rate.RateLimitTest;
 import com.b2international.snowowl.core.rest.resource.ResourceApiTest;
-import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 
 /**
@@ -49,9 +48,6 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 public class AllSnowOwlApiTests {
 	
 	@ClassRule
-	public static final RuleChain appRule = RuleChain
-			.outerRule(SnowOwlAppRule.snowOwl(AllSnowOwlApiTests.class))
-			.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
-			.around(new BundleStartRule("com.b2international.snowowl.core.rest"));
+	public static final TestRule appRule = SnowOwlAppRule.snowOwl(AllSnowOwlApiTests.class).bootRestApi();
 
 }

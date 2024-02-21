@@ -79,7 +79,9 @@ abstract class CollectionDeserializerBase<T extends PrimitiveCollection> extends
                 return single;
             }
         }
-        throw ctxt.mappingException(_valueClass);
+        ctxt.reportWrongTokenException(_valueClass, JsonToken.START_ARRAY, "");
+        // XXX the method above will throw an exception, so null won't be returned from here ever
+        return null;
     }
 
     private final T createContainerInstance(DeserializationContext ctxt)

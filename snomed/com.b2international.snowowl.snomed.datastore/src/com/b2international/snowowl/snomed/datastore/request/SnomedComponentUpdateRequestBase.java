@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.time.LocalDate;
 import java.util.Objects;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.date.DateFormats;

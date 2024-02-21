@@ -17,7 +17,7 @@ package com.b2international.snowowl.fhir.core.model;
 
 import java.util.Collection;
 
-import javax.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.AssertTrue;
 
 import com.b2international.snowowl.fhir.core.codesystems.HttpVerb;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;

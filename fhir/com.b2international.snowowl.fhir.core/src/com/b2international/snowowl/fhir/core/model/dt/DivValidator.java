@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.model.dt;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 import com.b2international.commons.StringUtils;
 

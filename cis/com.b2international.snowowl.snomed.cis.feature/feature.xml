@@ -18,34 +18,9 @@
    </license>
 
    <requires>
-      <import plugin="org.eclipse.jetty.deploy"/>
-      <import plugin="org.eclipse.jetty.http"/>
-      <import plugin="org.eclipse.jetty.io"/>
-      <import plugin="org.eclipse.jetty.osgi.boot"/>
-      <import plugin="org.eclipse.jetty.security"/>
-      <import plugin="org.eclipse.jetty.server"/>
-      <import plugin="org.eclipse.jetty.servlet"/>
-      <import plugin="org.eclipse.jetty.util"/>
-      <import plugin="org.eclipse.jetty.webapp"/>
-      <import plugin="org.eclipse.jetty.xml"/>
-      <import plugin="org.eclipse.jetty.alpn.client"/>
-      <import plugin="org.eclipse.jetty.annotations"/>
-      <import plugin="org.eclipse.jetty.client"/>
-      <import plugin="org.eclipse.jetty.jmx"/>
-      <import plugin="org.eclipse.jetty.jndi"/>
-      <import plugin="org.eclipse.jetty.plus"/>
-      <import plugin="org.eclipse.jetty.servlet-api"/>
-      <import plugin="org.eclipse.jetty.websocket-api"/>
-      <import plugin="org.eclipse.jetty.websocket.api"/>
-      <import plugin="org.eclipse.jetty.websocket.common"/>
-      <import plugin="org.eclipse.jetty.websocket.core.client"/>
-      <import plugin="org.eclipse.jetty.websocket.core.common"/>
-      <import plugin="org.eclipse.jetty.websocket.core.server"/>
-      <import plugin="org.eclipse.jetty.websocket.javax.client"/>
-      <import plugin="org.eclipse.jetty.websocket.javax.common"/>
-      <import plugin="org.eclipse.jetty.websocket.javax.server"/>
-      <import plugin="org.eclipse.jetty.websocket.server"/>
-      <import plugin="org.eclipse.jetty.websocket.servlet"/>
+      <import feature="com.b2international.snowowl.core.feature" version="8.12.0.qualifier"/>
+      <import feature="com.b2international.snowowl.snomed.core.feature" version="8.12.0.qualifier"/>
+      <import feature="com.b2international.snowowl.core.rest.feature" version="8.12.0.qualifier"/>
    </requires>
 
    <plugin

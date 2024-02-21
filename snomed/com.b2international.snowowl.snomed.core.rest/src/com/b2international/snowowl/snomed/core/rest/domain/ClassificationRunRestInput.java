@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 /**
  * @since 4.0

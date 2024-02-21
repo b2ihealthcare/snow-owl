@@ -74,7 +74,7 @@ public class DiscriminatorTest extends FhirTest {
 				.severity(IssueSeverity.ERROR)
 				.diagnostics("1 validation error")
 				.addLocation("Discriminator.path")
-				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'path' content is invalid [null]. Violation: may not be null.")
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'path' content is invalid [null]. Violation: must not be null.")
 				.build();
 			
 		exception.expect(ValidationException.class);

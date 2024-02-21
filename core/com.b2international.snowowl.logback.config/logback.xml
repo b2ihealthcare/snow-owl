@@ -1,6 +1,6 @@
 <configuration>
-
-	<jmxConfigurator />
+	<!-- Disables Logback init status messages, comment it if you need to debug logback init -->
+	<statusListener class="ch.qos.logback.core.status.NopStatusListener" />
 
 	<contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator"/>
 
@@ -26,7 +26,7 @@
 		<appender-ref ref="LOG_FILE" />
 	</logger>
 	
-	<logger level="ERROR" additivity="false" name="org.eclipse.jetty.annotations.AnnotationParser" />
+	<logger level="ERROR" additivity="false" name="org.eclipse.jetty.ee10.annotations.AnnotationParser" />
 	<logger level="ERROR" additivity="false" name="org.semanticweb.elk.reasoner.indexing.hierarchy.IndexObjectConverter" />
 
 	<root level="INFO">

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public abstract class CodeSystemApiAssert {
 	
 	public static ValidatableResponse assertCodeSystemSearch(final Map<String, Object> filters) {
 		return givenAuthenticatedRequest(CODESYSTEMS_API)
-			.queryParams(filters)
+			.queryParams(RestExtensions.encodeQueryParameters(filters))
 			.get()
 			.then();
 	}
@@ -53,6 +53,13 @@ public abstract class CodeSystemApiAssert {
 	public static ValidatableResponse assertCodeSystemGet(final String codeSystemId) {
 		return givenAuthenticatedRequest(CODESYSTEMS_API)
 			.get("/{id}", codeSystemId)
+			.then();
+	}
+	
+	public static ValidatableResponse assertCodeSystemVersionedGet(final String codeSystemId, final String version, final String...expand) {
+		return givenAuthenticatedRequest(CODESYSTEMS_API)
+			.queryParam("expand", expand == null ? null : String.join(",", expand))
+			.get("/{id}/{version}", codeSystemId, version)
 			.then();
 	}
 	

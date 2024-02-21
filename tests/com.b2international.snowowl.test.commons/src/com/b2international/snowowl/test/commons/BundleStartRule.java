@@ -48,6 +48,7 @@ public class BundleStartRule extends ExternalResource {
 		this.bundle = checkNotNull(Platform.getBundle(symbolicName), "Bundle not found for name '%s'. This can indicate resolution errors. Check it by manually trying to start it in the console after setting a breakpoint here.", symbolicName); 
 		LOG.info("Starting bundle: {}", this.bundle.getSymbolicName());
 		bundle.start();
+		LOG.trace("Started bundle: {}", this.bundle.getSymbolicName());
 	}
 
 	@Override

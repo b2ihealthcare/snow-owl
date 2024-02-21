@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirCodeSystemSubs
 import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirCodeSystemValidateCodeOperationTest;
 import com.b2international.snowowl.fhir.rest.tests.valueset.FhirValueSetSnomedExpandTest;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
-import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.Resources;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.SnowOwlAppRule;
@@ -64,9 +63,7 @@ public class AllFhirRestTests {
 	
 	@ClassRule
 	public static final RuleChain APPRULE = RuleChain
-		.outerRule(SnowOwlAppRule.snowOwl(AllFhirRestTests.class))
-		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
-		.around(new BundleStartRule("com.b2international.snowowl.core.rest"))
+		.outerRule(SnowOwlAppRule.snowOwl(AllFhirRestTests.class).bootRestApi())
 		.around(new SnomedContentRule(SnomedContentRule.SNOMEDCT, Resources.Snomed.MINI_RF2_INT_20210731, Rf2ReleaseType.FULL).importUntil("20200131"));
 	
 }

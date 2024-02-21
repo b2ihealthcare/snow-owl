@@ -17,9 +17,9 @@ package com.b2international.snowowl.core.validation.whitelist;
 
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.events.Request;

@@ -17,7 +17,7 @@ package com.b2international.snowowl.core.locks.request;
 
 import java.util.List;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.LockedException;
