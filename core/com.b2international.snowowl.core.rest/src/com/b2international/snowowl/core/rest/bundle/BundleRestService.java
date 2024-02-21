@@ -111,6 +111,7 @@ public class BundleRestService extends AbstractRestService {
 		final String bundleId,
 
 		@Parameter(description = "The timestamp to use for historical ('as of') queries", deprecated = true)
+		@RequestParam(value = "timestamp", required = false)
 		final Long timestamp,
 		
 		@ParameterObject

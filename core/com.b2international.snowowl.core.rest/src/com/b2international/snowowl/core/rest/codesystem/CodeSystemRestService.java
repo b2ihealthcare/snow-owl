@@ -118,6 +118,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		final String codeSystemId,
 		
 		@Parameter(description = "The timestamp to use for historical ('as of') queries", deprecated = true)
+		@RequestParam(value = "timestamp", required = false)
 		final Long timestamp,
 		
 		@ParameterObject

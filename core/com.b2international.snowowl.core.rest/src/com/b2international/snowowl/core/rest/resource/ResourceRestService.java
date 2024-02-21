@@ -112,6 +112,7 @@ public class ResourceRestService extends AbstractRestService {
 		final String resourceId,
 		
 		@Parameter(description = "The timestamp to use for historical ('as of') queries")
+		@RequestParam(value = "timestamp", required = false)
 		final Long timestamp,
 		
 		@ParameterObject
