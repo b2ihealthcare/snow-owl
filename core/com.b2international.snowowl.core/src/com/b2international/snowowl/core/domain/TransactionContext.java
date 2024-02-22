@@ -151,7 +151,7 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	<T> T lookup(String componentId, Class<T> type) throws ComponentNotFoundException;
 
 	/**
-	 * Returns a persisted component from the store with the given component id and
+	 * Returns a persisted (or staged) component from the store with the given component id and
 	 * type or <code>null</code> if does not exist.
 	 * 
 	 * @param componentId
