@@ -117,7 +117,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	
 	@Override
 	public <T> T lookupIfExists(String componentId, Class<T> type) {
-		return lookup(Collections.singleton(componentId), type).get(componentId);
+		return componentId == null ? null : lookup(Collections.singleton(componentId), type).get(componentId);
 	}
 	
 	@Override
