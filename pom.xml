@@ -205,6 +205,11 @@
 							<id>org.slf4j.api</id>
 							<removeAll />
 						</filter>
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>org.slf4j.jcl</id>
+							<removeAll />
+						</filter>
 					</filters>
 					<environments>
 						<environment>
