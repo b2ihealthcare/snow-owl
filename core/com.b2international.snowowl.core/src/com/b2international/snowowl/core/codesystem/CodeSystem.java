@@ -15,16 +15,12 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import java.util.List;
-
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.Dependency;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ResourceURIWithQuery;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.internal.ResourceDocument;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Captures metadata about a code system, which holds a set of concepts of medical significance (optionally with other, supporting components that
@@ -97,7 +93,8 @@ public final class CodeSystem extends TerminologyResource {
 				.setOid(getOid())
 				.setBranchPath(getBranchPath())
 				.setToolingId(getToolingId())
-				.setSettings(getSettings());
+				.setSettings(getSettings())
+				.setDependencies(getDependencies());
 	}
 	
 	public CodeSystemUpdateRequestBuilder toUpdateRequest() {
@@ -115,7 +112,8 @@ public final class CodeSystem extends TerminologyResource {
 				.setBundleId(getBundleId())
 				.setOid(getOid())
 				.setBranchPath(getBranchPath())
-				.setSettings(getSettings());
+				.setSettings(getSettings())
+				.setDependencies(getDependencies());
 	}
 
 }
