@@ -313,6 +313,7 @@
 					<configuration>
 						<timestampProvider>jgit</timestampProvider>
 						<jgit.ignore>pom.xml</jgit.ignore>
+						<jgit.dirtyWorkingTree>ignore</jgit.dirtyWorkingTree>
 						<skipPomGeneration>true</skipPomGeneration>
 					</configuration>
 				</plugin>
