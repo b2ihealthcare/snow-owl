@@ -1,17 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
-		<attributes>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry exported="true" kind="lib" path="lib/aggs-matrix-stats-client-7.17.16.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/analysis-common-7.17.16.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/antlr4-runtime-4.5.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/compiler-0.9.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-7.17.16.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-cli-7.17.16.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-core-7.17.16.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-geo-7.17.16.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-lz4-7.17.16.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-rest-client-7.17.16.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-rest-high-level-client-7.17.16.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-secure-sm-7.17.16.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-ssl-config-7.17.16.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-x-content-7.17.16.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/hppc-0.8.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jna-5.10.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.10.10.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jopt-simple-5.0.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lang-mustache-client-7.17.16.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lang-painless-7.17.16.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/log4j-api-2.17.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/log4j-core-2.17.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lucene-analyzers-common-8.11.1.jar"/>
@@ -28,21 +36,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/lucene-spatial3d-8.11.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lucene-suggest-8.11.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lz4-java-1.8.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/t-digest-3.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/aggs-matrix-stats-client-7.17.16.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/analysis-common-7.17.16.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-7.17.16.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-cli-7.17.16.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-core-7.17.16.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-geo-7.17.16.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-lz4-7.17.16.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-rest-client-7.17.16.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-rest-high-level-client-7.17.16.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-secure-sm-7.17.16.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-ssl-config-7.17.16.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-x-content-7.17.16.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lang-mustache-client-7.17.16.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lang-painless-7.17.16.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/mapper-extras-client-7.17.16.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/parent-join-client-7.17.16.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/percolator-client-7.17.16.jar"/>
@@ -51,8 +44,15 @@
 	<classpathentry exported="true" kind="lib" path="lib/reindex-client-7.17.16.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/scripting-painless-spi-7.17.16.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/ssl-config-7.17.16.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/t-digest-3.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/transport-7.17.16.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/transport-netty4-client-7.17.16.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" output="target/classes" path="src">
 		<attributes>
 			<attribute name="optional" value="true"/>
