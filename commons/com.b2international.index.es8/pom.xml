@@ -50,7 +50,9 @@
 								elasticsearch-rest-client,
 								jakarta.json-api,
 								jsr305,
-								parsson
+								parsson,
+								opentelemetry-context,
+								opentelemetry-api
 							</includeArtifactIds>
 							<outputDirectory>lib</outputDirectory>
 						</configuration>
