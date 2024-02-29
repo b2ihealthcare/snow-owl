@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 - XLS/CSV import improvements (available in paid tiers)
   * Support auto-detecting and importing `locale` values for preferred terms and synonyms
   * Support auto-detecting and importing hierarchical relationships in the form of a `parentId` column
+  * Support importing terminologies with multi-line concept definitions
 
 ### Bugs/Improvements
 - [lcs] ignore BOM characters when importing a CSV file describing code system concepts
