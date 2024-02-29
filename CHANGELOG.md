@@ -1,6 +1,59 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 9.1.0
+
+### Local Code Systems
+- XLS/CSV import improvements (available in paid tiers)
+  * Support auto-detecting and importing `locale` values for preferred terms and synonyms
+  * Support auto-detecting and importing hierarchical relationships in the form of a `parentId` column
+
+### Bugs/Improvements
+- [lcs] ignore BOM characters when importing a CSV file describing code system concepts
+- [lcs] detect auto-recognized column headers case insensitively
+- [loinc] remove duplicate `import` path segment from import API route
+- [loinc] fixed an issue that caused the LOINC import API to report a failure even if the request was valid
+
+### Dependencies
+- Bump Elasticsearch 7 to 7.17.18
+- Bump Elasticsearch 8 client to 8.12.2
+- Bump Eclipse Platform to e4.30
+- Bump Xtext to 2.33.0
+- Bump EMF to 2.35.0
+- Bump MWE2 to 2.16.0
+- Bump ECL to 2.1.5
+- Bump SLF4J to 2.0.11
+- Bump Logback to 1.4.14
+- Bump Jackson to 2.16.1
+- Bump Jetty to 12.0.3 (with Jakarta EE10)
+- Bump Spring to 6.1.3
+- Bump springdoc to 2.3.0
+- Bump Swagger libraries to 2.2.20
+- Bump Guava to 32.1.3-jre
+- Bump OWLAPI to custom 4.5.26
+- Bump Protege to custom 5.0.7
+- Bump snomed-owl-toolkit to a custom 5.1.1
+- Bump fastutil to 8.5.12
+- Bump rest-assured to 4.5.1
+- Bump mockito to 5.9.0
+- Bump bytebuddy to 1.14.11
+- Bump uuid-creator to 5.3.7
+- Bump failsafe to 3.3.2
+- Bump rxjava to 2.2.21
+- Bump netty to 4.1.106.Final
+- Bump kotlin-osgi-bundle to 1.9.22
+- Bump mapdb to 3.1.0
+- Bump failsafe to 3.2.2
+- Bump micrometer to 1.12.2
+- Bump zjsonpatch to 0.4.16
+- Bump bucket4j to 8.7.0
+- Bump hibernate validator to 8.0.1.Final
+- Bump java-jwt to 4.4.0
+- Bump jwks-rsa to 0.22.1
+- Bump testcontainers to 1.19.4
+- Add required Apache Commons libraries
+- Bump Tycho to 4.0.6
+
 ## 9.0.0
 
 ### Breaking changes
@@ -60,6 +113,59 @@ All notable changes to this project will be documented in this file.
 
 ### Dependencies
 - Bump supported Elasticsearch libraries to (7.17.16 #1252, 8.10.3 #1230)
+
+## 8.13.0
+
+### Local Code Systems
+- XLS/CSV import improvements (available in paid tiers)
+  * Support auto-detecting and importing `locale` values for preferred terms and synonyms
+  * Support auto-detecting and importing hierarchical relationships in the form of a `parentId` column
+
+### Bugs/Improvements
+- [lcs] ignore BOM characters when importing a CSV file describing code system concepts
+- [lcs] detect auto-recognized column headers case insensitively
+- [loinc] remove duplicate `import` path segment from import API route
+- [loinc] fixed an issue that caused the LOINC import API to report a failure even if the request was valid
+
+### Dependencies
+- Bump Elasticsearch 7 to 7.17.18
+- Bump Elasticsearch 8 client to 8.12.2
+- Bump Eclipse Platform to e4.30
+- Bump Xtext to 2.33.0
+- Bump EMF to 2.35.0
+- Bump MWE2 to 2.16.0
+- Bump ECL to 2.1.5
+- Bump SLF4J to 2.0.11
+- Bump Logback to 1.4.14
+- Bump Jackson to 2.16.1
+- Bump Jetty to 12.0.3 (with Jakarta EE10)
+- Bump Spring to 6.1.3
+- Bump springdoc to 2.3.0
+- Bump Swagger libraries to 2.2.20
+- Bump Guava to 32.1.3-jre
+- Bump OWLAPI to custom 4.5.26
+- Bump Protege to custom 5.0.7
+- Bump snomed-owl-toolkit to a custom 5.1.1
+- Bump fastutil to 8.5.12
+- Bump rest-assured to 4.5.1
+- Bump mockito to 5.9.0
+- Bump bytebuddy to 1.14.11
+- Bump uuid-creator to 5.3.7
+- Bump failsafe to 3.3.2
+- Bump rxjava to 2.2.21
+- Bump netty to 4.1.106.Final
+- Bump kotlin-osgi-bundle to 1.9.22
+- Bump mapdb to 3.1.0
+- Bump failsafe to 3.2.2
+- Bump micrometer to 1.12.2
+- Bump zjsonpatch to 0.4.16
+- Bump bucket4j to 8.7.0
+- Bump hibernate validator to 8.0.1.Final
+- Bump java-jwt to 4.4.0
+- Bump jwks-rsa to 0.22.1
+- Bump testcontainers to 1.19.4
+- Add required Apache Commons libraries
+- Bump Tycho to 4.0.6
 
 ## 8.12.1
 
