@@ -4,7 +4,7 @@ Snow Owl<sup>&reg;</sup> is a highly scalable, open source terminology server wi
 If you’d like to see Snow Owl in action, the [Snowray Terminology Service™](https://snowray.app) provides a managed terminology server and high-quality terminology content management from your web browser.
 
 [![build status](https://img.shields.io/github/actions/workflow/status/b2ihealthcare/snow-owl/maven.yml?branch=9.x&style=flat-square)](https://github.com/b2ihealthcare/snow-owl/actions)
-[![latest release](https://img.shields.io/github/v/release/b2ihealthcare/snow-owl?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/tag/v9.0.0)
+[![latest release](https://img.shields.io/github/v/release/b2ihealthcare/snow-owl?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/tag/v9.1.0)
 [![downloads](https://img.shields.io/github/downloads/b2ihealthcare/snow-owl/total.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/)
 [![Docker](https://img.shields.io/docker/pulls/b2ihealthcare/snow-owl-oss?style=flat-square)](https://hub.docker.com/r/b2ihealthcare/snow-owl-oss)
 [![GitHub](https://img.shields.io/github/license/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/blob/9.x/LICENSE)
@@ -38,16 +38,16 @@ Features include:
 
 # Download
 
-* [WINDOWS](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.0.0/com.b2international.snowowl.server.update-9.0.0-oss.zip) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.0.0/com.b2international.snowowl.server.update-9.0.0-oss.zip.sha1)
-* [LINUX](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.0.0/com.b2international.snowowl.server.update-9.0.0-oss.tar.gz) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.0.0/com.b2international.snowowl.server.update-9.0.0-oss.tar.gz.sha1) 
-* [RPM](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.0.0/com.b2international.snowowl.server.update-9.0.0-rpm.rpm) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.0.0/com.b2international.snowowl.server.update-9.0.0-rpm.rpm.sha1)
-* [DEB](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.0.0/com.b2international.snowowl.server.update-9.0.0-deb.deb) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.0.0/com.b2international.snowowl.server.update-9.0.0-deb.deb.sha1)
+* [WINDOWS](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.1.0/com.b2international.snowowl.server.update-9.1.0-oss.zip) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.1.0/com.b2international.snowowl.server.update-9.1.0-oss.zip.sha1)
+* [LINUX](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.1.0/com.b2international.snowowl.server.update-9.1.0-oss.tar.gz) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.1.0/com.b2international.snowowl.server.update-9.1.0-oss.tar.gz.sha1) 
+* [RPM](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.1.0/com.b2international.snowowl.server.update-9.1.0-rpm.rpm) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.1.0/com.b2international.snowowl.server.update-9.1.0-rpm.rpm.sha1)
+* [DEB](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.1.0/com.b2international.snowowl.server.update-9.1.0-deb.deb) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.1.0/com.b2international.snowowl.server.update-9.1.0-deb.deb.sha1)
 
 {% hint style="info" %}
 This distribution only includes features licensed under the Apache 2.0 license. To get access to the full set of features, please contact [B2i Healthcare](mailto:info@b2ihealthcare.com).
 {% endhint %}
 
-View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v9.0.0).
+View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v9.1.0).
 
 Not the version you're looking for? View [past releases](https://github.com/b2ihealthcare/snow-owl/releases).
 
