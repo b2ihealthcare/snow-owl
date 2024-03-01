@@ -1,6 +1,6 @@
 [Unit]
 Description=Snow Owl
-Documentation=https://docs.b2i.sg/snow-owl/
+Documentation=https://docs.b2ihealthcare.com/snow-owl/
 Wants=network-online.target
 After=network-online.target
 
