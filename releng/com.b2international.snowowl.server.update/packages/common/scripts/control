@@ -3,7 +3,7 @@ Version: [[version]]
 Priority: optional
 Architecture: all
 Depends: shadow-utils
-Maintainer: B2i Healthcare <support@b2i.sg>
+Maintainer: B2i Healthcare <info@b2ihealthcare.com>
 Description: [[name]]
 Distribution: stable
 Section: web
