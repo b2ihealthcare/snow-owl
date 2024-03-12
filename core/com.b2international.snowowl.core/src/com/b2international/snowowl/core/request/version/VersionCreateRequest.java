@@ -22,17 +22,15 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import jakarta.validation.constraints.NotNull;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
-import jakarta.validation.constraints.NotEmpty;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.revision.RevisionBranch.BranchNameValidator;
+import com.b2international.index.revision.TimestampProvider;
 import com.b2international.snowowl.core.*;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
@@ -55,6 +53,11 @@ import com.b2international.snowowl.core.version.VersionDocument;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * @since 5.7
@@ -151,13 +154,23 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 		final IProgressMonitor monitor = SubMonitor.convert(context.service(IProgressMonitor.class), TASK_WORK_STEP);
 
 		try (Locks<RepositoryContext> locks = Locks.forContext(CREATE_VERSION).by(submitter).on(resourcesToVersion).lock(context)) {
-			RepositoryContext lockContext = locks.ctx();
+			// inject a custom TimestampProvider instance into the ctx so we use the same timestamp across all repositories when versioning
+			var versioningTimestampProvider = new TimestampProvider() {
+				
+				private final Supplier<Long> timestamp = Suppliers.memoize(() -> Instant.now().toEpochMilli());
+				
+				@Override
+				public long getTimestamp() {
+					return timestamp.get();
+				}
+			};
+			RepositoryContext lockContext = locks.ctx().inject().bind(TimestampProvider.class, versioningTimestampProvider).build();
 			
 			// create a version for the resource
 			return new BranchSnapshotContentRequest<>(Branch.MAIN_PATH,
 					new ResourceRepositoryCommitRequestBuilder()
 					.setBody(tx -> {
-						// perform tooling/content versions first for earch resource to version
+						// perform tooling/content versions first for each resource to version
 						resourcesToVersion.forEach(resourceToVersion -> {
 							// version components in the given repository
 							new RepositoryRequest<CommitResult>(resourceToVersion.getToolingId(),
@@ -168,7 +181,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 								)
 							).execute(lockContext);
 							
-							// tag the repository
+							// tag the repository, which will use the current wall clock time to create the branch after successful content versioning
 							String versionBranch = RepositoryRequests
 								.branching()
 								.prepareCreate()
@@ -194,8 +207,10 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 									.resource(resourceToVersion.getResourceURI())
 									.branchPath(versionBranch)
 									.author(author)
-									.createdAt(Instant.now().toEpochMilli())
-									.updatedAt(Instant.now().toEpochMilli())
+									// use the same createdAt/updatedAt timestamp for the version entry as the one used for the resource repository commit via the provider
+									// fixes https://snowowl.atlassian.net/browse/SO-6056
+									.createdAt(versioningTimestampProvider.getTimestamp())
+									.updatedAt(versioningTimestampProvider.getTimestamp())
 									.toolingId(resourceToVersion.getToolingId())
 									.url(buildVersionUrl(lockContext, resourceToVersion))
 									.resourceSnapshot(resourceToVersion)

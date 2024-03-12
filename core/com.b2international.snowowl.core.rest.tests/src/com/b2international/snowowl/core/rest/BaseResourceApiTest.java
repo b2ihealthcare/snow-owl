@@ -18,9 +18,11 @@ package com.b2international.snowowl.core.rest;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
+import org.junit.Rule;
 
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.test.commons.Services;
+import com.b2international.snowowl.test.commons.TestMethodNameRule;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
@@ -28,6 +30,9 @@ import com.b2international.snowowl.test.commons.rest.RestExtensions;
  */
 public abstract class BaseResourceApiTest {
 
+	@Rule 
+	public final TestMethodNameRule testName = new TestMethodNameRule();
+	
 	@After
 	public void after() {
 		ResourceRequests
