@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 9.1.1
+
+### Bugs/Improvements
+- [core] align timestamps during versioned so that resource metadata changes are visible when requesting content with the versions createdAt timestamp (versioned state requests) (#1265)
+
+### Dependencies
+- Bump commons-compress to 1.26.0 (#1263, resolves CVE-2024-25710 and CVE-2024-26308)
+- Bump Spring to 6.1.4 (#1264, resolves CVE-2024-22243)
+- Bump Spring Security to 6.2.2 (#1264, resolves CVE-2024-22234)
+
 ## 9.1.0
 
 ### Local Code Systems
