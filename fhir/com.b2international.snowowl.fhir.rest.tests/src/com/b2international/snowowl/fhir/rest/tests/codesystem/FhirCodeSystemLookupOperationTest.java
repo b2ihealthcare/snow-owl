@@ -26,6 +26,7 @@ import org.junit.Test;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 
@@ -87,7 +88,26 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 	@Test
 	public void GET_CodeSystem_$lookup_Existing_Versioned() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.queryParam("system", CodeSystemRestRequests.getCodeSystemUrl("version/20020131"))
+			.queryParam("system", CodeSystemRestRequests.getSnomedIntUrl("version/20020131"))
+			.queryParam("code", Concepts.ROOT_CONCEPT)
+			.queryParam("_format", "json")
+			.when().get(CODESYSTEM_LOOKUP)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Parameters"))
+			.body("parameter[0].name", equalTo("name"))
+			.body("parameter[0].valueString", equalTo("SNOMEDCT/2002-01-31"))
+			.body("parameter[1].name", equalTo("version"))
+			.body("parameter[1].valueString", equalTo("2002-01-31"))
+			.body("parameter[2].name", equalTo("display"))
+			.body("parameter[2].valueString", equalTo("SNOMED CT Concept"));
+	}
+	
+	@Test
+	public void GET_CodeSystem_$lookup_Existing_Versioned_ViaVersionField() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("system", String.join("/", SnomedTerminologyComponentConstants.SNOMED_URI_SCT, Concepts.MODULE_SCT_CORE))
+			.queryParam("version", "20020131")
 			.queryParam("code", Concepts.ROOT_CONCEPT)
 			.queryParam("_format", "json")
 			.when().get(CODESYSTEM_LOOKUP)

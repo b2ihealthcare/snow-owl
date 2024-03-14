@@ -37,8 +37,6 @@ public class FhirRestTest extends FhirTest {
 	
 	public static final String FHIR_ROOT_CONTEXT = "/fhir"; //$NON-NLS-N$
 	
-	protected static final String SNOMED_VERSION = "2018-07-31";
-	
 	public static final String SNOMEDCT_URL = SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/900000000000207008";
 	
 	public static final class Endpoints {
@@ -74,7 +72,7 @@ public class FhirRestTest extends FhirTest {
 	}
 	
 	protected final String getTestCodeSystemUrl() {
-		return CodeSystemRestRequests.getCodeSystemUrl(getTestCodeSystemId());
+		return CodeSystemRestRequests.getSnomedIntUrl(getTestCodeSystemId());
 	}
 
 }
