@@ -15,16 +15,24 @@
  */
 package com.b2international.snowowl.core.branch;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.revision.BaseRevisionBranching;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.repository.PathTerminologyResourceResolver;
 
 /**
  * @since 4.1
  */
 public final class BranchDeleteRequest extends BranchBaseRequest<Boolean> implements AccessControl {
+
+	private static final long serialVersionUID = 1L;
+	private static final Logger LOGGER = LoggerFactory.getLogger(BranchDeleteRequest.class);
 
 	public BranchDeleteRequest(final String branchPath) {
 		super(branchPath);
@@ -33,7 +41,18 @@ public final class BranchDeleteRequest extends BranchBaseRequest<Boolean> implem
 	@Override
 	public Boolean execute(RepositoryContext context) {
 		try {
+			//Remove branch
 			context.service(BaseRevisionBranching.class).delete(getBranchPath());
+			
+			try {
+				//Schedule a job to remove issues corresponding to this branch
+				TerminologyResource resource = context.service(PathTerminologyResourceResolver.class).resolve(context, context.info().id(), getBranchPath());
+				String resourceURI = resource.getResourceURI(getBranchPath()).toString();
+				context.service(ValidationCleanupService.class).scheduleStaleIssueRemoval(context, resourceURI);				
+			} catch (Exception e) {
+				LOGGER.trace(String.format("Failed to remove validation issues associated with deleted branch %s", getBranchPath()), e);
+			}
+			
 		} catch (NotFoundException e) {
 			// ignore
 		}
