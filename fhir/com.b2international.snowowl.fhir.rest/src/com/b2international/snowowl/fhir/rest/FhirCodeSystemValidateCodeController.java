@@ -257,7 +257,7 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 		@ApiResponse(responseCode = "400", description = "Bad request"),
 		@ApiResponse(responseCode = "404", description = "Code system not found")
 	})
-	@GetMapping(value = "/{codeSystemId:**}/$validate-code", produces = {
+	@GetMapping(value = "/{id:**}/$validate-code", produces = {
 		APPLICATION_FHIR_JSON_VALUE,
 		APPLICATION_FHIR_XML_VALUE,
 		TEXT_JSON_VALUE,
@@ -268,7 +268,7 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 	public Promise<ResponseEntity<byte[]>> validateCodeInstance(
 			
 		@Parameter(description = "The id of the code system to validate against") 
-		@PathVariable(value = "codeSystemId") 
+		@PathVariable(value = "id") 
 		String codeSystemId, 
 		
 		@Parameter(description = "The code to be validated") 
@@ -330,7 +330,7 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 	/**
 	 * <code><b>POST /CodeSystem/{id}/$validate-code</b></code>
 	 * <p>
-	 * All parameters are in the request body, except the codeSystemId.
+	 * All parameters are in the request body, except the id.
 	 * 
 	 * @param codeSystemId
 	 * @param requestBody - an {@link InputStream} whose contents can be deserialized to FHIR parameters
@@ -348,7 +348,7 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 	@ApiResponse(responseCode = "404", description = "Not found")
 	@ApiResponse(responseCode = "400", description = "Bad request")
 	@PostMapping(
-		value = "/{codeSystemId:**}/$validate-code", 
+		value = "/{id:**}/$validate-code", 
 		consumes = {
 			APPLICATION_FHIR_JSON_VALUE,
 			APPLICATION_FHIR_XML_VALUE,
@@ -369,7 +369,7 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 	public Promise<ResponseEntity<byte[]>> validateCode(
 
 		@Parameter(description = "The id of the code system to validate against") 
-		@PathVariable(value = "codeSystemId") 
+		@PathVariable(value = "id") 
 		String codeSystemId, 
 
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The operation's input parameters", content = { 
