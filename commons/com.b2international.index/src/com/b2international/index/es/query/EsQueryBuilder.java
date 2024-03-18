@@ -385,7 +385,7 @@ public final class EsQueryBuilder {
 	}
 	
 	private void visit(RegexpPredicate regexp) {
-		deque.push(QueryBuilders.regexpQuery(toFieldPath(regexp), regexp.getArgument()).caseInsensitive(regexp.isCaseInsensitive()));
+		deque.push(QueryBuilders.regexpQuery(toFieldPath(regexp), regexp.getArgument()).caseInsensitive(regexp.isCaseInsensitive()).flags(RegexpFlag.NONE));
 	}
 	
 	private void visit(RangePredicate<?> range) {

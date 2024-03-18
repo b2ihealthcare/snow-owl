@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.core.ecl;
 
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.*;
 
@@ -258,6 +258,16 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 			
 		final Expression actual = eval("* {{ term = wild:\"*history*\" }}");
 		final Expression expected = SnomedDocument.Expressions.ids(List.of(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void termWildElasticsearchOptionalFlagsShouldNotInterfere() throws Exception {
+		// https://snowowl.atlassian.net/browse/SO-5906
+		// optional ES specific regex operators should be disabled otherwise special characters in terms cannot be recognized
+		// previously this thrown a low level search error, now it returns as intended
+		final Expression actual = eval("* {{ term = wild:\"*random term with optional < ES regexp character\" }}");
+		Expression expected = SnomedDocument.Expressions.ids(Set.of());
 		assertEquals(expected, actual);
 	}
 	
