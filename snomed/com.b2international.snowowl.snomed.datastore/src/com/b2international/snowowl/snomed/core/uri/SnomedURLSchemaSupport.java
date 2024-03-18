@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.uri;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.uri.ResourceURLSchemaSupport;
@@ -39,7 +40,7 @@ public class SnomedURLSchemaSupport implements ResourceURLSchemaSupport {
 	
 	@Override
 	public String withVersion(String uri, String version, LocalDate effectiveTime) {
-		return String.join("/version/", uri, effectiveTime.format(DateTimeFormatter.BASIC_ISO_DATE));
+		return String.join("/version/", uri, Optional.ofNullable(effectiveTime).map(et -> et.format(DateTimeFormatter.BASIC_ISO_DATE)).orElse(version));
 	}
 	
 }

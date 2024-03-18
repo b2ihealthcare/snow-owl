@@ -256,7 +256,7 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 	@ApiResponse(responseCode = "200", description = "OK")
 	@ApiResponse(responseCode = "400", description = "Bad request")
 	@ApiResponse(responseCode = "404", description = "Concept map not found")
-	@GetMapping(value = "/{conceptMapId:**}/$translate", produces = {
+	@GetMapping(value = "/{id:**}/$translate", produces = {
 		APPLICATION_FHIR_JSON_VALUE,
 		APPLICATION_FHIR_XML_VALUE,
 		TEXT_JSON_VALUE,
@@ -267,7 +267,7 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 	public Promise<ResponseEntity<byte[]>> translateInstance(
 			
 		@Parameter(description = "The id of the Concept Map to base the translation on") 
-		@PathVariable("conceptMapId") 
+		@PathVariable("id") 
 		String conceptMapId,
 		
 		@Parameter(description = "The code to translate") 

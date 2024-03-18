@@ -142,7 +142,7 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 	@ApiResponse(responseCode = "200", description = "OK")
 	@ApiResponse(responseCode = "400", description = "Bad request")
 	@ApiResponse(responseCode = "404", description = "Code system not found")
-	@GetMapping(value = "/{codeSystemId:**}/$subsumes", produces = {
+	@GetMapping(value = "/{id:**}/$subsumes", produces = {
 		APPLICATION_FHIR_JSON_VALUE,
 		APPLICATION_FHIR_XML_VALUE,
 		TEXT_JSON_VALUE,
@@ -153,7 +153,7 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 	public Promise<ResponseEntity<byte[]>> subsumes(
 			
 		@Parameter(description = "The id of the code system to invoke the operation on")
-		@PathVariable("codeSystemId") 
+		@PathVariable("id") 
 		String codeSystemId,
 		
 		@Parameter(description = "The \"A\" code that is to be tested") 
@@ -293,7 +293,7 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 	@ApiResponse(responseCode = "404", description = "Not found")
 	@ApiResponse(responseCode = "400", description = "Bad request")
 	@PostMapping(
-		value = "/{codeSystemId:**}/$subsumes", 
+		value = "/{id:**}/$subsumes", 
 		consumes = {
 			APPLICATION_FHIR_JSON_VALUE,
 			APPLICATION_FHIR_XML_VALUE,
@@ -314,7 +314,7 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 	public Promise<ResponseEntity<byte[]>> subsumes(
 
 		@Parameter(description = "The id of the code system to invoke the operation on")
-		@PathVariable("codeSystemId") 
+		@PathVariable("id") 
 		String codeSystemId,
 		
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The operation's input parameters", content = { 

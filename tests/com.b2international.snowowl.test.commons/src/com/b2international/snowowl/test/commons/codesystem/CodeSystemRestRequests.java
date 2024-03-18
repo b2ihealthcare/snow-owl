@@ -36,6 +36,7 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.ApiTestConstants;
 import com.b2international.snowowl.test.commons.Services;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -95,7 +96,7 @@ public abstract class CodeSystemRestRequests {
 		Json requestBody = Json.object(
 			"id", codeSystemId,
 			"title", "Title of " + codeSystemId,
-			"url", getCodeSystemUrl(codeSystemId),
+			"url", getSnomedIntUrl(codeSystemId),
 			"description", "<div>Markdown supported</div>",
 			"toolingId", SnomedTerminologyComponentConstants.TOOLING_ID,
 			"oid", "oid_" + codeSystemId,
@@ -135,8 +136,12 @@ public abstract class CodeSystemRestRequests {
 		return settings;
 	}
 
-	public static String getCodeSystemUrl(String codeSystemId) {
-		return SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/900000000000207008/" + codeSystemId;
+	public static String getSnomedIntUrl(String additionalParts) {
+		if (Strings.isNullOrEmpty(additionalParts)) {
+			return String.join("/", SnomedTerminologyComponentConstants.SNOMED_URI_SCT, Concepts.MODULE_SCT_CORE);
+		} else {
+			return String.join("/", SnomedTerminologyComponentConstants.SNOMED_URI_SCT, Concepts.MODULE_SCT_CORE, additionalParts);
+		}
 	}
 
 	public static ValidatableResponse assertGetCodeSystem(String codeSystemId) {

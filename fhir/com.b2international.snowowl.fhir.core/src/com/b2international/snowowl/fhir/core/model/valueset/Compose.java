@@ -94,7 +94,7 @@ public class Compose {
 		
 		@JsonProperty("include")
 		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-		public Builder profiles(Collection<Include> includes) {
+		public Builder includes(Collection<Include> includes) {
 			this.includes = includes;
 			return this;
 		}

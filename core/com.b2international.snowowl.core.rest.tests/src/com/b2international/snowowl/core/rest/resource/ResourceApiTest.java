@@ -502,7 +502,7 @@ public class ResourceApiTest {
 		// create a resource with ID
 		var codeSystemId = IDs.base62UUID();
 		CodeSystemRestRequests.createCodeSystem(codeSystemId).statusCode(201);
-		var codeSystemUrlToUse = CodeSystemRestRequests.getCodeSystemUrl(codeSystemId);
+		var codeSystemUrlToUse = CodeSystemRestRequests.getSnomedIntUrl(codeSystemId);
 		
 		// simulate that the user only has access to another resource
 		String token = RestExtensions.generateToken(Permission.requireAll(Permission.OPERATION_BROWSE, "another-resource"));

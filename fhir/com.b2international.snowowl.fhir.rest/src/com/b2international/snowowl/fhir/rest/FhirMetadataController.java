@@ -43,6 +43,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.commons.StringUtils;
@@ -224,8 +225,10 @@ public class FhirMetadataController extends AbstractFhirController {
 	private Metadata initMetadata() {
 		// get the ENGLISH version of the OpenAPI and use it to populate the FHIR metadata
 		final OpenAPI openAPI = openApiResource.getOpenApi(Locale.ENGLISH);
-		final Collection<CapabilityStatement.Rest.Resource> resources = collectResources(openAPI);
+		
 		final Collection<OperationDefinition> operationDefinitions = collectOperationDefinitions(openAPI);
+		final Map<String, OperationDefinition> operationMap = indexOperationDefinitions(operationDefinitions);
+		final Collection<CapabilityStatement.Rest.Resource> resources = collectResources(openAPI, operationMap);
 		
 		final CapabilityStatement.Rest.Builder restBuilder = CapabilityStatement.Rest.builder()
 			.mode(RestfulCapabilityMode.SERVER)
@@ -238,14 +241,12 @@ public class FhirMetadataController extends AbstractFhirController {
 
 		final String description = getServiceForClass(SnowOwlConfiguration.class).getDescription();
 
-		final Map<String, OperationDefinition> operationMap = indexOperationDefinitions(operationDefinitions, restBuilder);
 		final CapabilityStatement capabilityStatement = createCapabilityStatement(restBuilder, softwareVersion, date, description);
 		final TerminologyCapabilities terminologyCapabilities = createTerminologyCapabilities(softwareVersion, date, description);
-		
 		return new Metadata(capabilityStatement, terminologyCapabilities, operationMap);
 	}
 
-	private Collection<CapabilityStatement.Rest.Resource> collectResources(final OpenAPI openAPI) {
+	private Collection<CapabilityStatement.Rest.Resource> collectResources(final OpenAPI openAPI, final Map<String, OperationDefinition> operationMap) {
 		final Paths paths = openAPI.getPaths();
 		final List<io.swagger.v3.oas.models.tags.Tag> tags = openAPI.getTags();
 		
@@ -253,17 +254,18 @@ public class FhirMetadataController extends AbstractFhirController {
 			// Class-level tags with extensions indicate a resource
 			.filter(t -> t.getExtensions() != null && t.getExtensions().containsKey(B2I_OPENAPI_X_NAME))
 			.map(t -> {
+				final String resourceType = t.getName();
 				final Map<?, ?> nameExtensionMap = (Map<?, ?>) t.getExtensions().get(B2I_OPENAPI_X_NAME);
 				final String profile = (String) nameExtensionMap.get(B2I_OPENAPI_PROFILE);
 				
 				final CapabilityStatement.Rest.Resource.Builder resourceBuilder = CapabilityStatement.Rest.Resource.builder()
-					.type(ResourceTypeCode.of(t.getName()))
+					.type(ResourceTypeCode.of(resourceType))
 					.profile(Canonical.of(profile));
 			
-				// Collect the operations that belong to the same tagged class resource
+				// Collect the interactions that belong to the same tagged class resource
 				paths.values().stream()
 					.flatMap(pi -> pi.readOperations().stream())
-					.filter(o -> o.getTags().contains(t.getName())
+					.filter(o -> o.getTags().contains(resourceType)
 						&& o.getExtensions() != null
 						&& o.getExtensions().containsKey(B2I_OPENAPI_X_INTERACTION))
 					.forEachOrdered(op -> {
@@ -281,6 +283,29 @@ public class FhirMetadataController extends AbstractFhirController {
 							
 							resourceBuilder.interaction(interactionBuilder.build());
 						});
+					});
+				
+				// Collect operations for the resource as well
+				paths.entrySet().stream()
+					.filter(e -> {
+						final String key = e.getKey();
+						final PathItem value = e.getValue();
+
+						return key.startsWith(config.getApiBaseUrl())
+							&& key.contains("$")
+							&& (value.getGet() != null);
+					})
+					// "$" is part of the operation name
+					.map(e -> resourceType + getOperationName(e.getKey()))
+					.distinct()
+					.forEachOrdered(definitionKey -> {
+						final OperationDefinition operationDefinition = operationMap.get(definitionKey);
+						if (operationDefinition != null) {
+							resourceBuilder.operation(CapabilityStatement.Rest.Resource.Operation.builder()
+								.name(operationDefinition.getName())
+								.definition(buildOperationUrl(Code.of(resourceType), operationDefinition))
+								.build());
+						}
 					});
 	
 				return resourceBuilder.build();
@@ -306,10 +331,7 @@ public class FhirMetadataController extends AbstractFhirController {
 			.collect(Collectors.toList());
 	}
 
-	private Map<String, OperationDefinition> indexOperationDefinitions(
-		final Collection<OperationDefinition> operationDefinitions,
-		final CapabilityStatement.Rest.Builder restBuilder
-	) {
+	private Map<String, OperationDefinition> indexOperationDefinitions(final Collection<OperationDefinition> operationDefinitions) {
 		final Map<String, OperationDefinition> operationMap = newHashMap();
 
 		for (final OperationDefinition operationDefinition : operationDefinitions) {
@@ -317,11 +339,6 @@ public class FhirMetadataController extends AbstractFhirController {
 				// The "$" separator is already built in
 				final String key = code.getValue() + operationDefinition.getName().getValue();
 				operationMap.put(key, operationDefinition);
-				
-				restBuilder.operation(CapabilityStatement.Rest.Resource.Operation.builder()
-					.name(operationDefinition.getName())
-					.definition(buildOperationUrl(code, operationDefinition))
-					.build());
 			}
 		}
 		
@@ -385,10 +402,7 @@ public class FhirMetadataController extends AbstractFhirController {
 	}
 
 	private OperationDefinition buildOperationDefinition(String key, PathItem pathItem) {
-		final String operationName = Iterables.getLast(UriComponentsBuilder.fromPath(key)
-			.build()
-			.getPathSegments());
-		
+		final String name = getOperationName(key);
 		final io.swagger.v3.oas.models.Operation getOperation = pathItem.getGet();
 		final boolean isInstance = getOperation.getParameters().stream()
 			.filter(p -> "path".equals(p.getIn()))
@@ -396,8 +410,8 @@ public class FhirMetadataController extends AbstractFhirController {
 			.isPresent();
 
 		final OperationDefinition.Builder operationDefinitionBuilder = OperationDefinition.builder()
-			.name(operationName)
-			.code(Code.of(operationName))
+			.name(name)
+			.code(Code.of(name))
 			.kind(OperationKind.OPERATION)
 			.affectsState(false)
 			.status(PublicationStatus.ACTIVE)
@@ -448,6 +462,11 @@ public class FhirMetadataController extends AbstractFhirController {
 		});
 		
 		return operationDefinitionBuilder.build();
+	}
+
+	private String getOperationName(String key) {
+		final UriComponents uriComponents = UriComponentsBuilder.fromPath(key).build();
+		return Iterables.getLast(uriComponents.getPathSegments());
 	}
 
 	private TerminologyCapabilities createTerminologyCapabilities(String softwareVersion, Date date, String description) {

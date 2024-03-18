@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,21 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
+import java.util.Optional;
+
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.AcceptLanguageHeader;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.uri.ResourceURLSchemaSupport;
 import com.b2international.snowowl.fhir.core.model.ResourceResponseEntry;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.google.common.base.Strings;
 
 /**
  * @since 8.0
@@ -45,7 +50,42 @@ public abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 	
 	@Override
 	public final R execute(ServiceProvider context) {
-		CodeSystem codeSystem = FhirRequests
+		// try as is via the URL + version (optional) config
+		CodeSystem codeSystem = fetchCodeSystemByUrlAndVersion(context)
+				.or(() -> fetchCodeSystemByIdAndVersion(context))
+				.or(() -> {
+					// perform the third step only if there is a version specified
+					if (Strings.isNullOrEmpty(version)) {
+						return Optional.empty();
+					} else {
+						return fetchCodeSystemByUrl(context, system)
+								// if there is a codesystem with the specified URL then construct a versioned form using its official URL schema from its tooling
+								.flatMap((cs) -> fetchCodeSystemByUrl(context, context.service(RepositoryManager.class).get(cs.getToolingId()).service(ResourceURLSchemaSupport.class).withVersion(system, version, null)));
+					}
+				})
+				.orElseThrow(() -> new NotFoundException("CodeSystem", system));
+		
+		return doExecute(context, codeSystem);
+	}
+
+	private Optional<? extends CodeSystem> fetchCodeSystemByIdAndVersion(ServiceProvider context) {
+		return FhirRequests
+			.codeSystems().prepareSearch()
+			.one()
+			.filterById(system)
+			.filterByVersion(version)
+			.setSummary(configureSummary())
+			.buildAsync()
+			.getRequest()
+			.execute(context)
+			.first()
+			.map(ResourceResponseEntry.class::cast)
+			.map(ResourceResponseEntry::getResponseResource)
+			.map(CodeSystem.class::cast);
+	}
+
+	private Optional<CodeSystem> fetchCodeSystemByUrlAndVersion(ServiceProvider context) {
+		return FhirRequests
 				.codeSystems().prepareSearch()
 				.one()
 				.filterByUrl(system)
@@ -57,25 +97,22 @@ public abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 				.first()
 				.map(ResourceResponseEntry.class::cast)
 				.map(ResourceResponseEntry::getResponseResource)
-				.map(CodeSystem.class::cast)
-				.or(() -> {
-					return FhirRequests
-						.codeSystems().prepareSearch()
-						.one()
-						.filterById(system)
-						.filterByVersion(version)
-						.setSummary(configureSummary())
-						.buildAsync()
-						.getRequest()
-						.execute(context)
-						.first()
-						.map(ResourceResponseEntry.class::cast)
-						.map(ResourceResponseEntry::getResponseResource)
-						.map(CodeSystem.class::cast);
-				})
-				.orElseThrow(() -> new NotFoundException("CodeSystem", system));
-		
-		return doExecute(context, codeSystem);
+				.map(CodeSystem.class::cast);
+	}
+	
+	private Optional<CodeSystem> fetchCodeSystemByUrl(ServiceProvider context, String url) {
+		return FhirRequests
+				.codeSystems().prepareSearch()
+				.one()
+				.filterByUrl(url)
+				.setSummary(configureSummary())
+				.buildAsync()
+				.getRequest()
+				.execute(context)
+				.first()
+				.map(ResourceResponseEntry.class::cast)
+				.map(ResourceResponseEntry::getResponseResource)
+				.map(CodeSystem.class::cast);
 	}
 	
 	protected String configureSummary() {

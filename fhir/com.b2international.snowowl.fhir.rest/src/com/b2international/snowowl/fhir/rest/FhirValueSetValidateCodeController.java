@@ -272,7 +272,7 @@ public class FhirValueSetValidateCodeController extends AbstractFhirController {
 		@ApiResponse(responseCode = "400", description = "Bad request"),
 		@ApiResponse(responseCode = "404", description = "Value set not found")
 	})
-	@GetMapping(value = "/{valueSetId:**}/$validate-code", produces = {
+	@GetMapping(value = "/{id:**}/$validate-code", produces = {
 		APPLICATION_FHIR_JSON_VALUE,
 		APPLICATION_FHIR_XML_VALUE,
 		TEXT_JSON_VALUE,
@@ -283,7 +283,7 @@ public class FhirValueSetValidateCodeController extends AbstractFhirController {
 	public Promise<ResponseEntity<byte[]>> validateCodeInstance(
 			
 		@Parameter(description = "The id of the value set to validate against") 
-		@PathVariable(value = "valueSetId") 
+		@PathVariable(value = "id") 
 		String valueSetId, 
 		
 		@Parameter(description = "The version of the value set") 
@@ -374,7 +374,7 @@ public class FhirValueSetValidateCodeController extends AbstractFhirController {
 	@ApiResponse(responseCode = "404", description = "Not found")
 	@ApiResponse(responseCode = "400", description = "Bad request")
 	@PostMapping(
-		value = "/{valueSetId:**}/$validate-code", 
+		value = "/{id:**}/$validate-code", 
 		consumes = {
 			APPLICATION_FHIR_JSON_VALUE,
 			APPLICATION_FHIR_XML_VALUE,
@@ -395,7 +395,7 @@ public class FhirValueSetValidateCodeController extends AbstractFhirController {
 	public Promise<ResponseEntity<byte[]>> validateCode(
 
 		@Parameter(description = "The id of the value set to validate against") 
-		@PathVariable(value = "valueSetId") 
+		@PathVariable(value = "id") 
 		String valueSetId, 
 
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The operation's input parameters", content = { 

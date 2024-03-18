@@ -22,6 +22,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.elasticsearch.index.query.RegexpFlag;
 import org.elasticsearch.script.Script;
 import org.slf4j.Logger;
 
@@ -467,7 +468,7 @@ public class Es8QueryBuilder {
 	}
 	
 	private void visit(RegexpPredicate regexp) {
-		deque.push(QueryBuilders.regexp(r -> r.boost(this.boost).field(toFieldPath(regexp)).value(regexp.getArgument()).caseInsensitive(regexp.isCaseInsensitive())));
+		deque.push(QueryBuilders.regexp(r -> r.boost(this.boost).field(toFieldPath(regexp)).value(regexp.getArgument()).caseInsensitive(regexp.isCaseInsensitive()).flags(RegexpFlag.NONE.name())));
 	}
 	
 	private void visit(RangePredicate<?> range) {
