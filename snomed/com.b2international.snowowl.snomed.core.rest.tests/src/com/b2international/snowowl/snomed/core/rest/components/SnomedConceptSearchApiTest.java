@@ -33,11 +33,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.hamcrest.CoreMatchers;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import com.b2international.commons.json.Json;
+import com.b2international.index.SynonymsRule;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
@@ -48,6 +53,9 @@ import com.google.common.collect.HashBiMap;
  * @since 8.0.0
  */
 public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
+	
+	@ClassRule
+	public static SynonymsRule synonyms = new SynonymsRule(ApplicationContext.getServiceForClass(Environment.class).getDataPath().resolve("indexes/elastic-snowowl/config/analysis/synonym.txt"), List.of("awesome,kiraly"));
 	
 	@Test
 	public void searchBySemanticTag() throws Exception {
@@ -176,6 +184,31 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 
 		assertThat(hits.getTotal()).isEqualTo(1);
 		assertThat(hits.getItems()).allMatch(c -> conceptId.equals(c.getId()));
+	}
+	
+	@Test
+	public void searchByTerm() throws Exception {
+		String conceptId = createNewConcept(branchPath, Concepts.ROOT_CONCEPT);
+		String term = "An awesome term I am looking for (tag)";
+		createNewDescription(branchPath, Json.object(
+			"conceptId", conceptId,
+			"moduleId", Concepts.MODULE_SCT_CORE,
+			"typeId", Concepts.FULLY_SPECIFIED_NAME,
+			"term", term,
+			"languageCode", "en",
+			"acceptability", UK_PREFERRED_MAP,
+			"caseSignificanceId", Concepts.ENTIRE_TERM_CASE_INSENSITIVE,
+			"commitComment", "New FSN"
+		));
+		
+		SnomedConcepts hits = givenAuthenticatedRequest(getApiBaseUrl())
+			.accept(JSON_UTF8)
+			.queryParams(Map.of("term", "kiraly"))
+			.get("/{path}/concepts/", branchPath.getPath())
+			.then().assertThat()
+			.statusCode(200)
+			.extract().as(SnomedConcepts.class);
+		assertThat(hits).extracting(SnomedConcept::getId).contains(conceptId);
 	}
 	
 	@Test
@@ -394,6 +427,8 @@ public class SnomedConceptSearchApiTest extends AbstractSnomedApiTest {
 			.body("items[0].descriptions.items.module.id", allOf(not(emptyIterable()), everyItem(equalTo(Concepts.MODULE_SCT_CORE))))
 			.body("items[0].relationships.items.module.id", allOf(not(emptyIterable()), everyItem(equalTo(Concepts.MODULE_SCT_CORE))));
 	}
+	
+	
 	
 	@Test
 	public void wildcardAcceptLanguageHeader() throws Exception {
