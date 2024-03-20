@@ -183,4 +183,21 @@ public class AnalyzerTest extends BaseIndexTest {
 		assertThat(hits).containsOnly(bbq);
 	}
 	
+	@Test
+	public void tokenizedWithIgnoringStopwords() throws Exception {
+		DataWithTokenizedTextSearchAnalyzer bbq = new DataWithTokenizedTextSearchAnalyzer(KEY1, "bbq weekend");
+		DataWithTokenizedTextSearchAnalyzer stone = new DataWithTokenizedTextSearchAnalyzer(KEY2, "kidney stone");
+		indexDocuments(bbq, stone);
+		
+		// without specific synonym analyzer searches for synonyms return no hits
+		Hits<DataWithTokenizedTextSearchAnalyzer> hits = search(Query.select(DataWithTokenizedTextSearchAnalyzer.class)
+				.where(Expressions.dismax(
+					Expressions.matchTextAll("text.tokenized", "bbq and").withSynonyms(false).withIgnoreStopwords(true),
+					Expressions.matchTextAll("text.tokenized", "calculus").withIgnoreStopwords(true)
+				))
+				.limit(Integer.MAX_VALUE)
+				.build());
+		assertThat(hits).containsOnly(bbq);
+	}
+	
 }
