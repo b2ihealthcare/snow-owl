@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2020-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,22 +32,25 @@ public abstract class TermFilter implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * The <b>default</b> term matching contains the following elastic search expressions:
+	 * The <b>default</b> term matching contains the following index queries:
 	 * <p>
-	 * <li>Exact term match on a case insensitive, ASCII folded keyword type field (usually the <b>term.exact</b> field)
-	 * <li>All terms present match on a case insensitive, ASCII folded, possessive removed, split text type field (usually the <b>term</b> field)
-	 * <li>All term prefixes present match on a case insensitive, ASCII folded, possessive removed and split text type field where the field has 2-12 additional prefix terms generated via the edge_ngram token filter (usually the <b>term.prefix</b> field)
+	 * <li>Exact term match on a case insensitive, ASCII folded keyword type field (usually the <b>term.exact</b> field)</li>
+	 * <li>All terms present match on a case insensitive, ASCII folded, possessive removed, split text type field (usually the <b>term</b> field)</li>
+	 * <li>All terms but the last present exactly and the last term present as a prefix of a word. (the usual ASCII folding, possessive removals, text splitting and case sensitivity configuration apply)</li>
+	 * <li>All term prefixes present match on a case insensitive, ASCII folded, possessive removed and split text type field where the field has 2-12 additional prefix terms generated via the edge_ngram token filter (usually the <b>term.prefix</b> field)</li>
+	 * </p>
 	 * 
-	 * The <b>minShouldMatch</b> term filter contains the following elastic search expressions:
+	 * The <b>minShouldMatch</b> term filter contains the following index queries:
 	 * <p>
-	 * <li>All terms present match on a case insensitive, ASCII folded, possessive removed, split text type field (usually the <b>term</b> field)
-	 * <li>All term prefixes present match on a case insensitive, ASCII folded, possessive removed and split text type field where the field has 2-12 additional prefix terms generated via the edge_ngram token filter (usually the <b>term.prefix</b> field)
+	 * <li>All terms present match on a case insensitive, ASCII folded, possessive removed, split text type field (usually the <b>term</b> field)</li>
+	 * <li>All term prefixes present match on a case insensitive, ASCII folded, possessive removed and split text type field where the field has 2-12 additional prefix terms generated via the edge_ngram token filter (usually the <b>term.prefix</b> field)</li>
+	 * </p>
 	 * 
 	 * The <b>fuzziness</b> configuration alters the query to allow certain amount of fuzziness in the given terms:
 	 * 
-	 * <li>All terms present match on a case insensitive, ASCII folded, possessive removed, split text type field (usually the <b>term</b> field) with fuzziness enabled with hardcoded 10 expansions of 1 character difference (Levenshtein distance).
+	 * <li>All terms present match on a case insensitive, ASCII folded, possessive removed, split text type field (usually the <b>term</b> field) with fuzziness enabled with configurable max expansions (defaults to 10), prefixLength (defaults to 1) and configurable distance (usually set to AUTO, but can be set to any value according to Levenshtein distance).</li>
 	 * 
-	 * Additionally stopwords can be ignored, case sensitivity can be enabled/disabled and synonyms can be included if needed.
+	 * Additionally stopwords can be ignored, case sensitivity can be enabled/disabled and synonyms can be included if needed, unless any of these are taken into account on via the selected field's default search_analyzer configuration.
 	 * 
 	 * @return {@link MatchTermFilter.Builder}
 	 */
@@ -57,7 +60,7 @@ public abstract class TermFilter implements Serializable {
 	}
 	
 	/**
-	 * The <b>exactTermMatch</b> term filter contains the following elastic search expression:
+	 * The <b>exact</b> term filter contains the following index queries:
 	 * 
 	 * <li>Documents that contain an <b>exact</b> term in a provided field (usually the <b>term</b> field)
 	 * 
@@ -94,11 +97,28 @@ public abstract class TermFilter implements Serializable {
 		return terms.size() == 1 ? Iterables.getOnlyElement(terms) : null;
 	}
 	
+	/**
+	 * Converts this {@link TermFilter} instance into an executable low-level index query {@link Expression} instance using the given field and the default 'text', 'exact', 'prefix' field alias values.
+	 * 
+	 * @param field - the field to perform the term filter search on
+	 * @return an executable {@link Expression} instance, never <code>null</code>
+	 * @see #toExpression(String, String, String, String)
+	 */
 	@JsonIgnore
 	public Expression toExpression(String field) {
 		return toExpression(field, "text", "exact", "prefix");
 	}
 	
+	/**
+	 * Converts this {@link TermFilter} instance into an executable low-level index query {@link Expression} instance using the given field and field alias suffixes.
+	 * 
+	 * @param field - the field to perform the term filter search on
+	 * @param textFieldSuffix - the tokenized text field alias to perform tokenized match on
+	 * @param exactFieldSuffix - the exact text field alias to perform exact match on
+	 * @param prefixFieldSuffix - the prefix text field suffix to perform prefix match on
+	 * @return an executable {@link Expression} instance, never <code>null</code>
+	 * @see #toExpression(String)
+	 */
 	@JsonIgnore
 	public abstract Expression toExpression(String field, String textFieldSuffix, String exactFieldSuffix, String prefixFieldSuffix);
 	

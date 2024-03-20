@@ -83,9 +83,49 @@ public class AnalyzerTest extends BaseIndexTest {
 		
 	}
 	
+	@Doc
+	private static final class DataWithTokenizedTextSearchAnalyzer {
+		
+		@ID
+		private String id;
+		
+		@Field(
+			aliases = {
+				@FieldAlias(name = "tokenized", type = FieldAliasType.TEXT, analyzer = Analyzers.TOKENIZED, searchAnalyzer = Analyzers.TOKENIZED_SYNONYMS)
+			}
+		)
+		private String text;
+		
+		@JsonCreator
+		public DataWithTokenizedTextSearchAnalyzer(@JsonProperty("id") String id, @JsonProperty("text") String text) {
+			this.id = id;
+			this.text = text;
+		}
+		
+		public String getText() {
+			return text;
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(id, text);
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			DataWithTokenizedTextSearchAnalyzer other = (DataWithTokenizedTextSearchAnalyzer) obj;
+			return Objects.equals(id, other.id) 
+					&& Objects.equals(text, other.text);
+		}
+		
+	}
+	
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return List.of(DataWithTokenizedText.class);
+		return List.of(DataWithTokenizedText.class, DataWithTokenizedTextSearchAnalyzer.class);
 	}
 	
 	@Test
@@ -118,8 +158,42 @@ public class AnalyzerTest extends BaseIndexTest {
 		// without specific synonym analyzer searches for synonyms return no hits
 		Hits<DataWithTokenizedText> hits = search(Query.select(DataWithTokenizedText.class)
 				.where(Expressions.dismax(
-					Expressions.matchTextAll("text.tokenized", "barbecue").withSynonyms(true),
+					Expressions.matchTextAll("text.tokenized", "barbecue").withSynonymsEnabled(true),
 					Expressions.matchTextAll("text.tokenized", "calculus")
+				))
+				.limit(Integer.MAX_VALUE)
+				.build());
+		assertThat(hits).containsOnly(bbq);
+	}
+	
+	@Test
+	public void tokenizedWithSynonymsDefaultSearchAnalyzer() throws Exception {
+		DataWithTokenizedTextSearchAnalyzer bbq = new DataWithTokenizedTextSearchAnalyzer(KEY1, "bbq weekend");
+		DataWithTokenizedTextSearchAnalyzer stone = new DataWithTokenizedTextSearchAnalyzer(KEY2, "kidney stone");
+		indexDocuments(bbq, stone);
+		
+		// without specific synonym analyzer searches for synonyms return no hits
+		Hits<DataWithTokenizedTextSearchAnalyzer> hits = search(Query.select(DataWithTokenizedTextSearchAnalyzer.class)
+				.where(Expressions.dismax(
+					Expressions.matchTextAll("text.tokenized", "barbecue").withIgnoreStopwords(false),
+					Expressions.matchTextAll("text.tokenized", "calculus").withSynonymsEnabled(false).withIgnoreStopwords(false)
+				))
+				.limit(Integer.MAX_VALUE)
+				.build());
+		assertThat(hits).containsOnly(bbq);
+	}
+	
+	@Test
+	public void tokenizedWithIgnoringStopwords() throws Exception {
+		DataWithTokenizedTextSearchAnalyzer bbq = new DataWithTokenizedTextSearchAnalyzer(KEY1, "bbq weekend");
+		DataWithTokenizedTextSearchAnalyzer stone = new DataWithTokenizedTextSearchAnalyzer(KEY2, "kidney stone");
+		indexDocuments(bbq, stone);
+		
+		// without specific synonym analyzer searches for synonyms return no hits
+		Hits<DataWithTokenizedTextSearchAnalyzer> hits = search(Query.select(DataWithTokenizedTextSearchAnalyzer.class)
+				.where(Expressions.dismax(
+					Expressions.matchTextAll("text.tokenized", "bbq and").withSynonymsEnabled(false).withIgnoreStopwords(true),
+					Expressions.matchTextAll("text.tokenized", "calculus").withIgnoreStopwords(true)
 				))
 				.limit(Integer.MAX_VALUE)
 				.build());

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2022-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public final class MatchTermFilter extends TermFilter {
 	private final String term;
 	private final Integer minShouldMatch;
 	
-	private final boolean ignoreStopwords;
+	private final Boolean ignoreStopwords;
 	private final boolean caseSensitive;
 	private final Boolean synonyms;
 	
@@ -45,7 +45,7 @@ public final class MatchTermFilter extends TermFilter {
 	private final Integer prefixLength;
 	private final Integer maxExpansions;
 	
-	MatchTermFilter(final String term, final Integer minShouldMatch, final boolean ignoreStopwords, final boolean caseSensitive, final Boolean synonyms, final String fuzziness, final Integer prefixLength, final Integer maxExpansions) {
+	MatchTermFilter(final String term, final Integer minShouldMatch, final Boolean ignoreStopwords, final boolean caseSensitive, final Boolean synonyms, final String fuzziness, final Integer prefixLength, final Integer maxExpansions) {
 		if (term == null) {
 			throw new BadRequestException("'term' filter parameter was null.");
 		}
@@ -67,7 +67,7 @@ public final class MatchTermFilter extends TermFilter {
 		return minShouldMatch;
 	}
 	
-	public boolean isIgnoreStopwords() {
+	public Boolean isIgnoreStopwords() {
 		return ignoreStopwords;
 	}
 	
@@ -125,7 +125,7 @@ public final class MatchTermFilter extends TermFilter {
 		private String term;
 		private Integer minShouldMatch;
 		
-		private boolean ignoreStopwords;
+		private Boolean ignoreStopwords;
 		private boolean caseSensitive;
 		private Boolean synonyms;
 		
@@ -157,7 +157,7 @@ public final class MatchTermFilter extends TermFilter {
 			return this;
 		}
 		
-		public Builder ignoreStopwords(boolean ignoreStopwords) {
+		public Builder ignoreStopwords(Boolean ignoreStopwords) {
 			this.ignoreStopwords = ignoreStopwords;
 			return this;
 		}
@@ -202,10 +202,10 @@ public final class MatchTermFilter extends TermFilter {
 			TermFilter.exact().term(getTerm()).caseSensitive(isCaseSensitive()).build().toExpression(field, textFieldSuffix, exactFieldSuffix, prefixFieldSuffix),
 			matchTextAll(fieldAlias(field, textFieldSuffix), getTerm())
 				.withIgnoreStopwords(isIgnoreStopwords())
-				.withSynonyms(isSynonyms()),
+				.withSynonymsEnabled(isSynonyms()),
 			matchBooleanPrefix(fieldAlias(field, textFieldSuffix), getTerm())
 				.withIgnoreStopwords(isIgnoreStopwords())
-				.withSynonyms(isSynonyms()),
+				.withSynonymsEnabled(isSynonyms()),
 			matchTextAll(fieldAlias(field, prefixFieldSuffix), getTerm())
 				.withIgnoreStopwords(isIgnoreStopwords())
 		);
@@ -215,10 +215,10 @@ public final class MatchTermFilter extends TermFilter {
 		return dismaxWithScoreCategories(
 			matchTextAny(fieldAlias(field, textFieldSuffix), getTerm(), getMinShouldMatch())
 				.withIgnoreStopwords(isIgnoreStopwords())
-				.withSynonyms(isSynonyms()),
+				.withSynonymsEnabled(isSynonyms()),
 			matchTextAny(fieldAlias(field, prefixFieldSuffix), getTerm(), getMinShouldMatch())
 				.withIgnoreStopwords(isIgnoreStopwords())
-				.withSynonyms(isSynonyms())
+				.withSynonymsEnabled(isSynonyms())
 		);
 	}
 

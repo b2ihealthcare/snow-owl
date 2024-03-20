@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,8 @@ public final class TextPredicate extends Predicate {
 	private final int minShouldMatch;
 	
 	private Analyzers analyzer;
+	private Boolean synonymsEnabled;
+	private Boolean ignoreStopwords;
 	
 	private String fuzziness;
 	private int maxExpansions = 10;
@@ -81,6 +83,24 @@ public final class TextPredicate extends Predicate {
 		return prefixLength;
 	}
 	
+	public Boolean synonymsEnabled() {
+		return synonymsEnabled;
+	}
+	
+	public TextPredicate withSynonymsEnabled(Boolean synonymsEnabled) {
+		this.synonymsEnabled = synonymsEnabled;
+		return this;
+	}
+	
+	public Boolean ignoreStopwords() {
+		return ignoreStopwords;
+	}
+	
+	public TextPredicate withIgnoreStopwords(Boolean ignoreStopwords) {
+		this.ignoreStopwords = ignoreStopwords;
+		return this;
+	}
+	
 	public TextPredicate withFuzziness(String fuzziness) {
 		return withFuzziness(fuzziness, prefixLength, maxExpansions);
 	}
@@ -95,26 +115,6 @@ public final class TextPredicate extends Predicate {
 	@Override
 	public String toString() {
 		return String.format("TEXT(%s %s '%s'[])", getField(), type(), term(), CompareUtils.isEmpty(analyzer));
-	}
-
-	public TextPredicate withIgnoreStopwords(boolean ignoreStopwords) {
-		if (ignoreStopwords) {
-			return withAnalyzer((analyzer == Analyzers.TOKENIZED_SYNONYMS || analyzer == Analyzers.TOKENIZED_SYNONYMS_IGNORE_STOPWORDS) ? Analyzers.TOKENIZED_SYNONYMS_IGNORE_STOPWORDS : Analyzers.TOKENIZED_IGNORE_STOPWORDS);
-		} else {
-			return withAnalyzer(analyzer == Analyzers.TOKENIZED_SYNONYMS_IGNORE_STOPWORDS ? Analyzers.TOKENIZED_SYNONYMS : Analyzers.TOKENIZED);
-		}
-	}
-	
-	public TextPredicate withSynonyms(Boolean enableSynonyms) {
-		// if enableSynonyms is not a valid boolean value keep it unchanged, use the default set in the mapping
-		if (enableSynonyms == null) {
-			return this;
-		}
-		if (enableSynonyms) {
-			return withAnalyzer((analyzer == Analyzers.TOKENIZED_IGNORE_STOPWORDS || analyzer == Analyzers.TOKENIZED_SYNONYMS_IGNORE_STOPWORDS) ? Analyzers.TOKENIZED_SYNONYMS_IGNORE_STOPWORDS : Analyzers.TOKENIZED_SYNONYMS);
-		} else {
-			return withAnalyzer(analyzer == Analyzers.TOKENIZED_SYNONYMS_IGNORE_STOPWORDS ? Analyzers.TOKENIZED_IGNORE_STOPWORDS : Analyzers.TOKENIZED);
-		}
 	}
 
 }
