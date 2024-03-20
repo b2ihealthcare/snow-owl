@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,19 +37,24 @@ import com.google.common.collect.Range;
  */
 public class Expressions {
 	
-	// special 
+	// special constants used to mark up dynamic expressions for dynamic field matching in #matchDynamic expression builder
+	// separates key-value pairs in a dynamic field expression (if not used field exist expression will be used for the value)
 	private static final String DYNAMIC_VALUE_DELIMITER = "#";
 	
-	// special in: syntax support
-	private static final String IN_CLAUSE = "in:";
-	private static final Splitter COMMA_SPLITTER = Splitter.on(",");
-	private static final Joiner COMMA_JOINER = Joiner.on(",");
-
-	// special range: syntax support 
-	private static final String RANGE_CLAUSE = "range:";
-	private static final String RANGE_EXPRESSION_DELIMITER = "..";
-	private static final Splitter RANGE_SPLITTER = Splitter.on(RANGE_EXPRESSION_DELIMITER);
-	private static final Joiner RANGE_JOINER = Joiner.on(RANGE_EXPRESSION_DELIMITER);
+	// dynamic prefix match character
+	private static final String DYNAMIC_PREFIX_MATCH_CHAR = "*";
+	
+	// multi-valued dynamic term matching constants, expected format is 'in:VALUE_1,VALUE_2,VALUE_N'
+	private static final String DYNAMIC_IN_CLAUSE = "in:";
+	private static final String DYNAMIC_IN_VALUES_SEPARATOR = ",";
+	private static final Splitter DYNAMIC_IN_VALUES_SPLITTER = Splitter.on(DYNAMIC_IN_VALUES_SEPARATOR);
+	private static final Joiner DYNAMIC_IN_VALUES_JOINER = Joiner.on(DYNAMIC_IN_VALUES_SEPARATOR);
+	
+	// dynamic range field matching constants, expected format is 'range:lower..upper' where lower and upper parts are optional
+	private static final String DYNAMIC_RANGE_CLAUSE = "range:";
+	private static final String DYNAMIC_RANGE_VALUES_SEPARATOR = "..";
+	private static final Splitter DYNAMIC_RANGE_SPLITTER = Splitter.on(DYNAMIC_RANGE_VALUES_SEPARATOR);
+	private static final Joiner DYNAMIC_RANGE_JOINER = Joiner.on(DYNAMIC_RANGE_VALUES_SEPARATOR);
 
 	public static final class ExpressionBuilder extends AbstractExpressionBuilder<ExpressionBuilder> {
 		
@@ -308,12 +313,12 @@ public class Expressions {
 				final String fieldToMatch = String.join(".", field, propertyName);
 
 				// check special syntax first
-				if (propertyValue.startsWith(IN_CLAUSE)) {
+				if (propertyValue.startsWith(DYNAMIC_IN_CLAUSE)) {
 					// multi-valued -> terms query
-					bool.filter(Expressions.matchAny(fieldToMatch, COMMA_SPLITTER.splitToList(propertyValue.substring(IN_CLAUSE.length()))));
-				} else if (propertyValue.startsWith(RANGE_CLAUSE)) {
+					bool.filter(Expressions.matchAny(fieldToMatch, DYNAMIC_IN_VALUES_SPLITTER.splitToList(propertyValue.substring(DYNAMIC_IN_CLAUSE.length()))));
+				} else if (propertyValue.startsWith(DYNAMIC_RANGE_CLAUSE)) {
 					// range -> range query
-					final List<String> rangeValues = RANGE_SPLITTER.splitToList(propertyValue.substring(RANGE_CLAUSE.length()));
+					final List<String> rangeValues = DYNAMIC_RANGE_SPLITTER.splitToList(propertyValue.substring(DYNAMIC_RANGE_CLAUSE.length()));
 					if (rangeValues.size() > 2) {
 						throw new BadRequestException("Multiple range expressions (<min>..<max>) are found in property value match. Only a single <min>..<max> expression is allowed.", propertyValue);
 					} else if (rangeValues.size() <= 1) {
@@ -323,7 +328,7 @@ public class Expressions {
 						String upper = Strings.emptyToNull(rangeValues.get(1));
 						bool.filter(Expressions.matchRange(fieldToMatch, lower, upper));
 					}
-				} else if (propertyValue.endsWith("*")) {
+				} else if (propertyValue.endsWith(DYNAMIC_PREFIX_MATCH_CHAR)) {
 					// wildcard at the end -> prefix query
 					bool.filter(Expressions.prefixMatch(fieldToMatch, propertyValue.substring(0, (propertyValue.length() - 1))));						
 				} else {
@@ -346,10 +351,10 @@ public class Expressions {
 			final String filterValue;
 			if (value instanceof Iterable<?> iterable) {
 				// to valid in: expression if it is an iterable type
-				filterValue = IN_CLAUSE.concat(COMMA_JOINER.join(iterable));
+				filterValue = DYNAMIC_IN_CLAUSE.concat(DYNAMIC_IN_VALUES_JOINER.join(iterable));
 			} else if (value instanceof Range<?> range) {
 				// or to range: expression if is is a Guava Range object
-				filterValue = RANGE_CLAUSE.concat(RANGE_JOINER.join(range.lowerEndpoint(), range.upperEndpoint()));
+				filterValue = DYNAMIC_RANGE_CLAUSE.concat(DYNAMIC_RANGE_JOINER.join(range.lowerEndpoint(), range.upperEndpoint()));
 			} else {
 				// otherwise convert it to string to be able to join with the field name
 				filterValue = String.valueOf(value);
