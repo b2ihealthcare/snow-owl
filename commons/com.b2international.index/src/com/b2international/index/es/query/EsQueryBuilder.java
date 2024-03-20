@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.slf4j.Logger;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
+import com.b2international.index.Analyzers;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.compat.TextConstants;
 import com.b2international.index.mapping.DocumentMapping;
@@ -276,20 +277,23 @@ public final class EsQueryBuilder {
 		final String term = predicate.term();
 		final MatchType type = predicate.type();
 		final int minShouldMatch = predicate.minShouldMatch();
+		
 		QueryBuilder query;
+		
+		String searchAnalyzer = selectSearchAnalyzer(predicate);
 		switch (type) {
 		case BOOLEAN_PREFIX:
 			query = QueryBuilders.matchBoolPrefixQuery(field, term)
-				.analyzer(predicate.analyzer())
+				.analyzer(searchAnalyzer)
 				.operator(Operator.AND);
 			break;
 		case PHRASE:
 			query = QueryBuilders.matchPhraseQuery(field, term)
-						.analyzer(predicate.analyzer());
+						.analyzer(searchAnalyzer);
 			break;
 		case ALL:
 			MatchQueryBuilder all = QueryBuilders.matchQuery(field, term)
-						.analyzer(predicate.analyzer())
+						.analyzer(searchAnalyzer)
 						.operator(Operator.AND);
 			if (!Strings.isNullOrEmpty(predicate.fuzziness())) {
 				all
@@ -301,7 +305,7 @@ public final class EsQueryBuilder {
 			break;
 		case ANY:
 			MatchQueryBuilder any = QueryBuilders.matchQuery(field, term)
-						.analyzer(predicate.analyzer())
+						.analyzer(searchAnalyzer)
 						.operator(Operator.OR)
 						.minimumShouldMatch(Integer.toString(minShouldMatch));
 			if (!Strings.isNullOrEmpty(predicate.fuzziness())) {
@@ -314,7 +318,7 @@ public final class EsQueryBuilder {
 			break;
 		case PARSED:
 			query = QueryBuilders.queryStringQuery(TextConstants.escape(term))
-						.analyzer(predicate.analyzer())
+						.analyzer(searchAnalyzer)
 						.field(field)
 						.escape(false)
 						.allowLeadingWildcard(true)
@@ -328,6 +332,38 @@ public final class EsQueryBuilder {
 			needsScoring = true;
 		}
 		deque.push(query);
+	}
+	
+	private String selectSearchAnalyzer(TextPredicate predicate) {
+		final Boolean enableSynonym = predicate.synonym();
+		final Boolean ignoreStopWords = predicate.ignoreStopWords();
+		
+		if (predicate.analyzer() != null ) {
+			return predicate.analyzer();
+		}
+		
+		Analyzers searchAnalyzer = null;
+		if (enableSynonym != null) { 
+			if (enableSynonym) {
+				searchAnalyzer = Analyzers.TOKENIZED_SYNONYMS;
+			} else {
+				searchAnalyzer = Analyzers.TOKENIZED;
+			}
+		}
+		
+		if (ignoreStopWords != null) {
+			if (ignoreStopWords) {
+				if (searchAnalyzer == null && searchAnalyzer == Analyzers.TOKENIZED) {
+					searchAnalyzer = Analyzers.TOKENIZED_IGNORE_STOPWORDS;
+				} else if (searchAnalyzer == Analyzers.TOKENIZED_SYNONYMS) {
+					searchAnalyzer = Analyzers.TOKENIZED_SYNONYMS_IGNORE_STOPWORDS;
+				} else {
+					throw new IllegalArgumentException("Unsupported analyzer configuration");
+				}
+			}
+		}
+
+		return searchAnalyzer == null ? null : searchAnalyzer.getAnalyzer();
 	}
 	
 	private void visit(SingleArgumentPredicate<?> predicate) {
