@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 9.1.2
+
+### Bugs/Improvements
+- [index] fixed an issue where incorrect search results were returned due to incorrect search_analyzer configuration (#1268)
+- [index] disable optional regular expression flags when performiny any kind of regexp query (#1266)
+- [fhir] fixed an issue where using both the system and version parameters could result in a resource not found error (#1266)
+- [fhir] fixed an issue where `ValueSet#expand` operation responded with a randomized compose definition on each request (#1266)
+- [fhir] move resource-level operations to their right place in CapabilitiesStatement (#1266)
+
 ## 9.1.1
 
 ### Bugs/Improvements
