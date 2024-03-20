@@ -87,8 +87,8 @@ public final class TextPredicate extends Predicate {
 		return synonym;
 	}
 	
-	public TextPredicate withSynonyms(Boolean synonym) {
-		this.synonym = synonym;
+	public TextPredicate withSynonyms(Boolean synonyms) {
+		this.synonym = synonyms;
 		return this;
 	}
 	
