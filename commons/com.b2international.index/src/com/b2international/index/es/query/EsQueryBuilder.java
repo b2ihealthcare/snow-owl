@@ -353,7 +353,7 @@ public final class EsQueryBuilder {
 		
 		if (ignoreStopWords != null) {
 			if (ignoreStopWords) {
-				if (searchAnalyzer == null && searchAnalyzer == Analyzers.TOKENIZED) {
+				if (searchAnalyzer == null || searchAnalyzer == Analyzers.TOKENIZED) {
 					searchAnalyzer = Analyzers.TOKENIZED_IGNORE_STOPWORDS;
 				} else if (searchAnalyzer == Analyzers.TOKENIZED_SYNONYMS) {
 					searchAnalyzer = Analyzers.TOKENIZED_SYNONYMS_IGNORE_STOPWORDS;
