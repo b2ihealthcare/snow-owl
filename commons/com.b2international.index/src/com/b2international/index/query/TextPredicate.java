@@ -32,8 +32,8 @@ public final class TextPredicate extends Predicate {
 	private final int minShouldMatch;
 	
 	private Analyzers analyzer;
-	private Boolean synonym;
-	private Boolean ignoreStopWords;
+	private Boolean synonymsEnabled;
+	private Boolean ignoreStopwords;
 	
 	private String fuzziness;
 	private int maxExpansions = 10;
@@ -83,21 +83,21 @@ public final class TextPredicate extends Predicate {
 		return prefixLength;
 	}
 	
-	public Boolean synonym() {
-		return synonym;
+	public Boolean synonymsEnabled() {
+		return synonymsEnabled;
 	}
 	
-	public TextPredicate withSynonyms(Boolean synonyms) {
-		this.synonym = synonyms;
+	public TextPredicate withSynonymsEnabled(Boolean synonymsEnabled) {
+		this.synonymsEnabled = synonymsEnabled;
 		return this;
 	}
 	
 	public Boolean ignoreStopWords() {
-		return ignoreStopWords;
+		return ignoreStopwords;
 	}
 	
 	public TextPredicate withIgnoreStopwords(Boolean ignoreStopwords) {
-		this.ignoreStopWords = ignoreStopwords;
+		this.ignoreStopwords = ignoreStopwords;
 		return this;
 	}
 	

@@ -158,7 +158,7 @@ public class AnalyzerTest extends BaseIndexTest {
 		// without specific synonym analyzer searches for synonyms return no hits
 		Hits<DataWithTokenizedText> hits = search(Query.select(DataWithTokenizedText.class)
 				.where(Expressions.dismax(
-					Expressions.matchTextAll("text.tokenized", "barbecue").withSynonyms(true),
+					Expressions.matchTextAll("text.tokenized", "barbecue").withSynonymsEnabled(true),
 					Expressions.matchTextAll("text.tokenized", "calculus")
 				))
 				.limit(Integer.MAX_VALUE)
@@ -176,7 +176,7 @@ public class AnalyzerTest extends BaseIndexTest {
 		Hits<DataWithTokenizedTextSearchAnalyzer> hits = search(Query.select(DataWithTokenizedTextSearchAnalyzer.class)
 				.where(Expressions.dismax(
 					Expressions.matchTextAll("text.tokenized", "barbecue").withIgnoreStopwords(false),
-					Expressions.matchTextAll("text.tokenized", "calculus").withSynonyms(false).withIgnoreStopwords(false)
+					Expressions.matchTextAll("text.tokenized", "calculus").withSynonymsEnabled(false).withIgnoreStopwords(false)
 				))
 				.limit(Integer.MAX_VALUE)
 				.build());
@@ -192,7 +192,7 @@ public class AnalyzerTest extends BaseIndexTest {
 		// without specific synonym analyzer searches for synonyms return no hits
 		Hits<DataWithTokenizedTextSearchAnalyzer> hits = search(Query.select(DataWithTokenizedTextSearchAnalyzer.class)
 				.where(Expressions.dismax(
-					Expressions.matchTextAll("text.tokenized", "bbq and").withSynonyms(false).withIgnoreStopwords(true),
+					Expressions.matchTextAll("text.tokenized", "bbq and").withSynonymsEnabled(false).withIgnoreStopwords(true),
 					Expressions.matchTextAll("text.tokenized", "calculus").withIgnoreStopwords(true)
 				))
 				.limit(Integer.MAX_VALUE)

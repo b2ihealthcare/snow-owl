@@ -335,7 +335,7 @@ public final class EsQueryBuilder {
 	}
 	
 	private String selectSearchAnalyzer(TextPredicate predicate) {
-		final Boolean enableSynonym = predicate.synonym();
+		final Boolean enableSynonym = predicate.synonymsEnabled();
 		final Boolean ignoreStopWords = predicate.ignoreStopWords();
 		
 		if (predicate.analyzer() != null ) {

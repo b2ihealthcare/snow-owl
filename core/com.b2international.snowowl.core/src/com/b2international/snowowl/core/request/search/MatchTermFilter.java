@@ -202,10 +202,10 @@ public final class MatchTermFilter extends TermFilter {
 			TermFilter.exact().term(getTerm()).caseSensitive(isCaseSensitive()).build().toExpression(field, textFieldSuffix, exactFieldSuffix, prefixFieldSuffix),
 			matchTextAll(fieldAlias(field, textFieldSuffix), getTerm())
 				.withIgnoreStopwords(isIgnoreStopwords())
-				.withSynonyms(isSynonyms()),
+				.withSynonymsEnabled(isSynonyms()),
 			matchBooleanPrefix(fieldAlias(field, textFieldSuffix), getTerm())
 				.withIgnoreStopwords(isIgnoreStopwords())
-				.withSynonyms(isSynonyms()),
+				.withSynonymsEnabled(isSynonyms()),
 			matchTextAll(fieldAlias(field, prefixFieldSuffix), getTerm())
 				.withIgnoreStopwords(isIgnoreStopwords())
 		);
@@ -215,10 +215,10 @@ public final class MatchTermFilter extends TermFilter {
 		return dismaxWithScoreCategories(
 			matchTextAny(fieldAlias(field, textFieldSuffix), getTerm(), getMinShouldMatch())
 				.withIgnoreStopwords(isIgnoreStopwords())
-				.withSynonyms(isSynonyms()),
+				.withSynonymsEnabled(isSynonyms()),
 			matchTextAny(fieldAlias(field, prefixFieldSuffix), getTerm(), getMinShouldMatch())
 				.withIgnoreStopwords(isIgnoreStopwords())
-				.withSynonyms(isSynonyms())
+				.withSynonymsEnabled(isSynonyms())
 		);
 	}
 
