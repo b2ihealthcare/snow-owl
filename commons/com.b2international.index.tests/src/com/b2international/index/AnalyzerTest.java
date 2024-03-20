@@ -175,7 +175,7 @@ public class AnalyzerTest extends BaseIndexTest {
 		// without specific synonym analyzer searches for synonyms return no hits
 		Hits<DataWithTokenizedTextSearchAnalyzer> hits = search(Query.select(DataWithTokenizedTextSearchAnalyzer.class)
 				.where(Expressions.dismax(
-					Expressions.matchTextAll("text.tokenized", "barbecue"),
+					Expressions.matchTextAll("text.tokenized", "barbecue").withIgnoreStopwords(false),
 					Expressions.matchTextAll("text.tokenized", "calculus").withSynonyms(false)
 				))
 				.limit(Integer.MAX_VALUE)
