@@ -92,7 +92,7 @@ public final class TextPredicate extends Predicate {
 		return this;
 	}
 	
-	public Boolean ignoreStopWords() {
+	public Boolean ignoreStopwords() {
 		return ignoreStopwords;
 	}
 	
