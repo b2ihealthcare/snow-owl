@@ -176,7 +176,7 @@ public class AnalyzerTest extends BaseIndexTest {
 		Hits<DataWithTokenizedTextSearchAnalyzer> hits = search(Query.select(DataWithTokenizedTextSearchAnalyzer.class)
 				.where(Expressions.dismax(
 					Expressions.matchTextAll("text.tokenized", "barbecue").withIgnoreStopwords(false),
-					Expressions.matchTextAll("text.tokenized", "calculus").withSynonyms(false)
+					Expressions.matchTextAll("text.tokenized", "calculus").withSynonyms(false).withIgnoreStopwords(false)
 				))
 				.limit(Integer.MAX_VALUE)
 				.build());
