@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2019-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,7 @@ package com.b2international.snowowl.core.rest.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.MethodParameter;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.ResponseEntity.BodyBuilder;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.context.request.async.WebAsyncUtils;
@@ -30,6 +28,8 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.events.util.Response;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * @since 7.2
@@ -54,7 +54,7 @@ public class PromiseMethodReturnValueHandler implements HandlerMethodReturnValue
 			final Promise<?> promise = (Promise<?>) returnValue;
 			final DeferredResult<ResponseEntity<?>> result = new DeferredResult<>();
 			promise
-				.thenRespond(promiseResponse -> setDeferredResult(result, promiseResponse))
+				.thenRespond(promiseResponse -> setDeferredResult(result, promiseResponse, webRequest))
 				.fail(err -> {
 					if (result.isSetOrExpired()) {
 						LOG.warn("Deferred result is already set or expired, could not deliver Throwable.", err);
@@ -70,31 +70,28 @@ public class PromiseMethodReturnValueHandler implements HandlerMethodReturnValue
 		}
 	}
 
-	private Response<?> setDeferredResult(DeferredResult<ResponseEntity<?>> result, Response<?> promiseResponse) {
+	private Response<?> setDeferredResult(DeferredResult<ResponseEntity<?>> result, Response<?> promiseResponse, NativeWebRequest webRequest) {
 		if (result.isSetOrExpired()) {
 			LOG.warn("Deferred result is already set or expired, could not deliver result {}.", promiseResponse);
-		} else { 
+		} else {
 			final Object body = promiseResponse.getBody();
 			final ResponseEntity<?> response;
 			if (body instanceof ResponseEntity<?> b) {
-				// return a custom ResponseEntity, copy it and apply headers returned from the system
-				HttpHeaders headers = b.getHeaders();
-				// append headers returned from system
-				promiseResponse.getHeaders().forEach((headerName, headerValue) -> {
-					headers.set(headerName, headerValue);
-				});
-				response = new ResponseEntity<>(b.getBody(), headers, b.getStatusCode());
-				
+				// returning a standard object as response, with the given status code and without the headers to prevent header duplication
+				response = ResponseEntity.status(b.getStatusCode()).body(b.getBody());
 			} else {
-				// returning a standard object as reponse, use HTTP 200 OK
-				BodyBuilder responseBuilder = ResponseEntity.ok();
-				// append headers returned from system
-				promiseResponse.getHeaders().forEach((headerName, headerValue) -> {
-					responseBuilder.header(headerName, headerValue);
-				});
-				response = responseBuilder
-						.body(body);
+				// returning a standard object as response, use HTTP 200 OK
+				response = ResponseEntity.ok().body(body);
 			}
+			
+			// append headers returned from system directly into the HTTP Response
+			// see Spring Security issue not being able to properly prevent duplicate caching headers
+			// https://github.com/spring-projects/spring-security/issues/12865 
+			promiseResponse.getHeaders().forEach((headerName, headerValue) -> {
+				// XXX using set header here, for most of our use cases we only need a single response header, so overwrite anything that has been injected by Spring earlier
+				webRequest.getNativeResponse(HttpServletResponse.class).setHeader(headerName, headerValue);
+			});
+			
 			result.setResult(response);
 		}
 		return null;
