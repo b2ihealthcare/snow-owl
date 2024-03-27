@@ -230,11 +230,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 
 		try {
 			
-			RepositoryRequests.branching()
-				.prepareGet(expectedBranchPath)
-				.build(TOOLING_ID)
-				.execute(Services.bus())
-				.getSync();
+			getBranch(expectedBranchPath);
 			
 			fail("Branch " + expectedBranchPath + " already exists");
 			
@@ -250,11 +246,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		try {
 			
 			// Check if the branch has been created
-			RepositoryRequests.branching()
-				.prepareGet(expectedBranchPath)
-				.build(TOOLING_ID)
-				.execute(Services.bus())
-				.getSync();
+			getBranch(expectedBranchPath);
 			
 		} catch (NotFoundException e) {
 			fail("Branch " + expectedBranchPath + " did not get created as part of code system creation");
@@ -341,11 +333,7 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		
 		// Check if the branch has been deleted
 		String branch = Branch.get(Branch.MAIN_PATH, codeSystemId);
-		assertThat(RepositoryRequests.branching()
-			.prepareGet(branch)
-			.build(TOOLING_ID)
-			.execute(Services.bus())
-			.getSync()
+		assertThat(getBranch(branch)
 			.isDeleted()).isTrue();
 	}
 	
@@ -363,22 +351,14 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		assertCodeSystemGet(codeSystemId).statusCode(404);
 		
 		String branch = Branch.get(Branch.MAIN_PATH, codeSystemId);
-		assertThat(RepositoryRequests.branching()
-				.prepareGet(branch)
-				.build(TOOLING_ID)
-				.execute(Services.bus())
-				.getSync()
+		assertThat(getBranch(branch)
 				.isDeleted()).isTrue();
 			
 		CodeSystemVersionRestRequests.assertGetVersion(codeSystemId, "v1").statusCode(404);
 		
 		// Check if the branch has been deleted
 		String versionBranch = Branch.get(Branch.MAIN_PATH, codeSystemId, "v1");
-		assertThat(RepositoryRequests.branching()
-				.prepareGet(versionBranch)
-				.build(TOOLING_ID)
-				.execute(Services.bus())
-				.getSync()
+		assertThat(getBranch(versionBranch)
 				.isDeleted()).isTrue();
 	}
 	
@@ -599,6 +579,53 @@ public class CodeSystemApiTest extends BaseResourceApiTest {
 		assertCodeSystemVersionedGet(codeSystemId, "v1")
 			.statusCode(200)
 			.body("status", equalTo("active"));
+	}
+	
+	@Test
+	public void codesystem36_DeleteAndCreateAgain() throws Exception {
+		final String codeSystemId = "cs36";
+		createCodeSystem(prepareCodeSystemCreateRequestBody(codeSystemId));
+		assertCodeSystemGet(codeSystemId)
+			.statusCode(200);
+		
+		// version codesystem
+		final String effectiveTime = LocalDate.now().toString();
+		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v1", effectiveTime))
+			.statusCode(201);
+		
+		assertCodeSystemDelete(codeSystemId)
+			.statusCode(204);
+		assertCodeSystemGet(codeSystemId)
+			.statusCode(404);
+		
+		String branch = Branch.get(Branch.MAIN_PATH, codeSystemId);
+		assertThat(getBranch(branch).isDeleted())
+			.isTrue();
+			
+		CodeSystemVersionRestRequests.assertGetVersion(codeSystemId, "v1")
+			.statusCode(404);
+		
+		// Check if the version branch has been deleted
+		String versionBranch = Branch.get(Branch.MAIN_PATH, codeSystemId, "v1");
+		assertThat(getBranch(versionBranch).isDeleted())
+			.isTrue();
+		
+		// recreate with the same ID
+		createCodeSystem(prepareCodeSystemCreateRequestBody(codeSystemId));
+		assertCodeSystemGet(codeSystemId)
+			.statusCode(200);
+		
+		// version with the same version
+		assertVersionCreated(prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v1", effectiveTime))
+			.statusCode(201);
+	}
+
+	private Branch getBranch(String branch) {
+		return RepositoryRequests.branching()
+				.prepareGet(branch)
+				.build(TOOLING_ID)
+				.execute(Services.bus())
+				.getSync();
 	}
 	
 	private long getCodeSystemCreatedAt(final String id) {
