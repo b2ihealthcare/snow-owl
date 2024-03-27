@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ public class SnomedApiCacheControlTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void cacheControlVersioned() throws Exception {
-		assertSearchConcepts(getDefaultSnomedResourceUri().withPath("2002-01-31"), Map.of(), 10)
+		assertSearchConcepts(getDefaultSnomedResourceUri().withPath("2002-01-31"), Map.of(), 1)
 			.statusCode(200)
 			.header("Cache-Control", "s-maxage=0,max-age=0,must-revalidate")
 			.header("ETag", "TODO");
@@ -37,7 +37,7 @@ public class SnomedApiCacheControlTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void cacheControlUnversioned() throws Exception {
-		assertSearchConcepts(getDefaultSnomedResourceUri(), Map.of(), 10)
+		assertSearchConcepts(getDefaultSnomedResourceUri(), Map.of(), 1)
 			.statusCode(200)
 			.header("Cache-Control", "s-maxage=0,max-age=0,must-revalidate")
 			.header("ETag", "TODO");
