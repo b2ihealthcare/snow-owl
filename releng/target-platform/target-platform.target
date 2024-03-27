@@ -44,10 +44,10 @@
 <repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20180905201904/repository"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.codehaus.groovy.headless.feature.feature.group" version="2.9.2.xx-201801060157-e43j8-RELEASE"/>
-<unit id="org.codehaus.groovy.jdt.patch.feature.group" version="2.9.2.xx-201801060157-e43j8-RELEASE"/>
-<unit id="org.codehaus.groovy24.feature.feature.group" version="2.9.2.xx-201801060157-e43j8-RELEASE"/>
-<repository location="https://dist.springsource.org/release/GRECLIPSE/e4.3-j8"/>
+<unit id="org.codehaus.groovy.eclipse.feature.feature.group" version="2.9.2.xx-201801081619-e43-RELEASE"/>
+<unit id="org.codehaus.groovy.jdt.patch.feature.group" version="2.9.2.xx-201801081619-e43-RELEASE"/>
+<unit id="org.codehaus.groovy24.feature.feature.group" version="2.9.2.xx-201801081619-e43-RELEASE"/>
+<repository location="https://groovy.jfrog.io/artifactory/plugins-release/e4.3"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.emf.sdk.feature.group" version="2.12.0.v20160526-0356"/>
