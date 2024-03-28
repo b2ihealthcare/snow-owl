@@ -16,13 +16,21 @@
 package com.b2international.snowowl.snomed.core.rest.cache;
 
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.childUnderRootWithDefaults;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.JSON_UTF8;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.generateToken;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenRequestWithToken;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.UUID;
 
 import org.elasticsearch.core.Map;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
+import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 
 /**
@@ -65,6 +73,52 @@ public class SnomedApiCacheControlTest extends AbstractSnomedApiTest {
 				.header("ETag");
 		
 		assertThat(eTagAfterCommit).isNotEqualTo(eTagBeforeCommit);
+	}
+	
+	@Test
+	public void notModifiedResponseWhenSendingETagInIfNoneMatchHeader() throws Exception {
+		String eTag = assertSearchConcepts(SnomedContentRule.SNOMEDCT.withPath("2002-01-31"), Map.of(), 1)
+				.statusCode(200)
+				.extract()
+				.header("ETag");
+		
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.contentType(JSON_UTF8)
+			.queryParams(Map.of())
+			.header("If-None-Match", eTag)
+			.get("/{path}/concepts", SnomedContentRule.SNOMEDCT.withPath("2002-01-31").withoutResourceType())
+			.then()
+			.statusCode(304);
+	}
+	
+	@Test
+	public void reevaluateRequestIfNoneMatchHeaderValuesDoNotMatch() throws Exception {
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.contentType(JSON_UTF8)
+			.queryParams(Map.of())
+			.header("If-None-Match", UUID.randomUUID().toString()) // random string ETag
+			.get("/{path}/concepts", SnomedContentRule.SNOMEDCT.withPath("2002-01-31").withoutResourceType())
+			.then()
+			.statusCode(200);
+	}
+	
+	@Test
+	public void unauthorizedAccessShouldBeHonored() throws Exception {
+		String eTag = assertSearchConcepts(SnomedContentRule.SNOMEDCT.withPath("2002-01-31"), Map.of(), 1)
+			.statusCode(200)
+			.extract()
+			.header("ETag");
+		
+		String accessTokenWithoutSnomedAccess = generateToken(Permission.requireAll(Permission.OPERATION_BROWSE, UUID.randomUUID().toString()));
+		
+		givenRequestWithToken(SnomedApiTestConstants.SCT_API, accessTokenWithoutSnomedAccess)
+			.contentType(JSON_UTF8)
+			.queryParams(Map.of())
+			.header("If-None-Match", eTag)
+			.get("/{path}/concepts", SnomedContentRule.SNOMEDCT.withPath("2002-01-31").withoutResourceType())
+			.then()
+			.assertThat()
+			.statusCode(404); // no access should not report 304 Not Modified even if eTag value matches
 	}
 	
 }
