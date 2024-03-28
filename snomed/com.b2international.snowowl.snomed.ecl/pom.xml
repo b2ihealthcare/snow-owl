@@ -43,7 +43,17 @@
 					<dependency>
 					    <groupId>org.eclipse.platform</groupId>
 					    <artifactId>org.eclipse.equinox.common</artifactId>
-					    <version>3.10.0</version>
+					    <version>3.8.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.equinox.registry</artifactId>
+						<version>3.6.100</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.core.runtime</artifactId>
+						<version>3.12.0</version>
 					</dependency>
 					<dependency>
 					    <groupId>org.eclipse.emf</groupId>
