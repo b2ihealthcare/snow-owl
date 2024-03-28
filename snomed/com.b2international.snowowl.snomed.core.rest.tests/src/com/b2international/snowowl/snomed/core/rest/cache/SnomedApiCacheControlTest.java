@@ -15,24 +15,27 @@
  */
 package com.b2international.snowowl.snomed.core.rest.cache;
 
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.childUnderRootWithDefaults;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.elasticsearch.core.Map;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
-import com.b2international.snowowl.test.commons.rest.BranchBase;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 
 /**
- * @since 8.10
+ * @since 9.2
  */
-@BranchBase(isolateTests = false)
 public class SnomedApiCacheControlTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void cacheControlVersioned() throws Exception {
-		assertSearchConcepts(getDefaultSnomedResourceUri().withPath("2002-01-31"), Map.of(), 1)
+		assertSearchConcepts(SnomedContentRule.SNOMEDCT.withPath("2002-01-31"), Map.of(), 1)
 			.statusCode(200)
 			.header("Cache-Control", "s-maxage=0,max-age=0,must-revalidate")
-			.header("ETag", "TODO");
+			.header("ETag", CoreMatchers.notNullValue());
 	}
 	
 	@Test
@@ -40,7 +43,28 @@ public class SnomedApiCacheControlTest extends AbstractSnomedApiTest {
 		assertSearchConcepts(getDefaultSnomedResourceUri(), Map.of(), 1)
 			.statusCode(200)
 			.header("Cache-Control", "s-maxage=0,max-age=0,must-revalidate")
-			.header("ETag", "TODO");
+			.header("ETag", CoreMatchers.notNullValue());
+	}
+	
+	@Test
+	public void eTagGetsUpdatedAfterCommit() throws Exception {
+		String eTagBeforeCommit = assertSearchConcepts(getDefaultSnomedResourceUri(), Map.of(), 1)
+			.statusCode(200)
+			.header("Cache-Control", "s-maxage=0,max-age=0,must-revalidate")
+			.header("ETag", CoreMatchers.notNullValue())
+			.extract()
+			.header("ETag");
+		
+		createConcept(branchPath, childUnderRootWithDefaults());
+		
+		String eTagAfterCommit = assertSearchConcepts(getDefaultSnomedResourceUri(), Map.of(), 1)
+				.statusCode(200)
+				.header("Cache-Control", "s-maxage=0,max-age=0,must-revalidate")
+				.header("ETag", CoreMatchers.notNullValue())
+				.extract()
+				.header("ETag");
+		
+		assertThat(eTagAfterCommit).isNotEqualTo(eTagBeforeCommit);
 	}
 	
 }
