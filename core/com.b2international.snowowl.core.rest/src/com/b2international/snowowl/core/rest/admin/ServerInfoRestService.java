@@ -15,10 +15,9 @@
  */
 package com.b2international.snowowl.core.rest.admin;
 
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.core.ServerInfo;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -33,7 +32,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * @since 5.8
  */
 @Tag(description="Administration", name = CoreApiConfig.ADMINISTRATION)
-@Controller
+@RestController
 @RequestMapping(value = "/info") 
 public class ServerInfoRestService extends AbstractRestService {
 
@@ -42,7 +41,7 @@ public class ServerInfoRestService extends AbstractRestService {
 		description="Retrieves information about the running server, including version, available repositories, etc."
 	)
 	@RequestMapping(method = { RequestMethod.GET, RequestMethod.HEAD }, produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody Promise<ServerInfo> info() {
+	public Promise<ServerInfo> info() {
 		return RepositoryRequests.prepareGetServerInfo()
 				.buildAsync()
 				.execute(getBus());

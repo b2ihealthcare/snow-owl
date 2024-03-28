@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.core.rest;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -28,6 +27,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.ImmutableSet;
 
 import io.restassured.http.ContentType;
@@ -58,13 +58,12 @@ public abstract class SnomedClassificationRestRequests {
 				.contentType(ContentType.JSON)
 				.body(requestBody)
 				.post("/classifications")
-				.then();
+				.then()
+				.log().ifValidationFails();
 	}
 
 	public static String getClassificationJobId(ValidatableResponse response) {
-		return lastPathSegment(response.statusCode(201)
-				.extract()
-				.header("Location"));
+		return RestExtensions.assertCreated(response);
 	}
 
 	public static ValidatableResponse getClassification(IBranchPath branchPath, String classificationId) {

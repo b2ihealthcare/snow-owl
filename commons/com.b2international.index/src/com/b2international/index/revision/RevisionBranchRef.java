@@ -24,10 +24,12 @@ import java.util.stream.Collectors;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.google.common.base.Charsets;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.hash.Hashing;
 
 /**
  * Reference to a set of revision branch segments to query the contents visible from the branch at a given time.
@@ -216,6 +218,13 @@ public final class RevisionBranchRef {
 				.filter(segment -> segment.isBefore(timestamp)) // consider segments that are before the currently desired timestamp
 				.map(segment -> segment.restrictEnd(timestamp))
 				.collect(Collectors.toCollection(TreeSet::new)), deletedBranch);
+	}
+
+	/**
+	 * @return an ETag value for this branch reference
+	 */
+	public String eTag() {
+		return Hashing.murmur3_128().hashString(toString(), Charsets.UTF_8).toString();
 	}
 
 }

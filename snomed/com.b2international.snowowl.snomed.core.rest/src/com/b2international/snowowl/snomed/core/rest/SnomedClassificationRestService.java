@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -49,7 +48,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * @since 1.0
  */
 @Tag(description="Classifications", name = SnomedApiConfig.CLASSIFICATIONS)
-@Controller
+@RestController
 @RequestMapping(value = "/classifications")
 public class SnomedClassificationRestService extends AbstractRestService {
 
@@ -66,7 +65,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "404", description = "Branch not found")
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody Promise<ClassificationTasks> getAllClassificationRuns(
+	public Promise<ClassificationTasks> getAllClassificationRuns(
 			@Parameter(description = "The resource path", required = true)
 			@RequestParam(value="path", required=false) 
 			final String path,
@@ -145,7 +144,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "404", description = "Branch or classification not found")
 	})
 	@GetMapping(value = "/{classificationId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody Promise<ClassificationTask> getClassificationRun(
+	public Promise<ClassificationTask> getClassificationRun(
 			@Parameter(description ="The classification identifier")
 			@PathVariable(value="classificationId") 
 			final String classificationId) {
@@ -165,7 +164,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "404", description = "Branch or classification not found")
 	})
 	@GetMapping(value = "/{classificationId}/equivalent-concepts", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody Promise<EquivalentConceptSets> getEquivalentConceptSets(
+	public Promise<EquivalentConceptSets> getEquivalentConceptSets(
 			@Parameter(description ="The classification identifier")
 			@PathVariable(value="classificationId") 
 			final String classificationId,
@@ -204,7 +203,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 	@GetMapping(
 			value = "/{classificationId}/relationship-changes", 
 			produces = { AbstractRestService.JSON_MEDIA_TYPE, AbstractRestService.CSV_MEDIA_TYPE })
-	public @ResponseBody Promise<RelationshipChanges> getRelationshipChanges(
+	public Promise<RelationshipChanges> getRelationshipChanges(
 			@Parameter(description ="The classification identifier")
 			@PathVariable(value="classificationId") 
 			final String classificationId,

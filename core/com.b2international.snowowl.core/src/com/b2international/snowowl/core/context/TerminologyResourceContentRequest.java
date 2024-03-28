@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2020-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,24 @@
  */
 package com.b2international.snowowl.core.context;
 
+import java.util.Objects;
+
+import com.b2international.commons.exceptions.NotModifiedException;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.util.RequestHeaders;
+import com.b2international.snowowl.core.events.util.ResponseHeaders;
+import com.b2international.snowowl.core.rate.ApiConfiguration;
 import com.b2international.snowowl.core.request.BranchRealtimeContentRequest;
 import com.b2international.snowowl.core.request.BranchSnapshotContentRequest;
 import com.b2international.snowowl.core.request.RepositoryRequest;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver.PathWithVersion;
+import com.google.common.base.Strings;
 
 /**
  * @since 7.5
@@ -60,7 +68,32 @@ public final class TerminologyResourceContentRequest<R> extends DelegatingReques
 		}
 		
 		return new RepositoryRequest<R>(resource.getToolingId(),
-			snapshot ? new BranchSnapshotContentRequest<>(path, next()) : new BranchRealtimeContentRequest<>(path, next())
+			snapshot ? new BranchSnapshotContentRequest<>(path, nextWithCaching()) : new BranchRealtimeContentRequest<>(path, next())
 		).execute(context);
+	}
+
+	private Request<BranchContext, R> nextWithCaching() {
+		return ctx -> {
+			
+			final String eTag = ctx.service(RevisionSearcher.class).ref().eTag();
+			
+			// before executing the request, check whether we have an If-None-Match header set in the incoming request
+			// if yes, check the current ETag with any of the attached values, if none matches evaluate the query otherwise send back HTTP 304
+			String ifNoneMatchHeaderValue = ctx.service(RequestHeaders.class).header(ApiConfiguration.IF_NONE_MATCH_HEADER);
+			if (!Strings.isNullOrEmpty(ifNoneMatchHeaderValue) && Objects.equals(ifNoneMatchHeaderValue.replaceAll("\"", ""), eTag)) {
+				throw new NotModifiedException();
+			}
+			
+			R response = next().execute(ctx);
+			
+			// once we have the response ready calculate Cache-Control and ETag headers
+			final ApiConfiguration apiConfiguration = ctx.service(ApiConfiguration.class);
+			final ResponseHeaders responseHeaders = ctx.service(ResponseHeaders.class);
+			responseHeaders.set(ApiConfiguration.ETAG_HEADER, eTag);
+			// configure HTTP Cache-Control headers here using the currently configured global api.cache_control value
+			responseHeaders.set(ApiConfiguration.CACHE_CONTROL_HEADER, apiConfiguration.getCacheControl());
+			
+			return response;
+		};
 	}
 }

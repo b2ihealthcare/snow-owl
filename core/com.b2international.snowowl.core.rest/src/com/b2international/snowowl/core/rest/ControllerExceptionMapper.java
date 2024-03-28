@@ -112,6 +112,12 @@ public class ControllerExceptionMapper {
 	}
 	
 	@ExceptionHandler
+	@ResponseStatus(HttpStatus.NOT_MODIFIED)
+	public ResponseEntity<Void> handle(final NotModifiedException e) {
+		return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
+	}
+	
+	@ExceptionHandler
 	@ResponseStatus(HttpStatus.UNAUTHORIZED)
 	public ResponseEntity<RestApiError> handle(final UnauthorizedException ex) {
 		final ApiError err = ex.toApiError();
