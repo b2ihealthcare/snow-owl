@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.core.rest.util;
 
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Stream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.MethodParameter;
@@ -26,8 +30,10 @@ import org.springframework.web.method.support.AsyncHandlerMethodReturnValueHandl
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.events.util.Response;
+import com.google.common.collect.Iterables;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -76,25 +82,43 @@ public class PromiseMethodReturnValueHandler implements HandlerMethodReturnValue
 		} else {
 			final Object body = promiseResponse.getBody();
 			final ResponseEntity<?> response;
+
+			final Stream<Map.Entry<String, String>> responseHeaders;
+			
 			if (body instanceof ResponseEntity<?> b) {
 				// returning a standard object as response, with the given status code and without the headers to prevent header duplication
 				response = ResponseEntity.status(b.getStatusCode()).body(b.getBody());
+				responseHeaders = Stream.concat(promiseResponse.getHeaders().entrySet().stream(), b.getHeaders().isEmpty() ? Stream.empty() : flattenHttpHeaders(b));
 			} else {
 				// returning a standard object as response, use HTTP 200 OK
 				response = ResponseEntity.ok().body(body);
+				responseHeaders = promiseResponse.getHeaders().entrySet().stream();
 			}
 			
 			// append headers returned from system directly into the HTTP Response
 			// see Spring Security issue not being able to properly prevent duplicate caching headers
 			// https://github.com/spring-projects/spring-security/issues/12865 
-			promiseResponse.getHeaders().forEach((headerName, headerValue) -> {
+			responseHeaders.forEach((entry) -> {
 				// XXX using set header here, for most of our use cases we only need a single response header, so overwrite anything that has been injected by Spring earlier
-				webRequest.getNativeResponse(HttpServletResponse.class).setHeader(headerName, headerValue);
+				webRequest.getNativeResponse(HttpServletResponse.class).setHeader(entry.getKey(), entry.getValue());
 			});
 			
 			result.setResult(response);
 		}
 		return null;
+	}
+
+	private Stream<Entry<String, String>> flattenHttpHeaders(ResponseEntity<?> b) {
+		return b.getHeaders()
+				.entrySet()
+				.stream()
+				.map(entry -> {
+					// raise an error if we'd like to set a multi-valued HTTP response header
+					if (entry.getValue().size() > 1) {
+						throw new SnowowlRuntimeException("Multi-valued response headers are not supported yet");
+					}
+					return Map.entry(entry.getKey(), Iterables.getFirst(entry.getValue(), null));
+				});
 	}
 
 	@Override
