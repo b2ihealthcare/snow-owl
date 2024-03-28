@@ -236,6 +236,7 @@ public class RestExtensions {
 	
 	public static String assertCreated(ValidatableResponse response) {
 		return lastPathSegment(response.statusCode(201)
+				.header("Location", CoreMatchers.notNullValue())
 				.extract()
 				.header("Location"));
 	}
