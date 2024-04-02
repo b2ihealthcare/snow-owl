@@ -21,39 +21,42 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.collect.MapMaker;
 
-import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
 
 /**
+ * For more information see Bucket4j reference: https://bucket4j.com/8.10.1/toc.html#bandwidth
+ * 
  * @since 7.2
  */
 final class Bucket4jRateLimiter implements RateLimiter {
 
-	private final ApiConfiguration configuration;
+	private final RateLimitConfig configuration;
 	private final ConcurrentMap<String, Bucket> bucketByUser;
 
-	public Bucket4jRateLimiter(ApiConfiguration configuration) {
+	public Bucket4jRateLimiter(RateLimitConfig configuration) {
 		this.configuration = configuration;
 		this.bucketByUser = new MapMaker().makeMap();
 	}
 
 	@Override
 	public RateLimitConsumption consume(String username) {
-		Bucket bucket = bucketByUser.get(username);
-		if (bucket == null) {
-			bucket = createNewBucket();
-			bucketByUser.put(username, bucket);
-		}
-		
+		final Bucket bucket = bucketByUser.computeIfAbsent(username, this::createNewBucket);
 		final ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
 		return new RateLimitConsumption(probe.isConsumed(), probe.getRemainingTokens(), TimeUnit.NANOSECONDS.toSeconds(probe.getNanosToWaitForRefill()));
 	}
 
-	private Bucket createNewBucket() {
-		long overdraft = configuration.getOverdraft();
-		Bandwidth bandwidth = Bandwidth.builder().capacity(overdraft).refillGreedy(configuration.getRefillRate(), Duration.ofSeconds(1)).build();
-		return Bucket.builder().addLimit(bandwidth).build();
+	/*
+	 * userId argument is currently unused, tempting to assign it to the Bandwidth as optional identifier via #id(...), but that only increased memory consumption without any actual gain
+	 */
+	private Bucket createNewBucket(String userId) {
+		return Bucket.builder()
+				.addLimit(bandwidth -> 
+					bandwidth
+						.capacity(configuration.getCapacity())
+						.refillGreedy(configuration.getRefillRate(), Duration.ofSeconds(1))
+				)
+				.build();
 	}
 
 }

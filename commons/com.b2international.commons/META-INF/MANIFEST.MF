@@ -120,7 +120,7 @@ Import-Package: jakarta.el;version="[5.0.1,6.0.0)",
  jakarta.validation.valueextraction;version="[3.0.2,4.0.0)",
  org.slf4j;version="2.0.0"
 Bundle-ClassPath: .,
- lib/bucket4j-core-8.7.0.jar,
+ lib/bucket4j-core-8.10.1.jar,
  lib/zjsonpatch-0.4.16.jar,
  lib/jgrapht-core-1.5.2.jar,
  lib/jheaps-0.14.jar,

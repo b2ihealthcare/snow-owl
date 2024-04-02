@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2023-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,8 @@ import com.b2international.commons.exceptions.TooManyRequestsException;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.events.util.Response;
-import com.b2international.snowowl.core.rate.ApiConfiguration;
 import com.b2international.snowowl.core.rate.ApiPlugin;
+import com.b2international.snowowl.core.rate.RateLimitConfig;
 import com.b2international.snowowl.core.rate.RateLimitConsumption;
 import com.b2international.snowowl.core.rate.RateLimiter;
 import com.b2international.snowowl.core.request.ResourceRequests;
@@ -55,11 +55,11 @@ public class RateLimitTest {
 	public void setup() throws Exception {
 		// inject rate limit feature into the system until we run the rate limit tests
 		Environment env = ApplicationContext.getServiceForClass(Environment.class);
-		ApiConfiguration apiConfig = new ApiConfiguration();
+		RateLimitConfig rateLimitConfig = new RateLimitConfig();
 		// this means that the user is able to perform 2 requests at a time, with one second refill rate (default value, but just in case fix it here as well)
-		apiConfig.setOverdraft(2L);
-		apiConfig.setRefillRate(1L);
-		new ApiPlugin().initRateLimiter(env, apiConfig);
+		rateLimitConfig.setCapacity(2L);
+		rateLimitConfig.setRefillRate(1L);
+		new ApiPlugin().initRateLimiter(env, rateLimitConfig);
 		this.rateLimiter = env.service(RateLimiter.class);
 		
 	}

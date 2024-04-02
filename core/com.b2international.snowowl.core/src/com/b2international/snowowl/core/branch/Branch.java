@@ -246,6 +246,5 @@ public final class Branch implements MetadataHolder, Serializable {
 			.append(", children=").append(children).append("]");
 		return builder.toString();
 	}
-	
-		
+
 }

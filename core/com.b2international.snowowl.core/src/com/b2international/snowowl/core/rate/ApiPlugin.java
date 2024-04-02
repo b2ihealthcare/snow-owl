@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2019-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,14 +36,15 @@ public class ApiPlugin extends Plugin {
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		ApiConfiguration apiConfig = configuration.getModuleConfig(ApiConfiguration.class);
-		initRateLimiter(env, apiConfig);
+		env.services().registerService(ApiConfiguration.class, apiConfig);
+		initRateLimiter(env, apiConfig.getRateLimit());
 	}
 
 	@VisibleForTesting
-	public void initRateLimiter(Environment env, ApiConfiguration apiConfig) {
+	public void initRateLimiter(Environment env, RateLimitConfig config) {
 		final RateLimiter limiter;
-		if (apiConfig.getOverdraft() > 0L) {
-			limiter = new Bucket4jRateLimiter(apiConfig);
+		if (config.isEnabled()) {
+			limiter = new Bucket4jRateLimiter(config);
 		} else {
 			limiter = RateLimiter.NOOP;
 		}

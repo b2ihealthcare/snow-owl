@@ -34,6 +34,7 @@ import com.b2international.snowowl.snomed.core.request.*;
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedBranchingApiTest;
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedMergeApiTest;
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedMergeConflictTest;
+import com.b2international.snowowl.snomed.core.rest.cache.SnomedApiCacheControlTest;
 import com.b2international.snowowl.snomed.core.rest.classification.SnomedClassificationApiTest;
 import com.b2international.snowowl.snomed.core.rest.components.*;
 import com.b2international.snowowl.snomed.core.rest.ext.SnomedComponentEffectiveTimeRestoreTest;
@@ -125,6 +126,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedMrcmTest.class,
 	ResourceLockRequestTest.class,
 	ResourceSearchRequestTest.class,
+	// HTTP Caching
+	SnomedApiCacheControlTest.class
 })
 public class AllSnomedApiTests {
 
