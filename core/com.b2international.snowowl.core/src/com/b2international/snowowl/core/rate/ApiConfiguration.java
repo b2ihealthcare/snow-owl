@@ -63,10 +63,12 @@ public class ApiConfiguration {
 		this.http = http;
 	}
 
+	@JsonProperty("rate_limit")
 	public RateLimitConfig getRateLimit() {
 		return rateLimit;
 	}
 
+	@JsonProperty("rate_limit")
 	public void setRateLimit(RateLimitConfig rateLimit) {
 		this.rateLimit = rateLimit;
 	}

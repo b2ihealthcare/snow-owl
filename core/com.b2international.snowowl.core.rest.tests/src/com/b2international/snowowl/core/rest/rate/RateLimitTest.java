@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2023-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public class RateLimitTest {
 		Environment env = ApplicationContext.getServiceForClass(Environment.class);
 		RateLimitConfig rateLimitConfig = new RateLimitConfig();
 		// this means that the user is able to perform 2 requests at a time, with one second refill rate (default value, but just in case fix it here as well)
-		rateLimitConfig.setOverdraft(2L);
+		rateLimitConfig.setCapacity(2L);
 		rateLimitConfig.setRefillRate(1L);
 		new ApiPlugin().initRateLimiter(env, rateLimitConfig);
 		this.rateLimiter = env.service(RateLimiter.class);
