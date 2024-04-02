@@ -16,7 +16,7 @@
 package com.b2international.commons.exceptions;
 
 /**
- * @since 8.10
+ * @since 9.2
  */
 public class NotModifiedException extends ApiException {
 
