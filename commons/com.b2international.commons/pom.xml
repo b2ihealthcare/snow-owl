@@ -14,7 +14,7 @@
 
 	<properties>
 		<!-- Rate limiting -->
-		<bucket4j.version>8.7.0</bucket4j.version>
+		<bucket4j.version>8.10.1</bucket4j.version>
 		<!-- RFC 6902 JSON Patch implementation - zjsonpatch requires Jackson 2.14+ and Commons Collections 4.4 -->
 		<zjsonpatch.version>0.4.16</zjsonpatch.version>
 		<!-- Graph algorithms lib -->
@@ -123,7 +123,7 @@
 								jboss-logging,
 								picocli,
 								jsr305,
-								javax.annotation-api,
+								javax.annotation-api
 							</includeArtifactIds>
 							<outputDirectory>${basedir}/lib</outputDirectory>
 						</configuration>
