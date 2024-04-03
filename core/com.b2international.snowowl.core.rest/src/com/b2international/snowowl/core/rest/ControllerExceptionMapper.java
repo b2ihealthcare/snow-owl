@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.springframework.validation.BindException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingPathVariableException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -262,6 +263,17 @@ public class ControllerExceptionMapper {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public RestApiError handle(final MissingServletRequestPartException ex) {
+		return RestApiError.of(ApiError.builder(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
+	}
+	
+	/**
+	 * Exception handler for exceptions thrown due to required but missing query parameters.
+	 * @param ex
+	 * @return
+	 */
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public RestApiError handle(final MissingServletRequestParameterException ex) {
 		return RestApiError.of(ApiError.builder(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	
