@@ -674,7 +674,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			final String property = field.getName();
 			final Class<?> fieldType = NumericClassUtils.unwrapCollectionType(field);
 			
-			if (Map.class.isAssignableFrom(fieldType)) {
+			if (Map.class.isAssignableFrom(fieldType) || ObjectNode.class.isAssignableFrom(fieldType)) {
 				// allow dynamic mappings for dynamic objects like field using Map
 				final Map<String, Object> prop = newHashMap();
 				prop.put("type", "object");
