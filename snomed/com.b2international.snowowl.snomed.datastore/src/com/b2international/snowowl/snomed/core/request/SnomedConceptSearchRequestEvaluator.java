@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2020-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
@@ -27,12 +28,14 @@ import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
+import com.b2international.snowowl.core.domain.Description;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
 import com.b2international.snowowl.core.request.ExpandParser;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.SnomedDisplayTermType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Strings;
@@ -46,10 +49,11 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 	private Concept toConcept(ResourceURI codeSystem, SnomedConcept snomedConcept, String pt, boolean requestedExpand) {
 		final Concept concept = toConcept(codeSystem, snomedConcept, snomedConcept.getIconId(), pt, snomedConcept.getScore());
 		
-		SortedSet<String> alternativeTerms = snomedConcept.getPreferredDescriptions().stream()
-			.map(pd -> pd.getTerm())
-			.filter(term -> !Objects.equals(term, pt)) // leave the selected primary term out of the alternative terms list
-			.collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+		SortedSet<Description> alternativeTerms = snomedConcept.getPreferredDescriptions()
+				.stream()
+				.filter(pd -> !Objects.equals(pd.getTerm(), pt)) // leave the selected primary term out of the alternative terms list
+				.flatMap(this::generateAlternativeTerms)
+				.collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
 		
 		if (!alternativeTerms.isEmpty()) {
 			concept.setAlternativeTerms(alternativeTerms);
@@ -64,6 +68,13 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 		return concept;
 	}
 	
+	private Stream<Description> generateAlternativeTerms(SnomedDescription description) {
+		final String languageCode = description.getLanguageCode();
+		return description.getAcceptabilityMap().keySet().stream()
+				.map(refsetId -> new ExtendedLocale(languageCode, null, refsetId))
+				.map(language -> new Description(description.getTerm(), language.toString()));
+	}
+
 	@Override
 	public Concepts evaluate(ResourceURI uri, ServiceProvider context, Options search) {
 		
