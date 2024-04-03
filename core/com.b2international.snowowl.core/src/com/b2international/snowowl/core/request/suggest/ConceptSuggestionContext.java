@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2022-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.domain.DelegatingContext;
+import com.b2international.snowowl.core.domain.Description;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
@@ -139,7 +140,7 @@ public final class ConceptSuggestionContext extends DelegatingContext {
 			allTerms.add(concept.getTerm());
 		}
 		if (concept.getAlternativeTerms() != null) {
-			allTerms.addAll(concept.getAlternativeTerms());
+			concept.getAlternativeTerms().stream().map(Description::getTerm).forEach(allTerms::add);
 		}
 		return allTerms.build();
 	}
