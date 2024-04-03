@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,14 @@ package com.b2international.snowowl.snomed.fhir;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.Concept;
+import com.b2international.snowowl.core.domain.Description;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
 import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
@@ -39,6 +41,7 @@ import com.b2international.snowowl.snomed.core.SnomedDisplayTermType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.request.SnomedConceptSearchRequestEvaluator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
@@ -59,19 +62,24 @@ public final class SnomedFhirCodeSystemLookupConverter implements FhirCodeSystem
 	public List<Designation> expandDesignations(ServiceProvider context, CodeSystem codeSystem, Concept concept, LookupRequest request, String acceptLanguage) {
 		SnomedConcept snomedConcept = concept.getInternalConceptAs();
 		if (request.isPropertyRequested(SupportedCodeSystemRequestProperties.DESIGNATION)) {
-			List<Designation> designations = new ArrayList<>();
-			for (SnomedDescription description : snomedConcept.getDescriptions()) {
-				Coding coding = Coding.builder()
+			final SortedSet<Description> alternativeTerms = SnomedConceptSearchRequestEvaluator.generateAlternativeTerms(snomedConcept.getDescriptions());
+			// convert to Designation model
+			final List<Designation> designations = new ArrayList<>(alternativeTerms.size());
+			for (Description description : alternativeTerms) {
+				SnomedDescription snomedDescription = description.getInternalDescription();
+				// use context describes type of description
+				Coding use = Coding.builder()
 					.system(codeSystem.getUrl().getUriValue())
-					.code(description.getTypeId())
-					.display(SnomedDisplayTermType.PT.getLabel(description.getType()))
+					.code(snomedDescription.getTypeId())
+					.display(SnomedDisplayTermType.PT.getLabel(snomedDescription.getType()))
 					.build();
 				
 				designations.add(
 					Designation.builder()
-						.languageCode(description.getLanguageCode())
-						.use(coding)
+						// term and language code comes from the generated alternative term generic model
 						.value(description.getTerm())
+						.language(description.getLanguage())
+						.use(use)
 					.build()
 				);
 			}

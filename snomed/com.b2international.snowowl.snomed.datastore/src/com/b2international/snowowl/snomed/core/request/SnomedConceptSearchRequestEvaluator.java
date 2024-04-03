@@ -17,10 +17,8 @@ package com.b2international.snowowl.snomed.core.request;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
@@ -35,7 +33,7 @@ import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.SnomedDisplayTermType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Strings;
@@ -49,11 +47,7 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 	private Concept toConcept(ResourceURI codeSystem, SnomedConcept snomedConcept, String pt, boolean requestedExpand) {
 		final Concept concept = toConcept(codeSystem, snomedConcept, snomedConcept.getIconId(), pt, snomedConcept.getScore());
 		
-		SortedSet<Description> alternativeTerms = snomedConcept.getPreferredDescriptions()
-				.stream()
-				.filter(pd -> !Objects.equals(pd.getTerm(), pt)) // leave the selected primary term out of the alternative terms list
-				.flatMap(this::generateAlternativeTerms)
-				.collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+		SortedSet<Description> alternativeTerms = generateAlternativeTerms(snomedConcept.getPreferredDescriptions());
 		
 		if (!alternativeTerms.isEmpty()) {
 			concept.setAlternativeTerms(alternativeTerms);
@@ -68,11 +62,15 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 		return concept;
 	}
 	
-	private Stream<Description> generateAlternativeTerms(SnomedDescription description) {
-		final String languageCode = description.getLanguageCode();
-		return description.getAcceptabilityMap().keySet().stream()
-				.map(refsetId -> new ExtendedLocale(languageCode, null, refsetId))
-				.map(language -> new Description(description.getTerm(), language.toString()));
+	public static SortedSet<Description> generateAlternativeTerms(SnomedDescriptions descriptions) {
+		return descriptions.stream()
+				.flatMap(description -> {
+					final String languageCode = description.getLanguageCode();
+					return description.getAcceptabilityMap().keySet().stream()
+							.map(refsetId -> new ExtendedLocale(languageCode, null, refsetId))
+							.map(language -> new Description(description.getTerm(), language.toString()).withInternalDescription(description));
+				})
+				.collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
 	}
 
 	@Override
