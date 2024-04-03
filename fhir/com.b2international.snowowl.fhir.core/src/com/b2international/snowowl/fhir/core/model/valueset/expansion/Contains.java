@@ -15,21 +15,19 @@
  */
 package com.b2international.snowowl.fhir.core.model.valueset.expansion;
 
+import java.util.ArrayList;
 import java.util.Collection;
-
-import jakarta.validation.Valid;
 
 import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.model.valueset.Include;
-import com.b2international.snowowl.fhir.core.model.valueset.Compose.Builder;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.collect.Sets;
+
+import jakarta.validation.Valid;
 
 /**
  * The codes that are contained in the value set expansion.
@@ -67,8 +65,16 @@ public class Contains {
 	@JsonProperty
 	private Collection<Contains> contains;
 
-	Contains(Uri system, Boolean isAbstract, Boolean inactive, String version, Code code, String display, Collection<Designation> designations,
-			Collection<Contains> contains) {
+	Contains(
+		Uri system, 
+		Boolean isAbstract, 
+		Boolean inactive, 
+		String version, 
+		Code code, 
+		String display, 
+		Collection<Designation> designations,
+		Collection<Contains> contains) {
+		
 		this.system = system;
 		this.isAbstract = isAbstract;
 		this.inactive = inactive;
@@ -77,6 +83,7 @@ public class Contains {
 		this.display = display;
 		this.designations = designations;
 		this.contains = contains;
+		
 	}
 	
 	public Uri getSystem() {
@@ -183,9 +190,8 @@ public class Contains {
 		}
 		
 		public Builder addDesignation(final Designation designation) {
-			
 			if (designations == null) {
-				designations = Sets.newHashSet();
+				designations = new ArrayList<>();
 			}
 			designations.add(designation);
 			return this;
@@ -200,7 +206,7 @@ public class Contains {
 		
 		public Builder addContains(Contains content) {
 			if (contains == null) {
-				contains = Sets.newHashSet();
+				contains = new ArrayList<>();
 			}
 			contains.add(content);
 			return this;
