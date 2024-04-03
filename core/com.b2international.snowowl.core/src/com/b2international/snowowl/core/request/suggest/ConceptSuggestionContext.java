@@ -15,9 +15,7 @@
  */
 package com.b2international.snowowl.core.request.suggest;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.SortedSet;
+import java.util.*;
 import java.util.stream.Stream;
 
 import com.b2international.commons.collections.Collections3;
@@ -35,7 +33,6 @@ import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.domain.DelegatingContext;
 import com.b2international.snowowl.core.domain.Description;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 
 /**
@@ -134,15 +131,17 @@ public final class ConceptSuggestionContext extends DelegatingContext {
 		return locales;
 	}
 	
-	private List<String> getAllTerms(Concept concept) {
-		ImmutableList.Builder<String> allTerms = ImmutableList.<String> builder();
+	private Set<String> getAllTerms(Concept concept) {
+		final Set<String> allTerms = new HashSet<>();
+		
+		// just in case keep adding the selected display term even though the description list of the generic concept should already contain all descriptions, not just alternatives
 		if (concept.getTerm() != null) {
 			allTerms.add(concept.getTerm());
 		}
-		if (concept.getAlternativeTerms() != null) {
-			concept.getAlternativeTerms().stream().map(Description::getTerm).forEach(allTerms::add);
+		if (concept.getDescriptions() != null) {
+			concept.getDescriptions().stream().map(Description::getTerm).forEach(allTerms::add);
 		}
-		return allTerms.build();
+		return allTerms;
 	}
 
 	public Collection<String> exclusionQuery(ResourceURI resourceUri) {

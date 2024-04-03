@@ -33,6 +33,7 @@ import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.SnomedDisplayTermType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -43,35 +44,6 @@ import com.google.common.collect.ImmutableSortedSet;
  * @since 7.5
  */
 public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchRequestEvaluator {
-
-	private Concept toConcept(ResourceURI codeSystem, SnomedConcept snomedConcept, String pt, boolean requestedExpand) {
-		final Concept concept = toConcept(codeSystem, snomedConcept, snomedConcept.getIconId(), pt, snomedConcept.getScore());
-		
-		SortedSet<Description> alternativeTerms = generateAlternativeTerms(snomedConcept.getPreferredDescriptions());
-		
-		if (!alternativeTerms.isEmpty()) {
-			concept.setAlternativeTerms(alternativeTerms);
-		}
-		
-		concept.setActive(snomedConcept.isActive());
-		concept.setParentIds(snomedConcept.getParentIdsAsString());
-		concept.setAncestorIds(snomedConcept.getAncestorIdsAsString());
-		if (requestedExpand) {
-			concept.setInternalConcept(snomedConcept);
-		}
-		return concept;
-	}
-	
-	public static SortedSet<Description> generateAlternativeTerms(SnomedDescriptions descriptions) {
-		return descriptions.stream()
-				.flatMap(description -> {
-					final String languageCode = description.getLanguageCode();
-					return description.getAcceptabilityMap().keySet().stream()
-							.map(refsetId -> new ExtendedLocale(languageCode, null, refsetId))
-							.map(language -> new Description(description.getTerm(), language.toString()).withInternalDescription(description));
-				})
-				.collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
-	}
 
 	@Override
 	public Concepts evaluate(ResourceURI uri, ServiceProvider context, Options search) {
@@ -140,6 +112,44 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 			matches.getLimit(), 
 			matches.getTotal()
 		);
+	}
+	
+	private Concept toConcept(ResourceURI codeSystem, SnomedConcept snomedConcept, String pt, boolean requestedExpand) {
+		final Concept concept = toConcept(codeSystem, snomedConcept, snomedConcept.getIconId(), pt, snomedConcept.getScore());
+		
+		SortedSet<Description> descriptions = generateGenericDescriptions(snomedConcept.getPreferredDescriptions());
+		
+		if (!descriptions.isEmpty()) {
+			concept.setDescriptions(descriptions);
+		}
+		
+		concept.setActive(snomedConcept.isActive());
+		concept.setParentIds(snomedConcept.getParentIdsAsString());
+		concept.setAncestorIds(snomedConcept.getAncestorIdsAsString());
+		if (requestedExpand) {
+			concept.setInternalConcept(snomedConcept);
+		}
+		return concept;
+	}
+	
+	/**
+	 * Generates generic {@link Description} objects for each {@link SnomedDescription} in the given {@link SnomedDescriptions}. This method combines
+	 * the language code and each language reference set acceptability membership of the {@link SnomedDescription} to generate a generic
+	 * {@link Description} representation. The number of {@link Description}s generated can be higher than the given number of
+	 * {@link SnomedDescription}s.
+	 * 
+	 * @param descriptions
+	 * @return a {@link SortedSet} of {@link Description} objects, never <code>null</code>
+	 */
+	public static SortedSet<Description> generateGenericDescriptions(SnomedDescriptions descriptions) {
+		return descriptions.stream()
+				.flatMap(description -> {
+					final String languageCode = description.getLanguageCode();
+					return description.getAcceptabilityMap().keySet().stream()
+							.map(refsetId -> new ExtendedLocale(languageCode, null, refsetId))
+							.map(language -> new Description(description.getTerm(), language.toString()).withInternalDescription(description));
+				})
+				.collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
 	}
 	
 }

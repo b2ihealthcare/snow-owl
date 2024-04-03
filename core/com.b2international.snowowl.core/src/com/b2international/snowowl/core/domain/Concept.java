@@ -43,7 +43,7 @@ public final class Concept extends BaseComponent {
 	private Boolean active;
 	private String term;
 	private String iconId;
-	private SortedSet<Description> alternativeTerms;
+	private SortedSet<Description> descriptions;
 	
 	private List<String> parentIds;
 	private List<String> ancestorIds;
@@ -57,7 +57,7 @@ public final class Concept extends BaseComponent {
 			@JsonProperty("code") ComponentURI code, 
 			@JsonProperty("active") Boolean active, 
 			@JsonProperty("term") String term, 
-			@JsonProperty("alternativeTerms") SortedSet<Description> alternativeTerms, 
+			@JsonProperty("descriptions") SortedSet<Description> descriptions, 
 			@JsonProperty("iconId") String iconId, 
 			@JsonProperty("parentIds") List<String> parentIds, 
 			@JsonProperty("ancestorIds") List<String> ancestorIds,
@@ -66,7 +66,7 @@ public final class Concept extends BaseComponent {
 		setId(code.identifier());
 		setActive(active);
 		setTerm(term);
-		setAlternativeTerms(alternativeTerms);
+		setDescriptions(descriptions);
 		setIconId(iconId);
 		setScore(score);
 		setParentIds(parentIds);
@@ -106,8 +106,19 @@ public final class Concept extends BaseComponent {
 		this.iconId = iconId;
 	}
 	
+	/**
+	 * @param alternativeTerms
+	 * @deprecated deserialization only: if descriptions property is set via the constructor during deserialization then this ignores the incoming value, use {@link #setDescriptions(Collection)} instead
+	 */
+	@JsonProperty
 	public void setAlternativeTerms(Collection<Description> alternativeTerms) {
-		this.alternativeTerms = alternativeTerms == null ? null : Collections3.toImmutableSortedSet(alternativeTerms);
+		if (descriptions == null) {
+			setDescriptions(alternativeTerms);
+		}
+	}
+	
+	public void setDescriptions(Collection<Description> descriptions) {
+		this.descriptions = descriptions == null ? null : Collections3.toImmutableSortedSet(descriptions);
 	}
 	
 	public void setScore(Float score) {
@@ -116,9 +127,14 @@ public final class Concept extends BaseComponent {
 	
 	/**
 	 * @return optionally set alternative terms for this concept, may be <code>null</code> if there are not alternative terms present for this code
+	 * @deprecated serialization only for backward compatibility, use {@link #getDescriptions()} instead  
 	 */
 	public SortedSet<Description> getAlternativeTerms() {
-		return alternativeTerms;
+		return getDescriptions();
+	}
+	
+	public SortedSet<Description> getDescriptions() {
+		return descriptions;
 	}
 	
 	public Float getScore() {

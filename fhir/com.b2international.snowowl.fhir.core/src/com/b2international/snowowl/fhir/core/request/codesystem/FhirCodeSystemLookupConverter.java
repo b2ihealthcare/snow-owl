@@ -58,7 +58,7 @@ public interface FhirCodeSystemLookupConverter {
 	 */
 	default List<Designation> expandDesignations(ServiceProvider context, CodeSystem codeSystem, Concept concept, LookupRequest request, String acceptLanguage) {
 		if (request.isPropertyRequested(SupportedCodeSystemRequestProperties.DESIGNATION)) {
-			return Designation.fromDescriptions(concept.getAlternativeTerms());
+			return Designation.fromDescriptions(concept.getDescriptions());
 		} else {
 			return null;
 		}

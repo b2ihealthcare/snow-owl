@@ -62,7 +62,7 @@ public final class SnomedFhirCodeSystemLookupConverter implements FhirCodeSystem
 	public List<Designation> expandDesignations(ServiceProvider context, CodeSystem codeSystem, Concept concept, LookupRequest request, String acceptLanguage) {
 		SnomedConcept snomedConcept = concept.getInternalConceptAs();
 		if (request.isPropertyRequested(SupportedCodeSystemRequestProperties.DESIGNATION)) {
-			final SortedSet<Description> alternativeTerms = SnomedConceptSearchRequestEvaluator.generateAlternativeTerms(snomedConcept.getDescriptions());
+			final SortedSet<Description> alternativeTerms = SnomedConceptSearchRequestEvaluator.generateGenericDescriptions(snomedConcept.getDescriptions());
 			// convert to Designation model
 			final List<Designation> designations = new ArrayList<>(alternativeTerms.size());
 			for (Description description : alternativeTerms) {
