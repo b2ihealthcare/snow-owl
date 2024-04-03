@@ -32,6 +32,8 @@ public final class Description implements Comparable<Description> {
 	private final String term;
 	private final String language;
 	
+	private Object internalDescription;
+	
 	public Description(@JsonProperty("term") String term) {
 		this(term, null);
 	}
@@ -48,6 +50,15 @@ public final class Description implements Comparable<Description> {
 	
 	public String getLanguage() {
 		return language;
+	}
+	
+	public <T> T getInternalDescription() {
+		return (T) internalDescription;
+	}
+	
+	public Description withInternalDescription(Object internalDescription) {
+		this.internalDescription = internalDescription;
+		return this;
 	}
 	
 	@Override
