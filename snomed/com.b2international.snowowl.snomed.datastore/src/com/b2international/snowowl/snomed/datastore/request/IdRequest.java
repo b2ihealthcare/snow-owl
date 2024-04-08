@@ -45,6 +45,7 @@ import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.NamespaceConceptIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.NamespaceIdStrategy;
 import com.b2international.snowowl.snomed.datastore.index.entry.*;
+import com.google.common.base.Strings;
 import com.google.common.collect.*;
 
 /**
@@ -105,6 +106,7 @@ public final class IdRequest<C extends BranchContext, R> extends DelegatingReque
 						
 						final Set<String> refsetMemberIds = FluentIterable.from(categoryRequests)
 								.filter(SnomedRefSetMemberCreateRequest.class)
+								.filter(request -> !Strings.isNullOrEmpty(request.getId()))
 								.transform(request -> request.getId())
 								.toSet();
 						

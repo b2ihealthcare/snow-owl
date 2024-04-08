@@ -63,7 +63,7 @@ final class SnomedExtendedMapMemberCreateDelegate extends SnomedRefSetMemberCrea
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
 				.withModuleId(getModuleId())
-				.withRefSet(getReferenceSetId())
+				.withRefSet(getRefsetId())
 				.withMapTargetId(getComponentId(SnomedRf2Headers.FIELD_MAP_TARGET))
 				.withGroup(getProperty(SnomedRf2Headers.FIELD_MAP_GROUP, Integer.class))
 				.withPriority(getProperty(SnomedRf2Headers.FIELD_MAP_PRIORITY, Integer.class))

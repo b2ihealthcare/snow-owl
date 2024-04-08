@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,38 +28,38 @@ public abstract class SnomedComponentSearchRequestBuilder<B extends SnomedCompon
 	
 	/**
 	 * Filter matches by their active membership in the given reference set or ECL expression.
-	 * @param referenceSetIdOrECL
+	 * @param refsetIdOrEcl
 	 * @return
 	 */
-	public final B isActiveMemberOf(String referenceSetIdOrECL) {
-		return addOption(OptionKey.ACTIVE_MEMBER_OF, referenceSetIdOrECL);
+	public final B isActiveMemberOf(String refsetIdOrEcl) {
+		return addOption(OptionKey.ACTIVE_MEMBER_OF, refsetIdOrEcl);
 	}
 	
 	/**
 	 * Filter matches by their active membership in any of the given reference sets.
-	 * @param referenceSetIds
+	 * @param refsetIds
 	 * @return
 	 */
-	public final B isActiveMemberOf(Iterable<String> referenceSetIds) {
-		return addOption(OptionKey.ACTIVE_MEMBER_OF, referenceSetIds);
+	public final B isActiveMemberOf(Iterable<String> refsetIds) {
+		return addOption(OptionKey.ACTIVE_MEMBER_OF, refsetIds);
 	}
 	
 	/**
 	 * Filter matches by their membership in the given reference set or ECL expression. Matches both active and inactive memberships.
-	 * @param referenceSetIdOrECL
+	 * @param refsetIdOrEcl
 	 * @return
 	 */
-	public final B isMemberOf(String referenceSetIdOrECL) {
-		return addOption(OptionKey.MEMBER_OF, referenceSetIdOrECL);
+	public final B isMemberOf(String refsetIdOrEcl) {
+		return addOption(OptionKey.MEMBER_OF, refsetIdOrEcl);
 	}
 	
 	/**
 	 * Filter matches by their membership in any of the given reference sets. Matches both active and inactive memberships.
-	 * @param referenceSetIds
+	 * @param refsetIds
 	 * @return
 	 */
-	public final B isMemberOf(Iterable<String> referenceSetIds) {
-		return addOption(OptionKey.MEMBER_OF, referenceSetIds);
+	public final B isMemberOf(Iterable<String> refsetIds) {
+		return addOption(OptionKey.MEMBER_OF, refsetIds);
 	}
 	
 	/**

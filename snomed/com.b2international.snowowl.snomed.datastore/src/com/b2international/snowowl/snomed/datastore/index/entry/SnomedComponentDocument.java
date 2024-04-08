@@ -45,20 +45,20 @@ public abstract class SnomedComponentDocument extends SnomedDocument {
 			return matchAny(Fields.NAMESPACE, namespaces);
 		}
 		
-		public static final Expression memberOf(String referenceSetId) {
-			return exactMatch(Fields.MEMBER_OF, referenceSetId);
+		public static final Expression memberOf(String refsetId) {
+			return exactMatch(Fields.MEMBER_OF, refsetId);
 		}
 		
-		public static final Expression memberOf(Iterable<String> referenceSetIds) {
-			return matchAny(Fields.MEMBER_OF, referenceSetIds);
+		public static final Expression memberOf(Iterable<String> refsetIds) {
+			return matchAny(Fields.MEMBER_OF, refsetIds);
 		}
 		
-		public static final Expression activeMemberOf(String referenceSetId) {
-			return exactMatch(Fields.ACTIVE_MEMBER_OF, referenceSetId);
+		public static final Expression activeMemberOf(String refsetId) {
+			return exactMatch(Fields.ACTIVE_MEMBER_OF, refsetId);
 		}
 		
-		public static final Expression activeMemberOf(Iterable<String> referenceSetIds) {
-			return matchAny(Fields.ACTIVE_MEMBER_OF, referenceSetIds);
+		public static final Expression activeMemberOf(Iterable<String> refsetIds) {
+			return matchAny(Fields.ACTIVE_MEMBER_OF, refsetIds);
 		}
 		
 	}
@@ -83,13 +83,13 @@ public abstract class SnomedComponentDocument extends SnomedDocument {
 			return getSelf();
 		}
 		
-		public B activeMemberOf(Collection<String> referenceSetIds) {
-			this.activeMemberOf = Collections3.toImmutableList(referenceSetIds);
+		public B activeMemberOf(Collection<String> refsetIds) {
+			this.activeMemberOf = Collections3.toImmutableList(refsetIds);
 			return getSelf();
 		}
 		
-		public B memberOf(Collection<String> referenceSetIds) {
-			this.memberOf = Collections3.toImmutableList(referenceSetIds);
+		public B memberOf(Collection<String> refsetIds) {
+			this.memberOf = Collections3.toImmutableList(refsetIds);
 			return getSelf();
 		}
 		

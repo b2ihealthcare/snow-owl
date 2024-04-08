@@ -343,10 +343,10 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 		final FilterValue languageRefSetId = languageRefSetFilter.getLanguageRefSetId();
 		return evaluate(context, languageRefSetId)
 			.then(resolveIds(context))
-			.then(languageReferenceSetIds -> {
+			.then(languageRefsetIds -> {
 				return Expressions.bool()
-					.should(SnomedDescriptionIndexEntry.Expressions.acceptableIn(languageReferenceSetIds))
-					.should(SnomedDescriptionIndexEntry.Expressions.preferredIn(languageReferenceSetIds))
+					.should(SnomedDescriptionIndexEntry.Expressions.acceptableIn(languageRefsetIds))
+					.should(SnomedDescriptionIndexEntry.Expressions.preferredIn(languageRefsetIds))
 					.build();
 			});
 	}
@@ -392,15 +392,15 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 		final ExpressionBuilder dialectQuery = Expressions.bool();
 		for (DialectAlias alias : dialectAliasFilter.getDialects()) {
 			final Set<String> acceptabilityFields = getAcceptabilityFields(alias.getAcceptability());
-			final Collection<String> languageReferenceSetIds = languageMapping.get(alias.getAlias());
+			final Collection<String> languageRefsetIds = languageMapping.get(alias.getAlias());
 			
 			// empty acceptabilities or empty language reference set IDs mean that none of the provided values were valid so no match should be returned
-			if (acceptabilityFields.isEmpty() || languageReferenceSetIds.isEmpty()) {
+			if (acceptabilityFields.isEmpty() || languageRefsetIds.isEmpty()) {
 				return Promise.immediate(Expressions.matchNone());
 			}
 			
 			for (String acceptabilityField : acceptabilityFields) {
-				languageRefSetsByAcceptabilityField.putAll(acceptabilityField, languageReferenceSetIds);
+				languageRefSetsByAcceptabilityField.putAll(acceptabilityField, languageRefsetIds);
 			}
 		}
 		

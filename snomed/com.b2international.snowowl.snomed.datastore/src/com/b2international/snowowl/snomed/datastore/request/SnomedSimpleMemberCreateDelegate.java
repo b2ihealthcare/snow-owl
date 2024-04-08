@@ -44,7 +44,7 @@ final class SnomedSimpleMemberCreateDelegate extends SnomedRefSetMemberCreateDel
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
 				.withModuleId(getModuleId())
-				.withRefSet(getReferenceSetId())
+				.withRefSet(getRefsetId())
 				.addTo(context);
 
 		return member.getId();

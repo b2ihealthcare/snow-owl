@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2017-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ interface Rf2RefSetContentType extends Rf2ContentType<SnomedReferenceSetMember> 
 	@Override
 	default void validateByContentType(ImportDefectBuilder defectBuilder, String[] values) {
 		final String memberId = values[0];
-		final String referenceSetId = values[4];
+		final String refsetId = values[4];
 		final String referencedComponentId = values[5];
 		
 		defectBuilder
@@ -53,7 +53,7 @@ interface Rf2RefSetContentType extends Rf2ContentType<SnomedReferenceSetMember> 
 			.error("%s %s", Rf2ValidationDefects.INVALID_UUID, memberId);
 		
 		validateId(defectBuilder, referencedComponentId);
-		validateConceptIds(defectBuilder, referenceSetId);
+		validateConceptIds(defectBuilder, refsetId);
 		validateMembersByReferenceSetContentType(defectBuilder, values);
 	}
 	

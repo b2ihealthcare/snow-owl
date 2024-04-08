@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2018-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -205,12 +205,12 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 
 	@Override
 	protected SnomedRefSetMemberSearchRequestBuilder createSearchRequestBuilder() {
-		final Set<String> referenceSetIds = referenceSets.stream()
+		final Set<String> refsetIds = referenceSets.stream()
 				.map(c -> c.getId())
 				.collect(Collectors.toSet());
 		
 		return SnomedRequests.prepareSearchMember()
-				.filterByRefSet(referenceSetIds)
+				.filterByRefSet(refsetIds)
 				.sortBy(
 						Sort.fieldAsc(SnomedRefSetMemberIndexEntry.Fields.REFSET_ID), 
 						Sort.fieldAsc(SnomedRefSetMemberIndexEntry.Fields.ID));

@@ -54,7 +54,7 @@ final class SnomedSimpleMapMemberWithDescriptionCreateDelegate extends SnomedRef
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
 				.withModuleId(getModuleId())
-				.withRefSet(getReferenceSetId())
+				.withRefSet(getRefsetId())
 				.withMapTargetId(getComponentId(SnomedRf2Headers.FIELD_MAP_TARGET))
 				.withMapTargetDescription(Strings.nullToEmpty(getProperty(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION)))
 				.addTo(context);

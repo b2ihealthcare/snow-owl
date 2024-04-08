@@ -67,13 +67,13 @@ public final class SnomedDescriptionCreateRequestBuilder extends SnomedComponent
 		return getSelf();
 	}
 	
-	public SnomedDescriptionCreateRequestBuilder acceptableIn(String languageReferenceSetId) {
-		this.acceptabilityMap.put(languageReferenceSetId, Acceptability.ACCEPTABLE);
+	public SnomedDescriptionCreateRequestBuilder acceptableIn(String languageRefsetId) {
+		this.acceptabilityMap.put(languageRefsetId, Acceptability.ACCEPTABLE);
 		return getSelf();
 	}
 	
-	public SnomedDescriptionCreateRequestBuilder preferredIn(String languageReferenceSetId) {
-		this.acceptabilityMap.put(languageReferenceSetId, Acceptability.PREFERRED);
+	public SnomedDescriptionCreateRequestBuilder preferredIn(String languageRefsetId) {
+		this.acceptabilityMap.put(languageRefsetId, Acceptability.PREFERRED);
 		return getSelf();
 	}
 	

@@ -48,7 +48,7 @@ final class SnomedMRCMModuleScopeMemberCreateDelegate extends SnomedRefSetMember
 				.withId(getId())
 				.withActive(isActive())
 				.withModuleId(getModuleId())
-				.withRefSet(getReferenceSetId())
+				.withRefSet(getRefsetId())
 				.withReferencedComponent(getReferencedComponentId())
 				.withMRCMRuleRefsetId(getProperty(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID))
 				.addTo(context);

@@ -65,7 +65,7 @@ final class SnomedConcreteDomainMemberCreateDelegate extends SnomedRefSetMemberC
 				.withGroup(getProperty(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, Integer.class))
 				.withModuleId(getModuleId())
 				.withReferencedComponent(getReferencedComponentId())
-				.withRefSet(getReferenceSetId())
+				.withRefSet(getRefsetId())
 				.withSerializedValue(getProperty(SnomedRf2Headers.FIELD_VALUE))
 				.withTypeId(getComponentId(SnomedRf2Headers.FIELD_TYPE_ID))
 				.addTo(context);

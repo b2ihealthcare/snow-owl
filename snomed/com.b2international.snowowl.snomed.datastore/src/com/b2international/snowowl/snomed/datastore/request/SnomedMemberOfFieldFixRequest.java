@@ -58,7 +58,7 @@ public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext
 		final Logger log = LoggerFactory.getLogger("dataset-fix-SO-5690");
 		final int pageSize = context.getPageSize();
 		
-		Set<String> referenceSetIds = SnomedRequests.prepareSearchRefSet()
+		Set<String> refsetIds = SnomedRequests.prepareSearchRefSet()
 			.all()
 			.setFields(SnomedComponentDocument.Fields.ID)
 			.build()
@@ -67,33 +67,33 @@ public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext
 			.map(SnomedReferenceSet::getId)
 			.collect(Collectors.toSet());
 		
-		log.info("Found a total of {} reference sets", referenceSetIds.size());
+		log.info("Found a total of {} reference sets", refsetIds.size());
 
 		int counter = 0;
 		Multimap<String, String> missingMembersOfComponents = HashMultimap.create();
 		Multimap<String, String> missingActiveMembersOfComponents = HashMultimap.create();
 		
-		for (String referenceSetId : referenceSetIds) {
+		for (String refsetId : refsetIds) {
 			Multimap<String, String> missingMembersOf = HashMultimap.create();
 			Multimap<String, String> missingActiveMembersOf = HashMultimap.create();
 						
 			log.info("Processing batch {}", ++counter);
-			log.info("Processing refset {}", referenceSetId);
+			log.info("Processing refset {}", refsetId);
 			
 			SnomedRequests.prepareSearchMember()
-				.filterByRefSet(referenceSetId)
+				.filterByRefSet(refsetId)
 				.setLimit(pageSize)
 				.setFields(ID, ACTIVE, REFERENCED_COMPONENT_ID)
 				.stream(context)
 				.flatMap(SnomedReferenceSetMembers::stream)
 				.forEachOrdered(m -> {
-					if (m.isActive()) { missingActiveMembersOf.put(m.getReferencedComponentId(), referenceSetId); }
-					missingMembersOf.put(m.getReferencedComponentId(), referenceSetId);
+					if (m.isActive()) { missingActiveMembersOf.put(m.getReferencedComponentId(), refsetId); }
+					missingMembersOf.put(m.getReferencedComponentId(), refsetId);
 				});
 			
 			// Find concepts/descriptions with incomplete member of fields
 			SnomedRequests.prepareSearchConcept()
-				.isMemberOf(referenceSetId)
+				.isMemberOf(refsetId)
 				.setFields(ID)
 				.setLimit(pageSize)
 				.stream(context)
@@ -101,7 +101,7 @@ public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext
 				.forEachOrdered(c -> missingMembersOf.removeAll(c.getId()));
 			
 			SnomedRequests.prepareSearchDescription()
-				.isMemberOf(referenceSetId)
+				.isMemberOf(refsetId)
 				.setFields(ID)
 				.setLimit(pageSize)
 				.stream(context)
@@ -109,11 +109,11 @@ public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext
 				.forEachOrdered(d -> missingMembersOf.removeAll(d.getId()));
 			
 			missingMembersOfComponents.putAll(missingMembersOf);
-			log.info("Found {} components with missing member of entry for reference set {}", missingMembersOf.size(), referenceSetId);
+			log.info("Found {} components with missing member of entry for reference set {}", missingMembersOf.size(), refsetId);
 			
 			// Find concepts/descriptions with incomplete active member of fields
 			SnomedRequests.prepareSearchConcept()
-				.isActiveMemberOf(referenceSetId)
+				.isActiveMemberOf(refsetId)
 				.setFields(ID)
 				.setLimit(pageSize)
 				.stream(context)
@@ -121,7 +121,7 @@ public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext
 				.forEachOrdered(c -> missingActiveMembersOf.removeAll(c.getId()));
 		
 			SnomedRequests.prepareSearchDescription()
-				.isActiveMemberOf(referenceSetId)
+				.isActiveMemberOf(refsetId)
 				.setFields(ID)
 				.setLimit(pageSize)
 				.stream(context)
@@ -129,7 +129,7 @@ public class SnomedMemberOfFieldFixRequest implements Request<TransactionContext
 				.forEachOrdered(d -> missingActiveMembersOf.removeAll(d.getId()));
 			
 			missingActiveMembersOfComponents.putAll(missingActiveMembersOf);
-			log.info("Found {} components with missing active member of entry for reference set {}",  missingActiveMembersOf.size(), referenceSetId);
+			log.info("Found {} components with missing active member of entry for reference set {}",  missingActiveMembersOf.size(), refsetId);
 		}
 		
 		int modifiedComponentCount = 0;

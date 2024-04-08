@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
  */
 public abstract class SnomedMemberBuilder<B extends SnomedMemberBuilder<B>> extends SnomedComponentBuilder<B, SnomedRefSetMemberIndexEntry.Builder, SnomedRefSetMemberIndexEntry> {
 
-	private String referenceSetId;
+	private String refsetId;
 	private String referencedComponent;
 	
 	protected SnomedMemberBuilder() {
@@ -54,12 +54,12 @@ public abstract class SnomedMemberBuilder<B extends SnomedMemberBuilder<B>> exte
 	/**
 	 * Specifies the reference set where this reference set member belongs.
 	 * 
-	 * @param referenceSetId
+	 * @param refsetId
 	 *            - the identifier concept ID of the reference set
 	 * @return
 	 */
-	public final B withRefSet(String referenceSetId) {
-		this.referenceSetId = referenceSetId;
+	public final B withRefSet(String refsetId) {
+		this.refsetId = refsetId;
 		return getSelf();
 	}
 	
@@ -82,15 +82,15 @@ public abstract class SnomedMemberBuilder<B extends SnomedMemberBuilder<B>> exte
 	@OverridingMethodsMustInvokeSuper
 	public void init(SnomedRefSetMemberIndexEntry.Builder component, TransactionContext context) {
 		super.init(component, context);
-		final SnomedConceptDocument refSet = context.lookup(referenceSetId, SnomedConceptDocument.class);
-		checkState(refSet.getRefSetType() != null, "RefSet properties are missing from identifier concept document %s", referenceSetId);
+		final SnomedConceptDocument refSet = context.lookup(refsetId, SnomedConceptDocument.class);
+		checkState(refSet.getRefSetType() != null, "RefSet properties are missing from identifier concept document %s", refsetId);
 		component
 			.referencedComponentId(referencedComponent)
-			.refsetId(referenceSetId)
+			.refsetId(refsetId)
 			.referenceSetType(refSet.getRefSetType());
 		
 		if (refSet.getRefSetType() == SnomedRefSetType.CONCRETE_DATA_TYPE) {
-			component.field(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE, SnomedRefSetUtil.getDataType(referenceSetId));
+			component.field(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE, SnomedRefSetUtil.getDataType(refsetId));
 		}
 	}
 	

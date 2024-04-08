@@ -53,7 +53,7 @@ final class SnomedMRCMAttributeDomainMemberCreateDelegate extends SnomedRefSetMe
 				.withId(getId())
 				.withActive(isActive())
 				.withModuleId(getModuleId())
-				.withRefSet(getReferenceSetId())
+				.withRefSet(getRefsetId())
 				.withReferencedComponent(getReferencedComponentId())
 				.withDomainId(getProperty(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID))
 				.withGrouped(getProperty(SnomedRf2Headers.FIELD_MRCM_GROUPED, Boolean.class))

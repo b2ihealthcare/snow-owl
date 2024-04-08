@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.UUID;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
@@ -35,10 +34,10 @@ public final class SnomedRefSetMemberCreateRequestBuilder
 		extends BaseRequestBuilder<SnomedRefSetMemberCreateRequestBuilder, TransactionContext, String>
 		implements SnomedTransactionalRequestBuilder<String> {
 
-	private String id = UUID.randomUUID().toString();
+	private String id;
 	private Boolean active = Boolean.TRUE;
 	private String moduleId;
-	private String referenceSetId;
+	private String refsetId;
 	private String referencedComponentId;
 	private Map<String, Object> properties = Collections.emptyMap();
 	
@@ -65,8 +64,8 @@ public final class SnomedRefSetMemberCreateRequestBuilder
 		return getSelf();
 	}
 	
-	public SnomedRefSetMemberCreateRequestBuilder setRefsetId(String referenceSetId) {
-		this.referenceSetId = referenceSetId;
+	public SnomedRefSetMemberCreateRequestBuilder setRefsetId(String refsetId) {
+		this.refsetId = refsetId;
 		return getSelf();
 	}
 	
@@ -90,7 +89,7 @@ public final class SnomedRefSetMemberCreateRequestBuilder
 		request.setActive(active);
 		request.setModuleId(moduleId);
 		request.setReferencedComponentId(referencedComponentId);
-		request.setReferenceSetId(referenceSetId);
+		request.setRefsetId(refsetId);
 		request.setProperties(properties);
 		return request;
 	}

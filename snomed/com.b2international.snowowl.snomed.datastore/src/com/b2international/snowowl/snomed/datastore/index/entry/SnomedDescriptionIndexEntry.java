@@ -187,20 +187,20 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			return matchAny(Fields.CASE_SIGNIFICANCE_ID, caseSignificanceIds);
 		}
 		
-		public static Expression acceptableIn(String languageReferenceSetId) {
-			return acceptableIn(Collections.singleton(languageReferenceSetId));
+		public static Expression acceptableIn(String languageRefsetId) {
+			return acceptableIn(Collections.singleton(languageRefsetId));
 		}
 		
-		public static Expression preferredIn(String languageReferenceSetId) {
-			return preferredIn(Collections.singleton(languageReferenceSetId));
+		public static Expression preferredIn(String languageRefsetId) {
+			return preferredIn(Collections.singleton(languageRefsetId));
 		}
 		
-		public static Expression acceptableIn(Collection<String> languageReferenceSetIds) {
-			return matchAny(Fields.ACCEPTABLE_IN, languageReferenceSetIds);
+		public static Expression acceptableIn(Collection<String> languageRefsetIds) {
+			return matchAny(Fields.ACCEPTABLE_IN, languageRefsetIds);
 		}
 		
-		public static Expression preferredIn(Collection<String> languageReferenceSetIds) {
-			return matchAny(Fields.PREFERRED_IN, languageReferenceSetIds);
+		public static Expression preferredIn(Collection<String> languageRefsetIds) {
+			return matchAny(Fields.PREFERRED_IN, languageRefsetIds);
 		}
 		
 		public static Expression languageCode(String languageCode) {
