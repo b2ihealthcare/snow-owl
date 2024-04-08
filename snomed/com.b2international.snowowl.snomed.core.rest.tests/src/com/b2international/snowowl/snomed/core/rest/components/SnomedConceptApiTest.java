@@ -1131,7 +1131,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void createModuleConceptWithAxiom() throws Exception {
+	public void createModuleConceptWithAxiom_ShouldPropagateModuleAsUsualWithoutErrors() throws Exception {
 		ISnomedIdentifierService identifierService = ApplicationContext.getServiceForClass(ISnomedIdentifierService.class);
 		String moduleConceptId = Iterables.getOnlyElement(identifierService.reserve(null, ComponentCategory.CONCEPT, 1));
 
