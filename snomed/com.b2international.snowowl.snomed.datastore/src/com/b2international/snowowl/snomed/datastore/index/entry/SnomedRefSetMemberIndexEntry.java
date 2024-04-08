@@ -269,12 +269,12 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 	public static final class Expressions extends SnomedDocument.Expressions {
 		
-		public static Expression refsetId(String referenceSetId) {
-			return exactMatch(Fields.REFSET_ID, referenceSetId);
+		public static Expression refsetId(String refsetId) {
+			return exactMatch(Fields.REFSET_ID, refsetId);
 		}
 
-		public static Expression refsetIds(Collection<String> referenceSetIds) {
-			return matchAny(Fields.REFSET_ID, referenceSetIds);
+		public static Expression refsetIds(Collection<String> refsetIds) {
+			return matchAny(Fields.REFSET_ID, refsetIds);
 		}
 		
 		public static Expression referencedComponentId(String referencedComponentId) {

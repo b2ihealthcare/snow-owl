@@ -50,7 +50,7 @@ final class SnomedMRCMDomainMemberCreateDelegate extends SnomedRefSetMemberCreat
 				.withId(getId())
 				.withActive(isActive())
 				.withModuleId(getModuleId())
-				.withRefSet(getReferenceSetId())
+				.withRefSet(getRefsetId())
 				.withReferencedComponent(getReferencedComponentId())
 				.withDomainConstraint(getProperty(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT))
 				.withParentDomain(getProperty(SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN))

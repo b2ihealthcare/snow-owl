@@ -48,7 +48,7 @@ final class SnomedOWLExpressionMemberCreateDelegate extends SnomedRefSetMemberCr
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
 				.withModuleId(getModuleId())
-				.withRefSet(getReferenceSetId())
+				.withRefSet(getRefsetId())
 				.withOWLExpression(getProperty(SnomedRf2Headers.FIELD_OWL_EXPRESSION))
 				.addTo(context);
 

@@ -48,7 +48,7 @@ final class SnomedModuleDependencyMemberCreateDelegate extends SnomedRefSetMembe
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
 				.withModuleId(getModuleId())
-				.withRefSet(getReferenceSetId());
+				.withRefSet(getRefsetId());
 		
 		try {
 			

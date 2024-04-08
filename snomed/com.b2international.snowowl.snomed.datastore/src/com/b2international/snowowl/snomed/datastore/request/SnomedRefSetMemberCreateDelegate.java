@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2017-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,8 +59,8 @@ abstract class SnomedRefSetMemberCreateDelegate {
 		return request.getModuleId();
 	}
 
-	String getReferenceSetId() {
-		return request.getReferenceSetId();
+	String getRefsetId() {
+		return request.getRefsetId();
 	}
 
 	String getReferencedComponentId() {
@@ -142,21 +142,21 @@ abstract class SnomedRefSetMemberCreateDelegate {
 
 	protected final void checkHasProperty(String key) {
 		if (!hasProperty(key)) {
-			throw new BadRequestException("Property '%s' must be set for '%s' reference set members.", key, request.getReferenceSetId());
+			throw new BadRequestException("Property '%s' must be set for '%s' reference set members.", key, request.getRefsetId());
 		}
 	}
 
 	protected final void checkNonEmptyProperty(String key) {
 		checkHasProperty(key);
 		if (CompareUtils.isEmpty(getProperty(key, Object.class))) {
-			throw new BadRequestException("Property '%s' may not be null or empty for '%s' reference set members.", key, request.getReferenceSetId());
+			throw new BadRequestException("Property '%s' may not be null or empty for '%s' reference set members.", key, request.getRefsetId());
 		}
 	}
 	
 	protected final void checkNonNullProperty(String key) {
 		checkHasProperty(key);
 		if (getProperty(key, Object.class) == null) {
-			throw new BadRequestException("Property '%s' may not be null for '%s' reference set members.", key, request.getReferenceSetId());
+			throw new BadRequestException("Property '%s' may not be null for '%s' reference set members.", key, request.getRefsetId());
 		}
 	}
 

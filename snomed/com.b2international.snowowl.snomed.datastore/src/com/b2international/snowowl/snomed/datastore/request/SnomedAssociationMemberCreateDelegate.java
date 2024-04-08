@@ -47,7 +47,7 @@ final class SnomedAssociationMemberCreateDelegate extends SnomedRefSetMemberCrea
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
 				.withModuleId(getModuleId())
-				.withRefSet(getReferenceSetId())
+				.withRefSet(getRefsetId())
 				.withTargetComponentId(getComponentId(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID))
 				.addTo(context);
 

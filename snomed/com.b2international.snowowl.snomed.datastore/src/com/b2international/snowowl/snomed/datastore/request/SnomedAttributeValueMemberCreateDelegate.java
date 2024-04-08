@@ -48,7 +48,7 @@ final class SnomedAttributeValueMemberCreateDelegate extends SnomedRefSetMemberC
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
 				.withModuleId(getModuleId())
-				.withRefSet(getReferenceSetId())
+				.withRefSet(getRefsetId())
 				.withValueId(getComponentId(SnomedRf2Headers.FIELD_VALUE_ID))
 				.addTo(context);
 

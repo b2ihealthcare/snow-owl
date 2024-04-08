@@ -51,7 +51,7 @@ final class SnomedMRCMAttributeRangeMemberCreateDelegate extends SnomedRefSetMem
 				.withId(getId())
 				.withActive(isActive())
 				.withModuleId(getModuleId())
-				.withRefSet(getReferenceSetId())
+				.withRefSet(getRefsetId())
 				.withReferencedComponent(getReferencedComponentId())
 				.withRangeConstraint(getProperty(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT))
 				.withAttributeRule(getProperty(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE))
