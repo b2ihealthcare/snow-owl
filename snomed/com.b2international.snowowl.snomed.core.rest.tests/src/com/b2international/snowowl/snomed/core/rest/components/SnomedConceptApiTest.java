@@ -1130,4 +1130,49 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		assertThat(concept.getStatedParentIdsAsString()).contains(Concepts.ROOT_CONCEPT);
 	}
 	
+	@Test
+	public void createModuleConceptWithAxiom() throws Exception {
+		ISnomedIdentifierService identifierService = ApplicationContext.getServiceForClass(ISnomedIdentifierService.class);
+		String moduleConceptId = Iterables.getOnlyElement(identifierService.reserve(null, ComponentCategory.CONCEPT, 1));
+
+		String createdConceptId = createConcept(branchPath,
+			Json.object(
+				"id", moduleConceptId,
+				"moduleId", moduleConceptId, // module is applied to all subcomponents implicitly via the API
+				"active", true,
+				"descriptions", Json.array(
+					Json.object(
+						"typeId", Concepts.FULLY_SPECIFIED_NAME,
+						"term", "FSN of module concept",
+						"languageCode", DEFAULT_LANGUAGE_CODE,
+						"acceptability", UK_PREFERRED_MAP
+					),
+					Json.object(
+						"typeId", Concepts.SYNONYM,
+						"term", "PT of concept",
+						"languageCode", DEFAULT_LANGUAGE_CODE,
+						"acceptability", UK_PREFERRED_MAP
+					)
+				),
+				"relationships", Json.array(
+					Json.object(
+						"active", true,
+						"typeId", Concepts.IS_A,
+						"destinationId", Concepts.MODULE_ROOT,
+						"characteristicTypeId", Concepts.INFERRED_RELATIONSHIP
+					)
+				),
+				"members", Json.array(
+					Json.object(
+						"active", true,
+						"refsetId", Concepts.REFSET_OWL_AXIOM,
+						"owlExpression", String.format("SubClassOf(:%s :%s)", moduleConceptId, Concepts.MODULE_ROOT)
+					)
+				)
+			)
+		);
+		
+		assertEquals(moduleConceptId, createdConceptId);
+	}
+	
 }
