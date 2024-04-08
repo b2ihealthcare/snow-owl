@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.UUID;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
@@ -35,7 +34,7 @@ public final class SnomedRefSetMemberCreateRequestBuilder
 		extends BaseRequestBuilder<SnomedRefSetMemberCreateRequestBuilder, TransactionContext, String>
 		implements SnomedTransactionalRequestBuilder<String> {
 
-	private String id = UUID.randomUUID().toString();
+	private String id;
 	private Boolean active = Boolean.TRUE;
 	private String moduleId;
 	private String refsetId;
