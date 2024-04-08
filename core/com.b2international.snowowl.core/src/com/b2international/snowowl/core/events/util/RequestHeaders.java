@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2019-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.events.util;
 import java.util.Collections;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -25,6 +26,9 @@ import com.google.common.collect.ImmutableMap;
  */
 public final class RequestHeaders {
 
+	@JsonIgnore
+	public static final RequestHeaders EMPTY = new RequestHeaders(Map.of());
+	
 	private final Map<String, String> headers;
 
 	public RequestHeaders(Map<String, String> headers) {

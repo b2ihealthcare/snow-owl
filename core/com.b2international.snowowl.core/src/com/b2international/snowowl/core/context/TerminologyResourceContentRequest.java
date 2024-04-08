@@ -79,7 +79,7 @@ public final class TerminologyResourceContentRequest<R> extends DelegatingReques
 			
 			// before executing the request, check whether we have an If-None-Match header set in the incoming request
 			// if yes, check the current ETag with any of the attached values, if none matches evaluate the query otherwise send back HTTP 304
-			String ifNoneMatchHeaderValue = ctx.service(RequestHeaders.class).header(ApiConfiguration.IF_NONE_MATCH_HEADER);
+			String ifNoneMatchHeaderValue = ctx.optionalService(RequestHeaders.class).orElse(RequestHeaders.EMPTY).header(ApiConfiguration.IF_NONE_MATCH_HEADER);
 			if (!Strings.isNullOrEmpty(ifNoneMatchHeaderValue) && Objects.equals(ifNoneMatchHeaderValue.replaceAll("\"", ""), eTag)) {
 				throw new NotModifiedException();
 			}
@@ -88,10 +88,11 @@ public final class TerminologyResourceContentRequest<R> extends DelegatingReques
 			
 			// once we have the response ready calculate Cache-Control and ETag headers
 			final ApiConfiguration apiConfiguration = ctx.service(ApiConfiguration.class);
-			final ResponseHeaders responseHeaders = ctx.service(ResponseHeaders.class);
-			responseHeaders.set(ApiConfiguration.ETAG_HEADER, eTag);
-			// configure HTTP Cache-Control headers here using the currently configured global api.cache_control value
-			responseHeaders.set(ApiConfiguration.CACHE_CONTROL_HEADER, apiConfiguration.getCacheControl());
+			ctx.optionalService(ResponseHeaders.class).ifPresent(responseHeaders -> {
+				responseHeaders.set(ApiConfiguration.ETAG_HEADER, eTag);
+				// configure HTTP Cache-Control headers here using the currently configured global api.cache_control value
+				responseHeaders.set(ApiConfiguration.CACHE_CONTROL_HEADER, apiConfiguration.getCacheControl());
+			});
 			
 			return response;
 		};
