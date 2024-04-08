@@ -34,6 +34,8 @@ import com.google.common.collect.ImmutableSet;
  */
 public abstract class BaseSnomedComponentCreateRequest implements SnomedCoreComponentCreateRequest {
 
+	private static final long serialVersionUID = 1L;
+
 	@Nonnull
 	private Boolean active = Boolean.TRUE;
 	

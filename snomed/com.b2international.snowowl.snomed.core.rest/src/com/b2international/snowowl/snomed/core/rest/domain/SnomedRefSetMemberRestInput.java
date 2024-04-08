@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.core.rest.domain;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Map;
-import java.util.UUID;
 
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -30,7 +29,7 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
  */
 public class SnomedRefSetMemberRestInput {
 
-	private String id = UUID.randomUUID().toString();
+	private String id;
 	private Boolean active = Boolean.TRUE;
 	private String moduleId;
 	private String referencedComponentId;

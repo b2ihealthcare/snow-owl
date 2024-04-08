@@ -21,10 +21,9 @@ import static com.google.common.collect.Maps.newHashMap;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.annotation.Nonnull;
-
-import jakarta.validation.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.options.Options;
@@ -39,22 +38,25 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 
+import jakarta.validation.constraints.NotEmpty;
+
 /**
  * @since 4.5
  */
 final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequest {
 
-	@Nonnull
+	private static final long serialVersionUID = 1L;
+
 	private String id;
 
 	@Nonnull
 	private Boolean active = Boolean.TRUE;
 	
 	@NotEmpty
-	private String moduleId;
+	private String refsetId;
 	
-	@NotEmpty
-	private String referenceSetId;
+	// Not @NotEmpty, it can be populated after the request is validated (eg. nested create requests)
+	private String moduleId;
 	
 	private String referencedComponentId;
 	
@@ -76,8 +78,8 @@ final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequ
 		return moduleId;
 	}
 	
-	String getReferenceSetId() {
-		return referenceSetId;
+	String getRefsetId() {
+		return refsetId;
 	}
 	
 	String getReferencedComponentId() {
@@ -126,8 +128,8 @@ final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequ
 		this.referencedComponentId = referencedComponentId;
 	}
 	
-	void setReferenceSetId(String referenceSetId) {
-		this.referenceSetId = referenceSetId;
+	void setRefsetId(String refsetId) {
+		this.refsetId = refsetId;
 	}
 	
 	void setModuleId(String moduleId) {
@@ -155,7 +157,7 @@ final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequ
 			SnomedReferenceSet refSet = getRefSet(context);
 			SnomedRefSetMemberCreateDelegate delegate = getDelegate(refSet.getType());
 			Builder<String> requiredComponentIds = ImmutableSet.<String>builder().addAll(delegate.getRequiredComponentIds());
-			requiredComponentIds.add(referenceSetId);
+			requiredComponentIds.add(refsetId);
 			if (!Strings.isNullOrEmpty(referencedComponentId)) {
 				requiredComponentIds.add(referencedComponentId);
 			}
@@ -170,6 +172,18 @@ final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequ
 
 	@Override
 	public String execute(TransactionContext context) {
+		// generate id field as UUID if not defined otherwise
+		if (Strings.isNullOrEmpty(id)) {
+			id = UUID.randomUUID().toString();
+		} else {
+			// otherwise validate that it is a valid UUID
+			try {
+				UUID.fromString(id);
+			} catch (IllegalArgumentException e) {
+				throw new BadRequestException("Refset Member uses an illegal non-UUID identifier '%s'.", id);
+			}
+		}
+		
 		/* 
 		 * TODO: Generalize the logic below: any attempts of retrieving a missing component during component creation
 		 * should return a 400 response instead of a 404. 
@@ -184,7 +198,7 @@ final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequ
 	}
 
 	private SnomedReferenceSet getRefSet(TransactionContext context) {
-		final SnomedReferenceSet refSet = new SnomedReferenceSetConverter(context, Options.builder().build(), Collections.emptyList()).convert(context.lookup(referenceSetId, SnomedConceptDocument.class));
+		final SnomedReferenceSet refSet = new SnomedReferenceSetConverter(context, Options.builder().build(), Collections.emptyList()).convert(context.lookup(refsetId, SnomedConceptDocument.class));
 		checkArgument(refSet.getType() != null, "Reference Set Properties are missing from identifier concept document: %s.", refSet.getId());
 		return refSet;
 	}
