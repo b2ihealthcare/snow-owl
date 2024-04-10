@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2020-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.core.request;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 
@@ -27,12 +26,15 @@ import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
+import com.b2international.snowowl.core.domain.Description;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
 import com.b2international.snowowl.core.request.ExpandParser;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.SnomedDisplayTermType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Strings;
@@ -43,27 +45,6 @@ import com.google.common.collect.ImmutableSortedSet;
  */
 public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchRequestEvaluator {
 
-	private Concept toConcept(ResourceURI codeSystem, SnomedConcept snomedConcept, String pt, boolean requestedExpand) {
-		final Concept concept = toConcept(codeSystem, snomedConcept, snomedConcept.getIconId(), pt, snomedConcept.getScore());
-		
-		SortedSet<String> alternativeTerms = snomedConcept.getPreferredDescriptions().stream()
-			.map(pd -> pd.getTerm())
-			.filter(term -> !Objects.equals(term, pt)) // leave the selected primary term out of the alternative terms list
-			.collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
-		
-		if (!alternativeTerms.isEmpty()) {
-			concept.setAlternativeTerms(alternativeTerms);
-		}
-		
-		concept.setActive(snomedConcept.isActive());
-		concept.setParentIds(snomedConcept.getParentIdsAsString());
-		concept.setAncestorIds(snomedConcept.getAncestorIdsAsString());
-		if (requestedExpand) {
-			concept.setInternalConcept(snomedConcept);
-		}
-		return concept;
-	}
-	
 	@Override
 	public Concepts evaluate(ResourceURI uri, ServiceProvider context, Options search) {
 		
@@ -131,6 +112,44 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 			matches.getLimit(), 
 			matches.getTotal()
 		);
+	}
+	
+	private Concept toConcept(ResourceURI codeSystem, SnomedConcept snomedConcept, String pt, boolean requestedExpand) {
+		final Concept concept = toConcept(codeSystem, snomedConcept, snomedConcept.getIconId(), pt, snomedConcept.getScore());
+		
+		SortedSet<Description> descriptions = generateGenericDescriptions(snomedConcept.getPreferredDescriptions());
+		
+		if (!descriptions.isEmpty()) {
+			concept.setDescriptions(descriptions);
+		}
+		
+		concept.setActive(snomedConcept.isActive());
+		concept.setParentIds(snomedConcept.getParentIdsAsString());
+		concept.setAncestorIds(snomedConcept.getAncestorIdsAsString());
+		if (requestedExpand) {
+			concept.setInternalConcept(snomedConcept);
+		}
+		return concept;
+	}
+	
+	/**
+	 * Generates generic {@link Description} objects for each {@link SnomedDescription} in the given {@link SnomedDescriptions}. This method combines
+	 * the language code and each language reference set acceptability membership of the {@link SnomedDescription} to generate a generic
+	 * {@link Description} representation. The number of {@link Description}s generated can be higher than the given number of
+	 * {@link SnomedDescription}s.
+	 * 
+	 * @param descriptions
+	 * @return a {@link SortedSet} of {@link Description} objects, never <code>null</code>
+	 */
+	public static SortedSet<Description> generateGenericDescriptions(SnomedDescriptions descriptions) {
+		return descriptions.stream()
+				.flatMap(description -> {
+					final String languageCode = description.getLanguageCode();
+					return description.getAcceptabilityMap().keySet().stream()
+							.map(refsetId -> new ExtendedLocale(languageCode, null, refsetId))
+							.map(language -> new Description(description.getTerm(), language.toString()).withInternalDescription(description));
+				})
+				.collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
 	}
 	
 }

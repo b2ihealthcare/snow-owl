@@ -26,8 +26,8 @@ import org.junit.Test;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 
 /**
@@ -176,9 +176,21 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 			.body("parameter[1].name", equalTo("display"))
 			.body("parameter[1].valueString", equalTo("Clinical finding"))
 			.body("parameter[2].name", equalTo("designation"))
-			.body("parameter[2].part[0].valueCode", equalTo("en"))
-			.body("parameter[2].part[1].valueCoding.code", equalTo("900000000000003001"))
-			.body("parameter[2].part[2].valueString", equalTo("Clinical finding (finding)"));
+			.body("parameter[2].part[0].valueCode", equalTo("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_UK))
+			.body("parameter[2].part[1].valueCoding.code", equalTo("900000000000013009"))
+			.body("parameter[2].part[2].valueString", equalTo("Clinical finding"))
+			.body("parameter[3].name", equalTo("designation"))
+			.body("parameter[3].part[0].valueCode", equalTo("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US))
+			.body("parameter[3].part[1].valueCoding.code", equalTo("900000000000013009"))
+			.body("parameter[3].part[2].valueString", equalTo("Clinical finding"))
+			.body("parameter[4].name", equalTo("designation"))
+			.body("parameter[4].part[0].valueCode", equalTo("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_UK))
+			.body("parameter[4].part[1].valueCoding.code", equalTo("900000000000003001"))
+			.body("parameter[4].part[2].valueString", equalTo("Clinical finding (finding)"))
+			.body("parameter[5].name", equalTo("designation"))
+			.body("parameter[5].part[0].valueCode", equalTo("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US))
+			.body("parameter[5].part[1].valueCoding.code", equalTo("900000000000003001"))
+			.body("parameter[5].part[2].valueString", equalTo("Clinical finding (finding)"));
 	}
 	
 	@Test

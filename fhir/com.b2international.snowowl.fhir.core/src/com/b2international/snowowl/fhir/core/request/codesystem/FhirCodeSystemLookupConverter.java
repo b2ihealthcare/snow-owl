@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.Concept;
@@ -59,7 +58,7 @@ public interface FhirCodeSystemLookupConverter {
 	 */
 	default List<Designation> expandDesignations(ServiceProvider context, CodeSystem codeSystem, Concept concept, LookupRequest request, String acceptLanguage) {
 		if (request.isPropertyRequested(SupportedCodeSystemRequestProperties.DESIGNATION)) {
-			return concept.getAlternativeTerms().stream().map(term -> Designation.builder().value(term).build()).collect(Collectors.toList());
+			return Designation.fromDescriptions(concept.getDescriptions());
 		} else {
 			return null;
 		}

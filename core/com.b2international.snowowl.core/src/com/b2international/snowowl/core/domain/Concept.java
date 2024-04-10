@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2020-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,11 @@
  */
 package com.b2international.snowowl.core.domain;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.SortedSet;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -41,7 +43,7 @@ public final class Concept extends BaseComponent {
 	private Boolean active;
 	private String term;
 	private String iconId;
-	private SortedSet<String> alternativeTerms;
+	private SortedSet<Description> descriptions;
 	
 	private List<String> parentIds;
 	private List<String> ancestorIds;
@@ -55,7 +57,7 @@ public final class Concept extends BaseComponent {
 			@JsonProperty("code") ComponentURI code, 
 			@JsonProperty("active") Boolean active, 
 			@JsonProperty("term") String term, 
-			@JsonProperty("alternativeTerms") SortedSet<String> alternativeTerms, 
+			@JsonProperty("descriptions") SortedSet<Description> descriptions, 
 			@JsonProperty("iconId") String iconId, 
 			@JsonProperty("parentIds") List<String> parentIds, 
 			@JsonProperty("ancestorIds") List<String> ancestorIds,
@@ -64,7 +66,7 @@ public final class Concept extends BaseComponent {
 		setId(code.identifier());
 		setActive(active);
 		setTerm(term);
-		setAlternativeTerms(alternativeTerms);
+		setDescriptions(descriptions);
 		setIconId(iconId);
 		setScore(score);
 		setParentIds(parentIds);
@@ -104,8 +106,19 @@ public final class Concept extends BaseComponent {
 		this.iconId = iconId;
 	}
 	
-	public void setAlternativeTerms(SortedSet<String> alternativeTerms) {
-		this.alternativeTerms = alternativeTerms;
+	/**
+	 * @param alternativeTerms
+	 * @deprecated deserialization only: if descriptions property is set via the constructor during deserialization then this ignores the incoming value, use {@link #setDescriptions(Collection)} instead
+	 */
+	@JsonProperty
+	public void setAlternativeTerms(Collection<Description> alternativeTerms) {
+		if (descriptions == null) {
+			setDescriptions(alternativeTerms);
+		}
+	}
+	
+	public void setDescriptions(Collection<Description> descriptions) {
+		this.descriptions = descriptions == null ? null : Collections3.toImmutableSortedSet(descriptions);
 	}
 	
 	public void setScore(Float score) {
@@ -114,9 +127,14 @@ public final class Concept extends BaseComponent {
 	
 	/**
 	 * @return optionally set alternative terms for this concept, may be <code>null</code> if there are not alternative terms present for this code
+	 * @deprecated serialization only for backward compatibility, use {@link #getDescriptions()} instead  
 	 */
-	public SortedSet<String> getAlternativeTerms() {
-		return alternativeTerms;
+	public SortedSet<Description> getAlternativeTerms() {
+		return getDescriptions();
+	}
+	
+	public SortedSet<Description> getDescriptions() {
+		return descriptions;
 	}
 	
 	public Float getScore() {
