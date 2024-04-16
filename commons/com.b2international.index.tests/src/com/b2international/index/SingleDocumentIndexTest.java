@@ -30,11 +30,10 @@ import java.util.concurrent.ForkJoinTask;
 
 import org.junit.Test;
 
-import com.b2international.index.Fixtures.Data;
-import com.b2international.index.Fixtures.DataWithMap;
-import com.b2international.index.Fixtures.DataWithUpdateScript;
+import com.b2international.index.Fixtures.*;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -46,7 +45,13 @@ public class SingleDocumentIndexTest extends BaseIndexTest {
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.<Class<?>>of(Data.class, DataWithMap.class, DataWithUpdateScript.class);
+		return ImmutableList.<Class<?>>of(
+			Data.class, 
+			DataWithMap.class, 
+			DataWithJson.class,
+			DataWithDynamicJson.class,
+			DataWithUpdateScript.class
+		);
 	}
 	
 	@Test
@@ -156,7 +161,7 @@ public class SingleDocumentIndexTest extends BaseIndexTest {
 	}
 	
 	@Test
-	public void indexDocumentWithMapType() throws Exception {
+	public void indexDocumentWithMap() throws Exception {
 		final DataWithMap data = new DataWithMap(KEY1, Map.of("field1", "field1Value", "field2", "field2Value"));
 		indexDocument(data);
 		assertEquals(data, getDocument(DataWithMap.class, KEY1));
@@ -166,6 +171,46 @@ public class SingleDocumentIndexTest extends BaseIndexTest {
 				.build();
 		
 		final Iterable<DataWithMap> matches = search(query);
+		assertThat(matches).hasSize(1);
+		assertThat(matches).containsOnly(data);
+	}
+	
+	@Test
+	public void indexDocumentWithJson() throws Exception {
+		final ObjectNode model = (ObjectNode) getMapper().reader()
+			.readTree("{ \"field1\": \"world\", \"field2\": 987 }");
+		
+		final DataWithJson data = new DataWithJson(KEY1, model);
+		indexDocument(data);
+		assertEquals(data, getDocument(DataWithJson.class, KEY1));
+		
+		// Source-only fields are not searchable
+		final Query<DataWithDynamicJson> query = Query.select(DataWithDynamicJson.class)
+			.where(Expressions.exactMatch("model.field1", "world"))
+			.build();
+		
+		final Iterable<DataWithDynamicJson> matches = search(query);
+		assertThat(matches).isEmpty();
+	}
+	
+	@Test
+	public void indexDocumentWithDynamicJson() throws Exception {
+		final ObjectNode model = (ObjectNode) getMapper().reader()
+			.readTree("{ \"field1\": \"hello\", \"field2\": 654 }");
+		
+		final DataWithDynamicJson data = new DataWithDynamicJson(KEY1, model);
+		indexDocument(data);
+		assertEquals(data, getDocument(DataWithDynamicJson.class, KEY1));		
+		
+		/*
+		 * Dynamic mapping also allows us to run queries on JSON properties (nothing fancy, though, 
+		 * as the object is not split out to a nested document)
+		 */
+		final Query<DataWithDynamicJson> query = Query.select(DataWithDynamicJson.class)
+			.where(Expressions.exactMatch("model.field1", "hello"))
+			.build();
+		
+		final Iterable<DataWithDynamicJson> matches = search(query);
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(data);
 	}
