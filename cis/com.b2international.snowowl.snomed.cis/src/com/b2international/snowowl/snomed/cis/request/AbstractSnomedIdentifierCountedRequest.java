@@ -15,14 +15,14 @@
  */
 package com.b2international.snowowl.snomed.cis.request;
 
-import javax.annotation.Nonnegative;
-import jakarta.validation.constraints.NotNull;
-
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.domain.SctIds;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 
 /**
  * @since 5.5
@@ -37,7 +37,7 @@ abstract class AbstractSnomedIdentifierCountedRequest implements Request<Service
 	private final String namespace;
 
 	@JsonProperty
-	@Nonnegative
+	@PositiveOrZero
 	private final int quantity;
 
 	AbstractSnomedIdentifierCountedRequest(ComponentCategory category, String namespace, int quantity) {

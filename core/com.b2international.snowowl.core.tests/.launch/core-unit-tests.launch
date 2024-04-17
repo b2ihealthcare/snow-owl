@@ -89,6 +89,7 @@
         <setEntry value="org.apache.aries.spifly.dynamic.bundle@2:true"/>
         <setEntry value="org.apache.commons.commons-codec@default:default"/>
         <setEntry value="org.apache.commons.commons-collections4@default:default"/>
+        <setEntry value="org.apache.commons.commons-compress@default:default"/>
         <setEntry value="org.apache.commons.commons-io@default:default"/>
         <setEntry value="org.apache.commons.logging@default:default"/>
         <setEntry value="org.apache.httpcomponents.httpasyncclient@default:default"/>
@@ -139,6 +140,7 @@
         <setEntry value="org.hamcrest@default:default"/>
         <setEntry value="org.hdrhistogram.HdrHistogram@default:default"/>
         <setEntry value="org.jetbrains.kotlin.osgi-bundle@default:default"/>
+        <setEntry value="org.jsr-305@default:default"/>
         <setEntry value="org.junit@default:default"/>
         <setEntry value="org.mockito.mockito-core@default:default"/>
         <setEntry value="org.objectweb.asm.commons@default:default"/>

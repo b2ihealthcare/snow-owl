@@ -115,6 +115,7 @@
         <setEntry value="org.hamcrest.core@default:default"/>
         <setEntry value="org.hamcrest@default:default"/>
         <setEntry value="org.hdrhistogram.HdrHistogram@default:default"/>
+        <setEntry value="org.jsr-305@default:default"/>
         <setEntry value="org.junit@default:default"/>
         <setEntry value="org.objectweb.asm.commons@default:default"/>
         <setEntry value="org.objectweb.asm.tree.analysis@default:default"/>
