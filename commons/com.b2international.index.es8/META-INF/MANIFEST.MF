@@ -17,7 +17,6 @@ Bundle-ClassPath: .,
  lib/elasticsearch-java-8.12.2.jar,
  lib/elasticsearch-rest-client-8.12.2.jar,
  lib/jakarta.json-api-2.0.2.jar,
- lib/jsr305-3.0.2.jar,
  lib/opentelemetry-api-1.29.0.jar,
  lib/opentelemetry-context-1.29.0.jar,
  lib/parsson-1.0.5.jar
