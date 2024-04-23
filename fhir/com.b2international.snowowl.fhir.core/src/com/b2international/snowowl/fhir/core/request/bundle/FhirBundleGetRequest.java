@@ -15,9 +15,10 @@
  */
 package com.b2international.snowowl.fhir.core.request.bundle;
 
+import org.hl7.fhir.r5.model.Bundle;
+
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequest;
-import com.b2international.snowowl.fhir.core.model.Bundle;
 
 /**
  * @since 8.0.0

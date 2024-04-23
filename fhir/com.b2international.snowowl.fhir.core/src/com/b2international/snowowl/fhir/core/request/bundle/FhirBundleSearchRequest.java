@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,17 @@
 package com.b2international.snowowl.fhir.core.request.bundle;
 
 import java.io.IOException;
+import java.util.Date;
+
+import org.hl7.fhir.r5.model.Bundle;
+import org.hl7.fhir.r5.model.Bundle.BundleType;
+import org.hl7.fhir.r5.model.Meta;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.fhir.core.codesystems.BundleType;
-import com.b2international.snowowl.fhir.core.model.Bundle;
-import com.b2international.snowowl.fhir.core.model.Bundle.Builder;
-import com.b2international.snowowl.fhir.core.model.Meta;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.dt.Instant;
+import com.b2international.snowowl.fhir.core.request.FhirResourceSearchRequest;
 
 /**
  * @since 8.0.0
@@ -37,7 +37,7 @@ public class FhirBundleSearchRequest extends SearchResourceRequest<RepositoryCon
 
 	@Override
 	protected Bundle createEmptyResult(int limit) {
-		return prepareBundle().total(0).build();
+		return prepareBundle().setTotal(0);
 	}
 
 	@Override
@@ -45,13 +45,13 @@ public class FhirBundleSearchRequest extends SearchResourceRequest<RepositoryCon
 		throw new UnsupportedOperationException();
 	}
 	
-	private Builder prepareBundle() {
-		return Bundle.builder(IDs.base62UUID())
-				.type(BundleType.SEARCHSET)
-				.meta(Meta.builder()
-						.addTag(CompareUtils.isEmpty(fields()) ? null : Coding.CODING_SUBSETTED)
-						.lastUpdated(Instant.builder().instant(java.time.Instant.now()).build())
-						.build());
+	private Bundle prepareBundle() {
+		return (Bundle) new Bundle(BundleType.SEARCHSET)
+				.setId(IDs.base62UUID())
+				.setMeta(new Meta()
+						.addTag(CompareUtils.isEmpty(fields()) ? null : FhirResourceSearchRequest.CODING_SUBSETTED)
+						.setLastUpdated(new Date())
+				);
 	}
 
 }
