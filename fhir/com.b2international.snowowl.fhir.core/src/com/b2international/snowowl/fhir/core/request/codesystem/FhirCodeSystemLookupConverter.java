@@ -17,12 +17,11 @@ package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import java.util.List;
 
+import org.hl7.fhir.r5.model.CodeSystem;
+
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.Concept;
-import com.b2international.snowowl.fhir.core.model.Designation;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.codesystem.Property;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
 
 /**

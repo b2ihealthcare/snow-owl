@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,32 +18,31 @@ package com.b2international.snowowl.fhir.core.request.codesystem;
 import java.util.List;
 import java.util.Set;
 
+import org.hl7.fhir.r5.model.CodeSystem;
+import org.hl7.fhir.r5.model.Enumerations.CodeSystemContentMode;
+import org.hl7.fhir.r5.model.Identifier;
+import org.hl7.fhir.r5.model.Identifier.IdentifierUse;
+
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
-import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
-import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
-import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
-import com.b2international.snowowl.fhir.core.model.dt.Identifier;
+import com.b2international.snowowl.fhir.core.R5ObjectFields;
 import com.b2international.snowowl.fhir.core.request.FhirResourceSearchRequest;
 
 /**
  * @since 8.0
  */
-final class FhirCodeSystemSearchRequest extends FhirResourceSearchRequest<CodeSystem.Builder, CodeSystem> {
+final class FhirCodeSystemSearchRequest extends FhirResourceSearchRequest<CodeSystem> {
 
 	private static final long serialVersionUID = 1L;
 	private static final Set<String> EXTERNAL_FHIR_CODESYSTEM_FIELDS = Set.of(
-		CodeSystem.Fields.COUNT,
-		CodeSystem.Fields.CONTENT,
-		CodeSystem.Fields.CONCEPT,
-		CodeSystem.Fields.FILTER,
-		CodeSystem.Fields.PROPERTY,
-		CodeSystem.Fields.IDENTIFIER
+		R5ObjectFields.CodeSystem.COUNT,
+		R5ObjectFields.CodeSystem.CONTENT,
+		R5ObjectFields.CodeSystem.CONCEPT,
+		R5ObjectFields.CodeSystem.FILTER,
+		R5ObjectFields.CodeSystem.PROPERTY,
+		R5ObjectFields.CodeSystem.IDENTIFIER
 	);
 	
 	@Override
@@ -57,20 +56,19 @@ final class FhirCodeSystemSearchRequest extends FhirResourceSearchRequest<CodeSy
 	}
 
 	@Override
-	protected CodeSystem.Builder createResourceBuilder() {
-		return CodeSystem.builder();
+	protected CodeSystem createResource() {
+		return new CodeSystem();
 	}
 	
 	@Override
-	protected void expandResourceSpecificFields(RepositoryContext context, CodeSystem.Builder entry, ResourceFragment resource) {
-		includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, resource::getCopyright, entry::copyright);
-		includeIfFieldSelected(CodeSystem.Fields.IDENTIFIER, () -> {
+	protected void expandResourceSpecificFields(RepositoryContext context, CodeSystem entry, ResourceFragment resource) {
+		includeIfFieldSelected(R5ObjectFields.CodeSystem.COPYRIGHT, resource::getCopyright, entry::setCopyright);
+		includeIfFieldSelected(R5ObjectFields.CodeSystem.IDENTIFIER, () -> {
 			if (!CompareUtils.isEmpty(resource.getOid())) {
-				return Identifier.builder()
-						.use(IdentifierUse.OFFICIAL)
-						.system(resource.getUrl())
-						.value(resource.getOid())
-						.build();
+				return new Identifier()
+						.setUse(IdentifierUse.OFFICIAL)
+						.setSystem(resource.getUrl())
+						.setValue(resource.getOid());
 			} else {
 				return null;
 			}
@@ -83,15 +81,15 @@ final class FhirCodeSystemSearchRequest extends FhirResourceSearchRequest<CodeSy
 		
 		final ResourceURI resourceURI = resource.getResourceURI();
 		
-		if (fields().isEmpty() || fields().contains(CodeSystem.Fields.CONCEPT)) {
+		if (fields().isEmpty() || fields().contains(R5ObjectFields.CodeSystem.CONCEPT)) {
 			// XXX: When "concept" is requested to be included, we also need a total concept count to set "content" properly
-			final List<Concept> concepts = converter.expandConcepts(context, resourceURI, locales());
+			final List<CodeSystem.ConceptDefinitionComponent> concepts = converter.expandConcepts(context, resourceURI, locales());
 			final int count = converter.count(context, resourceURI);
 
 			if (concepts.size() == 0) {
-				entry.content(CodeSystemContentMode.NOT_PRESENT);	
+				entry.setContent(CodeSystemContentMode.NOTPRESENT);
 			} else if (concepts.size() == count) {
-				entry.content(CodeSystemContentMode.COMPLETE);
+				entry.setContent(CodeSystemContentMode.COMPLETE);
 			} else {
 				/*
 				 * If the total concept count differs from the returned list's size, content is
@@ -99,18 +97,18 @@ final class FhirCodeSystemSearchRequest extends FhirResourceSearchRequest<CodeSy
 				 * "example" and "fragment", but the latter implies a curated subset, whereas
 				 * the former is intended for subsets without a specific intent.
 				 */				
-				entry.content(CodeSystemContentMode.EXAMPLE);
+				entry.setContent(CodeSystemContentMode.EXAMPLE);
 			}
 			
-			entry.concepts(concepts);
-			entry.count(count);
+			entry.setConcept(concepts);
+			entry.setCount(count);
 		} else {
-			entry.content(CodeSystemContentMode.NOT_PRESENT);
-			includeIfFieldSelected(CodeSystem.Fields.COUNT, () -> converter.count(context, resourceURI), entry::count);
+			entry.setContent(CodeSystemContentMode.NOTPRESENT);
+			includeIfFieldSelected(R5ObjectFields.CodeSystem.COUNT, () -> converter.count(context, resourceURI), entry::setCount);
 		}
 		
-		includeIfFieldSelected(CodeSystem.Fields.FILTER, () -> converter.expandFilters(context, resourceURI, locales()), entry::filters);
-		includeIfFieldSelected(CodeSystem.Fields.PROPERTY, () -> converter.expandProperties(context, resourceURI, locales()), properties -> {
+		includeIfFieldSelected(R5ObjectFields.CodeSystem.FILTER, () -> converter.expandFilters(context, resourceURI, locales()), entry::setFilter);
+		includeIfFieldSelected(R5ObjectFields.CodeSystem.PROPERTY, () -> converter.expandProperties(context, resourceURI, locales()), properties -> {
 			properties.stream()
 				.filter(p -> !(SupportedCodeSystemRequestProperties.class.isInstance(p)))
 				.map(prop -> SupportedConceptProperty.builder(prop).build())

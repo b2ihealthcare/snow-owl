@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2022-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,13 @@ package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import java.time.LocalDate;
 
+import org.hl7.fhir.r5.model.CodeSystem;
+
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
 
 /**
