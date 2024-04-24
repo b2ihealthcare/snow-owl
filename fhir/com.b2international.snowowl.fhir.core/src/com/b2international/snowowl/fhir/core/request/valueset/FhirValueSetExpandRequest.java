@@ -22,6 +22,7 @@ import org.hl7.fhir.r5.model.Bundle;
 import org.hl7.fhir.r5.model.CodeSystem;
 import org.hl7.fhir.r5.model.Enumerations.FilterOperator;
 import org.hl7.fhir.r5.model.Enumerations.PublicationStatus;
+import org.hl7.fhir.r5.model.Parameters;
 import org.hl7.fhir.r5.model.ValueSet;
 
 import com.b2international.commons.CompareUtils;
@@ -38,17 +39,12 @@ import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.fhir.core.R5ObjectFields;
-import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
+import com.b2international.snowowl.fhir.core.operations.ValueSetExpandParameters;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.b2international.snowowl.fhir.core.request.codesystem.FhirRequest;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Hashing;
-
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 
 /**
  * @since 8.0
@@ -57,19 +53,15 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 
 	private static final long serialVersionUID = 1L;
 	
-	@NotNull
-	@Valid
-	@JsonProperty
-	@JsonUnwrapped
-	private ExpandValueSetRequest request;
+	private ValueSetExpandParameters parameters;
 
-	public FhirValueSetExpandRequest(ExpandValueSetRequest request) {
-		this.request = request;
+	public FhirValueSetExpandRequest(Parameters parameters) {
+		this.parameters = new ValueSetExpandParameters(parameters);
 	}
 	
 	@Override
 	public ValueSet execute(ServiceProvider context) {
-		final String uri = request.getUrl().getUriValue();
+		final String uri = parameters.getUrl().asStringValue();
 		ValueSet valueSet = null;
 		try {
 			valueSet = FhirRequests.valueSets().prepareGet(uri)
@@ -84,7 +76,7 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 					.get(valueSet.getUserString(TerminologyResource.Fields.TOOLING_ID))
 					.optionalService(FhirValueSetExpander.class)
 					.orElse(FhirValueSetExpander.NOOP)
-					.expand(context, valueSet, request);
+					.expand(context, valueSet, parameters);
 		} catch (NotFoundException e) {
 			// if there is no Value Set present for the given URL, then try to parse the URL to a meaningful value if possible and evaluate it
 			if (uri.startsWith("http://")) {
@@ -109,7 +101,7 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 		}
 		
 		// if this is the base URI string, then always append the core module to represent the International Edition properly
-		if (Uri.SNOMED_BASE_URI_STRING.equals(baseUrl)) {
+		if ("http://snomed.info/sct".equals(baseUrl)) {
 			baseUrl = baseUrl.concat("/900000000000207008");
 		}
 		
@@ -144,15 +136,15 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 		
 		ConceptSearchRequestBuilder req = CodeSystemRequests.prepareSearchConcepts()
 				.filterByCodeSystemUri(new ResourceURI(codeSystem.getUserString(TerminologyResource.Fields.RESOURCE_URI)))
-				.filterByActive(request.getActiveOnly())
-				.filterByTerm(request.getFilter())
-				.setLimit(request.getCount() == null ? 10 : request.getCount())
-				.setSearchAfter(request.getAfter())
+				.filterByActive(parameters.getActiveOnly().getValue())
+				.filterByTerm(parameters.getFilter().getValue())
+				.setLimit(parameters.getCount() == null ? 10 : parameters.getCount().getValue())
+				.setSearchAfter(parameters.getAfter() == null ? null : parameters.getAfter().getValue())
 				// SNOMED only preferred display support (VS should always use FSN)
 				.setPreferredDisplay("FSN") 
-				.setLocales(FhirRequest.extractLocales(request.getDisplayLanguage()))
+				.setLocales(FhirRequest.extractLocales(parameters.getDisplayLanguage()))
 				// always return sorted results for consistency, in case of term filtering return by score otherwise by ID
-				.sortBy(!CompareUtils.isEmpty(request.getFilter()) ? SearchIndexResourceRequest.SCORE : SearchResourceRequest.Sort.fieldAsc("id"));
+				.sortBy(!CompareUtils.isEmpty(parameters.getFilter()) ? SearchIndexResourceRequest.SCORE : SearchResourceRequest.Sort.fieldAsc("id"));
 
 		ValueSet.ValueSetComposeComponent compose = null;
 		

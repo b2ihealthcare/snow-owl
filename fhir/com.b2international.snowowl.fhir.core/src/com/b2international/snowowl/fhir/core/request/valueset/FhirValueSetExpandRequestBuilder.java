@@ -15,13 +15,13 @@
  */
 package com.b2international.snowowl.fhir.core.request.valueset;
 
+import org.hl7.fhir.r5.model.Parameters;
 import org.hl7.fhir.r5.model.ValueSet;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
-import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
 
 /**
  * @since 8.0
@@ -30,16 +30,16 @@ public final class FhirValueSetExpandRequestBuilder
 		extends BaseRequestBuilder<FhirValueSetExpandRequestBuilder, ServiceProvider, ValueSet>
 		implements SystemRequestBuilder<ValueSet> {
 
-	private ExpandValueSetRequest request;
+	private Parameters parameters;
 
-	public FhirValueSetExpandRequestBuilder setRequest(ExpandValueSetRequest request) {
-		this.request = request;
+	public FhirValueSetExpandRequestBuilder setParameters(Parameters parameters) {
+		this.parameters = parameters;
 		return getSelf();
 	}
 	
 	@Override
 	protected Request<ServiceProvider, ValueSet> doBuild() {
-		return new FhirValueSetExpandRequest(request);
+		return new FhirValueSetExpandRequest(parameters);
 	}
 
 }
