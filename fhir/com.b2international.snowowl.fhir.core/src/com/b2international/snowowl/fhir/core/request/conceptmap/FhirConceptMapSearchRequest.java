@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,17 @@ package com.b2international.snowowl.fhir.core.request.conceptmap;
 
 import java.util.List;
 
+import org.hl7.fhir.r5.model.ConceptMap;
+
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
-import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap.Builder;
+import com.b2international.snowowl.fhir.core.R5ObjectFields;
 import com.b2international.snowowl.fhir.core.request.FhirResourceSearchRequest;
 
 /**
  * @since 8.0
  */
-final class FhirConceptMapSearchRequest extends FhirResourceSearchRequest<ConceptMap.Builder, ConceptMap> {
+final class FhirConceptMapSearchRequest extends FhirResourceSearchRequest<ConceptMap> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -37,25 +37,25 @@ final class FhirConceptMapSearchRequest extends FhirResourceSearchRequest<Concep
 	}
 	
 	@Override
-	protected Builder createResourceBuilder() {
-		return ConceptMap.builder();
+	protected ConceptMap createResource() {
+		return new ConceptMap();
 	}
 	
 	@Override
 	protected void configureFieldsToLoad(List<String> fields) {
-		fields.remove(ConceptMap.Fields.GROUP);
+		fields.remove(R5ObjectFields.ConceptMap.GROUP);
 	}
 	
 	@Override
-	protected void expandResourceSpecificFields(RepositoryContext context, Builder entry, ResourceFragment resource) {
-		includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, resource::getCopyright, entry::copyright);
+	protected void expandResourceSpecificFields(RepositoryContext context, ConceptMap entry, ResourceFragment resource) {
+		includeIfFieldSelected(R5ObjectFields.CodeSystem.COPYRIGHT, resource::getCopyright, entry::setCopyright);
 
 		FhirConceptMapResourceConverter converter = context.service(RepositoryManager.class)
 				.get(resource.getToolingId())
 				.optionalService(FhirConceptMapResourceConverter.class)
 				.orElse(FhirConceptMapResourceConverter.DEFAULT);
 		
-		includeIfFieldSelected(ConceptMap.Fields.GROUP, () -> converter.expandMembers(context, resource.getResourceURI()), entry::groups);
+		includeIfFieldSelected(R5ObjectFields.ConceptMap.GROUP, () -> converter.expandMembers(context, resource.getResourceURI()), entry::setGroup);
 	}
 	
 }

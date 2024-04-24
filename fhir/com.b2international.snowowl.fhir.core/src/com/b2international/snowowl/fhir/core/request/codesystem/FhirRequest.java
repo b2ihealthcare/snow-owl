@@ -17,6 +17,10 @@ package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import java.util.Optional;
 
+import org.hl7.fhir.r5.model.Bundle;
+import org.hl7.fhir.r5.model.CodeSystem;
+import org.hl7.fhir.r5.model.CodeType;
+
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.AcceptLanguageHeader;
@@ -24,9 +28,6 @@ import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.uri.ResourceURLSchemaSupport;
-import com.b2international.snowowl.fhir.core.model.ResourceResponseEntry;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.google.common.base.Strings;
@@ -60,7 +61,7 @@ public abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 					} else {
 						return fetchCodeSystemByUrl(context, system)
 								// if there is a codesystem with the specified URL then construct a versioned form using its official URL schema from its tooling
-								.flatMap((cs) -> fetchCodeSystemByUrl(context, context.service(RepositoryManager.class).get(cs.getToolingId()).service(ResourceURLSchemaSupport.class).withVersion(system, version, null)));
+								.flatMap((cs) -> fetchCodeSystemByUrl(context, context.service(RepositoryManager.class).get(cs.getUserData("toolingId")).service(ResourceURLSchemaSupport.class).withVersion(system, version, null)));
 					}
 				})
 				.orElseThrow(() -> new NotFoundException("CodeSystem", system));
@@ -78,9 +79,9 @@ public abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 			.buildAsync()
 			.getRequest()
 			.execute(context)
-			.first()
-			.map(ResourceResponseEntry.class::cast)
-			.map(ResourceResponseEntry::getResponseResource)
+			.getEntry().stream().findFirst()
+			.map(Bundle.BundleEntryComponent.class::cast)
+			.map(Bundle.BundleEntryComponent::getResource)
 			.map(CodeSystem.class::cast);
 	}
 
@@ -94,9 +95,9 @@ public abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 				.buildAsync()
 				.getRequest()
 				.execute(context)
-				.first()
-				.map(ResourceResponseEntry.class::cast)
-				.map(ResourceResponseEntry::getResponseResource)
+				.getEntry().stream().findFirst()
+				.map(Bundle.BundleEntryComponent.class::cast)
+				.map(Bundle.BundleEntryComponent::getResource)
 				.map(CodeSystem.class::cast);
 	}
 	
@@ -109,9 +110,9 @@ public abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 				.buildAsync()
 				.getRequest()
 				.execute(context)
-				.first()
-				.map(ResourceResponseEntry.class::cast)
-				.map(ResourceResponseEntry::getResponseResource)
+				.getEntry().stream().findFirst()
+				.map(Bundle.BundleEntryComponent.class::cast)
+				.map(Bundle.BundleEntryComponent::getResource)
 				.map(CodeSystem.class::cast);
 	}
 	
@@ -119,8 +120,8 @@ public abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 		return Summary.TRUE;
 	}
 
-	public static final String extractLocales(Code displayLanguage) {
-		String locales = displayLanguage != null ? displayLanguage.getCodeValue() : null;
+	public static final String extractLocales(CodeType displayLanguage) {
+		String locales = displayLanguage != null ? displayLanguage.getCode() : null;
 		if (CompareUtils.isEmpty(locales)) {
 			locales = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER;
 		}

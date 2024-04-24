@@ -27,7 +27,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Coding;
 /**
  * @since 6.4
  */
-public interface IConceptProperty extends FhirCodeSystem {
+public interface IConceptProperty {
 
 	/**
 	 * @return the FHIR type of the property.
