@@ -33,6 +33,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -44,10 +46,10 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.b2international.commons.json.Json;
-import com.b2international.index.revision.BaseRevisionBranching;
-import com.b2international.index.revision.RevisionBranch;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
+import com.b2international.index.revision.*;
 import com.b2international.index.revision.RevisionBranch.BranchState;
-import com.b2international.index.revision.RevisionSegment;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -60,6 +62,8 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.merge.Merge;
+import com.b2international.snowowl.core.request.RepositoryRequest;
+import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -71,8 +75,11 @@ import com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdProvider;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
@@ -1519,6 +1526,141 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		.as(SnomedDescriptions.class);
 			
 		assertThat(descriptions.getTotal()).isEqualTo(1);
+	}
+	
+	@Test
+	public void upgrade31DuplicateDescriptionAfterDerivedPropertyToggle() {
+		CodeSystemVersions allVersions = CodeSystemVersionRestRequests.getVersions(SNOMEDCT);
+		String secondLatestSIVersion = allVersions.getItems().get(allVersions.getItems().size() - 2).getVersion();
+		String latestSIVersion = Iterables.getLast(allVersions).getVersion();
+
+		// Create extension with one before latest SI version
+		CodeSystem extensionCodeSystem = createExtension(CodeSystemURI.branch(SNOMEDCT, secondLatestSIVersion), branchPath.lastSegment());
+		IBranchPath extensionPath = BranchPathUtils.createPath(extensionCodeSystem.getBranchPath());
+		String extensionModuleId = createModule(extensionCodeSystem);
+		
+		//Create a concept on the extension code system
+		String extensionConceptId = createConcept(extensionCodeSystem.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId)
+				.with("namespaceId", Concepts.B2I_NAMESPACE));
+		// Add a synonym to the concept
+		String descriptionId = createDescription(extensionCodeSystem.getCodeSystemURI(), createDescriptionRequestBody(extensionConceptId)
+				.with("moduleId", extensionModuleId)
+				.with("namespaceId", Concepts.B2I_NAMESPACE)
+				.with("term", "Example Synonym"));
+				
+		// Version the extension
+		String firstExtensionVersion = getNextAvailableEffectiveDateAsString(extensionCodeSystem.getShortName());
+		createVersion(extensionCodeSystem.getShortName(), firstExtensionVersion, firstExtensionVersion).statusCode(201);
+				
+		//Create "Task" branch
+		IBranchPath taskBranchPath = BranchPathUtils.createPath(extensionPath, "4170");
+		branching.createBranch(taskBranchPath).statusCode(201);
+		
+		//Change the description on the task branch by modifying derived properties like memberOf/activeMemberOf
+		@SuppressWarnings("deprecation")
+		RevisionIndex index = ApplicationContext.getServiceForClass(RepositoryManager.class)
+			.get(SnomedDatastoreActivator.REPOSITORY_UUID)
+			.service(RevisionIndex.class);
+		
+		SnomedDescriptionIndexEntry releasedRevision = index.read(taskBranchPath.getPath(), reader -> {
+			Query<SnomedDescriptionIndexEntry> query = Query.select(SnomedDescriptionIndexEntry.class)
+					.from(SnomedDescriptionIndexEntry.class)
+					.where(Expressions.builder()
+							.filter(SnomedDescriptionIndexEntry.Expressions.released(true))
+							.filter(SnomedDescriptionIndexEntry.Expressions.id(descriptionId))
+							.build())
+					.build();
+			return Iterables.getOnlyElement(reader.search(query), null);
+		});
+		
+		SnomedDescriptionIndexEntry revisionModifiedOnTask = SnomedDescriptionIndexEntry.builder(releasedRevision)
+				.memberOf(Collections.emptySet())
+				.activeMemberOf(Collections.emptySet())
+				.build();
+		
+		new RepositoryRequest<>(SnomedDatastoreActivator.REPOSITORY_UUID, context -> {
+			index.prepareCommit(taskBranchPath.getPath())
+				.stageNew(revisionModifiedOnTask)
+				.withContext(context.inject().bind(ModuleIdProvider.class, c -> c.getModuleId()).build())
+				.commit(ApplicationContext.getServiceForClass(TimestampProvider.class).getTimestamp(), "test", "Apply non-structural change to description " + descriptionId);
+			return null;
+		}).execute(ApplicationContext.getServiceForClass(Environment.class));
+		
+		//Create the second extension version
+		Json properties = createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId).with("namespaceId", Concepts.B2I_NAMESPACE);
+		createConcept(extensionCodeSystem.getCodeSystemURI(), properties); //Unrelated content, to have something to version
+		
+		String secondExtensionVersion = getNextAvailableEffectiveDateAsString(extensionCodeSystem.getShortName());
+		createVersion(extensionCodeSystem.getShortName(), secondExtensionVersion, secondExtensionVersion).statusCode(201);
+		String secondVersionPath = extensionCodeSystem.getRelativeBranchPath(secondExtensionVersion);
+		
+		//Revision visible here is the versioned one from the extension code system, which has been revised by the changes on the task branch
+		index.read(secondVersionPath, reader -> {
+			Query<JsonNode> query = Query.select(JsonNode.class)
+				.from(SnomedDescriptionIndexEntry.class)
+				.where(Expressions.builder()
+						.filter(SnomedDescriptionIndexEntry.Expressions.id(descriptionId))
+						.build())
+				.build();
+		
+			List<JsonNode> hits = reader.search(query).getHits();
+			hits.forEach(node -> {
+				System.err.println(node);
+			});
+			return null;
+		});
+		
+		//Promote the task branch
+		final String promoteLocation = createMerge(taskBranchPath.getPath(), extensionPath.getPath(), "Merge task branch into extension code system", true)
+				.statusCode(202)
+				.extract()
+				.header("Location");
+		waitForMergeJob(lastPathSegment(promoteLocation));
+		
+		//Create upgrade from second version of extension and latest INT version
+		CodeSystemURI upgradeVersion = CodeSystemURI.branch(SNOMEDCT, latestSIVersion);
+		String upgradeCodeSystemId = CodeSystemRequests.prepareUpgrade(CodeSystemURI.branch(extensionCodeSystem.getShortName(), secondExtensionVersion), upgradeVersion)
+			.build(extensionCodeSystem.getRepositoryId())
+			.execute(getBus())
+			.getSync();
+		CodeSystem upgradeCodeSystem = CodeSystemRestRequests.getCodeSystem(upgradeCodeSystemId).extract().as(CodeSystem.class);
+		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
+		index.read(upgradeCodeSystem.getBranchPath(), reader -> {
+			Query<JsonNode> query = Query.select(JsonNode.class)
+				.from(SnomedDescriptionIndexEntry.class)
+				.where(Expressions.builder()
+						.filter(SnomedDescriptionIndexEntry.Expressions.id(descriptionId))
+						.build())
+				.build();
+			
+			List<JsonNode> hits = reader.search(query).getHits();
+			hits.forEach(node -> System.err.println(node));
+			return null;
+		});
+		
+		//Synchronize the latest extension code system state with the upgrade code system
+		Boolean result = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getCodeSystemURI(), extensionCodeSystem.getCodeSystemURI())
+				.build(upgradeCodeSystem.getRepositoryId())
+				.execute(getBus())
+				.getSync();
+		assertTrue(result);
+		assertState(upgradeCodeSystem.getBranchPath(), extensionCodeSystem.getBranchPath(), BranchState.FORWARD);
+		
+		index.read(upgradeCodeSystem.getBranchPath(), reader -> {
+			Query<JsonNode> query = Query.select(JsonNode.class)
+				.from(SnomedDescriptionIndexEntry.class)
+				.where(Expressions.builder()
+						.filter(SnomedDescriptionIndexEntry.Expressions.id(descriptionId))
+						.build())
+				.build();
+			
+			List<JsonNode> hits = reader.search(query).getHits();
+			hits.forEach(node -> System.err.println(node));
+			return null;
+		});
+		
+		//Check that there are no duplicates on the upgrade branch
+		getDescription(upgradeCodeSystem.getCodeSystemURI(), descriptionId);	
 	}
 	
 	private void assertState(String branchPath, String compareWith, BranchState expectedState) {
