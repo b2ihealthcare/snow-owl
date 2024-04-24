@@ -23,6 +23,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
@@ -70,7 +71,7 @@ final class FhirSubsumesRequest extends FhirRequest<SubsumptionResult> {
 	private boolean isSubsumedBy(ServiceProvider context, CodeSystem codeSystem, final String subType, final String superType) {
 		return CodeSystemRequests.prepareSearchConcepts()
 			.setLimit(0)
-			.filterByCodeSystemUri(codeSystem.getResourceURI())
+			.filterByCodeSystem(codeSystem.getUserString(TerminologyResource.Fields.RESOURCE_URI))
 			.filterById(subType)
 			.filterByAncestor(superType)
 			.buildAsync()

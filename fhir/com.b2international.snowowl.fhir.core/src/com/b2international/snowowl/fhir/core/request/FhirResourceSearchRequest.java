@@ -37,6 +37,7 @@ import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionBranchPoint;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
@@ -307,7 +308,8 @@ public abstract class FhirResourceSearchRequest<T extends MetadataResource> exte
 			.orElse(null)
 		);
 		// XXX append the toolingId as user supplied metadata for now, it is needed when executing tooling specific request based on a FHIR Resource data
-		meta.setUserData("toolingId", resource.getToolingId());
+		meta.setUserData(TerminologyResource.Fields.TOOLING_ID, resource.getToolingId());
+		meta.setUserData(TerminologyResource.Fields.RESOURCE_URI, resource.getResourceURI().toString());
 		return meta;
 	}
 

@@ -146,7 +146,7 @@ public final class R5ObjectFields {
 		
 	}
 	
-	public static final class Fields extends MetadataResource {
+	public static final class ValueSet extends MetadataResource {
 		
 		public static final String IMMUTABLE = "immutable";
 		public static final String COMPOSE = "compose";
