@@ -21,17 +21,22 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.hl7.fhir.r5.model.CodeSystem;
+import org.hl7.fhir.r5.model.Parameters;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.codesystem.*;
+import com.b2international.snowowl.fhir.core.operations.CodeSystemLookupParameters;
+import com.b2international.snowowl.fhir.core.operations.CodeSystemLookupResultParameters;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.common.collect.Sets;
@@ -49,71 +54,68 @@ import com.google.common.collect.Sets;
  * @see LookupResult
  * @since 8.0
  */
-final class FhirLookupRequest extends FhirRequest<LookupResult> {
+final class FhirCodeSystemLookupRequest extends FhirRequest<CodeSystemLookupResultParameters> {
 
 	private static final long serialVersionUID = 1L;
 	
 	private static final Set<String> LOOKUP_REQUEST_PROPS = Arrays.stream(SupportedCodeSystemRequestProperties.values()).map(SupportedCodeSystemRequestProperties::getCodeValue).collect(Collectors.toSet());
 	
-	@NotNull
-	@Valid
-	@JsonProperty
-	@JsonUnwrapped
-	private LookupRequest request;
+	private final CodeSystemLookupParameters parameters;
 
-	FhirLookupRequest(LookupRequest request) {
-		super(request.getSystem(), request.getVersion());
-		this.request = request;
+	FhirCodeSystemLookupRequest(CodeSystemLookupParameters parameters) {
+		super(parameters.getSystem().getValue(), parameters.getVersion().getValue());
+		this.parameters = parameters;
 	}
 
 	@Override
-	protected LookupResult doExecute(ServiceProvider context, CodeSystem codeSystem) {
+	protected CodeSystemLookupResultParameters doExecute(ServiceProvider context, CodeSystem codeSystem) {
 		validateRequestedProperties(codeSystem);
 		
-		final String acceptLanguage = extractLocales(request.getDisplayLanguage());
+		final String acceptLanguage = extractLocales(parameters.getDisplayLanguage());
 
-		FhirCodeSystemLookupConverter converter = context.service(RepositoryManager.class).get(codeSystem.getToolingId())
+		FhirCodeSystemLookupConverter converter = context.service(RepositoryManager.class).get(codeSystem.getUserString(TerminologyResource.Fields.TOOLING_ID))
 				.optionalService(FhirCodeSystemLookupConverter.class)
 				.orElse(FhirCodeSystemLookupConverter.DEFAULT);
 		
-		final String conceptExpand = converter.configureConceptExpand(request);
+		final String conceptExpand = converter.configureConceptExpand(parameters);
 		
 		Concept concept = CodeSystemRequests.prepareSearchConcepts()
 			.one()
-			.filterByCodeSystemUri(codeSystem.getResourceURI())
-			.filterById(request.getCode())
+			.filterByCodeSystemUri(new ResourceURI(codeSystem.getUserString(TerminologyResource.Fields.RESOURCE_URI)))
+			.filterById(parameters.getCode().getCode())
 			.setLocales(acceptLanguage)
 			.setExpand(conceptExpand)
 			.buildAsync()
 			.execute(context)
 			.first()
-			.orElseThrow(() -> new NotFoundException("Concept", request.getCode()));
+			.orElseThrow(() -> new NotFoundException("Concept", parameters.getCode().getCode()));
 		
+		CodeSystemLookupResultParameters result = new CodeSystemLookupResultParameters();
 		
-		return LookupResult.builder()
-				.name(codeSystem.getName())
-				.display(concept.getTerm())
-				.version(codeSystem.getVersion())
-				.designation(converter.expandDesignations(context, codeSystem, concept, request, acceptLanguage))
-				.property(converter.expandProperties(context, codeSystem, concept, request))
-				.build();
+		result.setName(codeSystem.getName());
+		result.setDisplay(concept.getTerm());
+		result.setVersion(codeSystem.getVersion());
+		result.setDesignation(converter.expandDesignations(context, codeSystem, concept, parameters, acceptLanguage));
+		result.setProperty(converter.expandProperties(context, codeSystem, concept, parameters));
+		
+		return result; 
 	}
 	
 	private void validateRequestedProperties(CodeSystem codeSystem) {
-		final Set<String> requestedProperties = request.getPropertyCodes();
+		final Set<String> requestedProperties = parameters.getPropertyCodes();
 		// first check if any of the properties are lookup request properties
 		final Set<String> nonLookupProperties = Sets.difference(requestedProperties, LOOKUP_REQUEST_PROPS);
 		
 		// second check if the remaining unsupported properties supported by the CodeSystem either via full URL
-		final Set<String> supportedProperties = codeSystem.getProperties() == null 
+		final Set<String> supportedProperties = codeSystem.getProperty() == null 
 				? Collections.emptySet() 
-				: codeSystem.getProperties().stream().map(SupportedConceptProperty::getUri).map(Uri::getUriValue).collect(Collectors.toSet());
+				: codeSystem.getProperty().stream().map(SupportedConceptProperty::getUri).map(Uri::getUriValue).collect(Collectors.toSet());
 		final Set<String> unsupportedProperties = Sets.difference(nonLookupProperties, supportedProperties);
 		
 		// or via their code only
-		final Set<String> supportedCodes = codeSystem.getProperties() == null 
+		final Set<String> supportedCodes = codeSystem.getProperty() == null 
 				? Collections.emptySet() 
-				: codeSystem.getProperties().stream().map(SupportedConceptProperty::getCodeValue).collect(Collectors.toSet());
+				: codeSystem.getProperty().stream().map(SupportedConceptProperty::getCodeValue).collect(Collectors.toSet());
 		final Set<String> unsupportedCodes = Sets.difference(unsupportedProperties, supportedCodes);
 		
 		if (!unsupportedCodes.isEmpty()) {

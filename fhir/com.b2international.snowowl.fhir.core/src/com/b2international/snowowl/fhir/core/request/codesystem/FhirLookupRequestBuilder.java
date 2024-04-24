@@ -38,7 +38,7 @@ public final class FhirLookupRequestBuilder
 	
 	@Override
 	protected Request<ServiceProvider, LookupResult> doBuild() {
-		return new FhirLookupRequest(request);
+		return new FhirCodeSystemLookupRequest(request);
 	}
 
 }
