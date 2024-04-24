@@ -696,7 +696,10 @@ public final class StagingArea {
 		if (stagedObjects.containsKey(objectId)) {
 			StagedObject currentStagedObject = stagedObjects.get(objectId);
 			if (!currentStagedObject.isCommit() && currentStagedObject.getObject() instanceof Revision && newDocument instanceof Revision) {
-				stagedObjects.put(objectId, changed(newDocument, new RevisionDiff((Revision) currentStagedObject.getObject(), (Revision) newDocument), commit));
+				RevisionDiff diff = new RevisionDiff((Revision) currentStagedObject.getObject(), (Revision) newDocument);
+				if (diff.hasChanges()) {
+					stagedObjects.put(objectId, changed(newDocument, diff, commit));
+				}
 			} else {
 				stagedObjects.put(objectId, added(newDocument, null, commit));
 			}
