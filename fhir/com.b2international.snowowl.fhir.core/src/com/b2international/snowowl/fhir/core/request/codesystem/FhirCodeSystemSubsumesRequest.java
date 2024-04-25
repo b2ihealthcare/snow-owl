@@ -19,16 +19,11 @@ import java.util.Objects;
 
 import org.hl7.fhir.r5.model.CodeSystem;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
-import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.b2international.snowowl.fhir.core.operations.CodeSystemSubsumptionParameters;
+import com.b2international.snowowl.fhir.core.operations.CodeSystemSubsumptionResultParameters;
 
 /**
  * Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).
@@ -36,35 +31,31 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
  * @see <a href="http://hl7.org/fhir/codesystem-operation-subsumes.html">offical FHIR $subsumes operation docs</a> for more details.
  * @since 8.0
  */
-final class FhirSubsumesRequest extends FhirRequest<SubsumptionResult> {
+final class FhirCodeSystemSubsumesRequest extends FhirRequest<CodeSystemSubsumptionResultParameters> {
 
 	private static final long serialVersionUID = 1L;
 	
-	@NotNull
-	@Valid
-	@JsonProperty
-	@JsonUnwrapped
-	private final SubsumptionRequest request;
+	private final CodeSystemSubsumptionParameters parameters;
 
-	public FhirSubsumesRequest(SubsumptionRequest request) {
-		super(request.getSystem(), request.getVersion());
-		this.request = request;
+	public FhirCodeSystemSubsumesRequest(CodeSystemSubsumptionParameters parameters) {
+		super(parameters.getSystem().getValue(), parameters.getVersion().getValue());
+		this.parameters = parameters;
 	}
 
 	@Override
-	public SubsumptionResult doExecute(ServiceProvider context, CodeSystem codeSystem) {
+	public CodeSystemSubsumptionResultParameters doExecute(ServiceProvider context, CodeSystem codeSystem) {
 		
-		final String codeA = request.getCodeA() != null ? request.getCodeA() : request.getCodingA().getCodeValue();
-		final String codeB = request.getCodeB() != null ? request.getCodeB() : request.getCodingB().getCodeValue();
+		final String codeA = parameters.getCodeA() != null ? parameters.getCodeA().getValue() : parameters.getCodingA().getCode();
+		final String codeB = parameters.getCodeB() != null ? parameters.getCodeB().getValue() : parameters.getCodingB().getCode();
 		
 		if (Objects.equals(codeA, codeB)) {
-			return SubsumptionResult.equivalent();
+			return CodeSystemSubsumptionResultParameters.equivalent();
 		} else if (isSubsumedBy(context, codeSystem, codeA, codeB)) {
-			return SubsumptionResult.subsumedBy(); 
+			return CodeSystemSubsumptionResultParameters.subsumedBy(); 
 		} else if (isSubsumedBy(context, codeSystem, codeB, codeA)) {
-			return SubsumptionResult.subsumes();	
+			return CodeSystemSubsumptionResultParameters.subsumes();	
 		} else {
-			return SubsumptionResult.notSubsumed();				
+			return CodeSystemSubsumptionResultParameters.notSubsumed();				
 		}
 	}
 
