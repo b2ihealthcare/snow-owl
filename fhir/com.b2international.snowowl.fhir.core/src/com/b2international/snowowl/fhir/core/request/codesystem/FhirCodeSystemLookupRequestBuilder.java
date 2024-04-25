@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,30 +15,32 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
+import org.hl7.fhir.r5.model.Parameters;
+
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
+import com.b2international.snowowl.fhir.core.operations.CodeSystemLookupParameters;
+import com.b2international.snowowl.fhir.core.operations.CodeSystemLookupResultParameters;
 
 /**
  * @since 8.0
  */
-public final class FhirLookupRequestBuilder 
-		extends BaseRequestBuilder<FhirLookupRequestBuilder, ServiceProvider, LookupResult>
-		implements SystemRequestBuilder<LookupResult> {
+public final class FhirCodeSystemLookupRequestBuilder 
+		extends BaseRequestBuilder<FhirCodeSystemLookupRequestBuilder, ServiceProvider, CodeSystemLookupResultParameters>
+		implements SystemRequestBuilder<CodeSystemLookupResultParameters> {
 
-	private LookupRequest request;
+	private CodeSystemLookupParameters parameters;
 	
-	public FhirLookupRequestBuilder setRequest(LookupRequest request) {
-		this.request = request;
+	public FhirCodeSystemLookupRequestBuilder setParameters(Parameters parameters) {
+		this.parameters = new CodeSystemLookupParameters(parameters);
 		return getSelf();
 	}
 	
 	@Override
-	protected Request<ServiceProvider, LookupResult> doBuild() {
-		return new FhirCodeSystemLookupRequest(request);
+	protected Request<ServiceProvider, CodeSystemLookupResultParameters> doBuild() {
+		return new FhirCodeSystemLookupRequest(parameters);
 	}
 
 }

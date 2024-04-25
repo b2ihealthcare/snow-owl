@@ -47,15 +47,69 @@ public final class CodeSystemLookupResultParameters extends BaseParameters {
 	}
 
 	public void setDesignation(List<ConceptDefinitionDesignationComponent> designations) {
-//		getParameters().addParameter("designation", designations);
+		if (designations == null) return;
+		
+		designations.stream()
+			.map(designation -> {
+				var designationParameter = new Parameters.ParametersParameterComponent().setName("designation");
+				
+				// add value part, which is the term of the designation
+				designationParameter.addPart(
+					new Parameters.ParametersParameterComponent()
+						.setName("value")
+						.setValue(designation.getValueElement())
+				);
+				// add language part
+				designationParameter.addPart(
+					new Parameters.ParametersParameterComponent()
+						.setName("language")
+						.setValue(designation.getLanguageElement())
+				);
+				// add use part
+				designationParameter.addPart(
+					new Parameters.ParametersParameterComponent()
+						.setName("use")
+						.setValue(designation.getUse())
+				);
+				// add language part
+				designation.getAdditionalUse().forEach(additionalUse -> {
+					designationParameter.addPart(
+						new Parameters.ParametersParameterComponent()
+						.setName("additionalUse")
+						.setValue(additionalUse)
+					);
+				});
+				
+				
+				return designationParameter; 
+			})
+			.forEach(getParameters()::addParameter);
 	}
 
 	public void setProperty(List<ConceptPropertyComponent> properties) {
-//		getParameters().addParameter("property", properties);
+		if (properties == null) return;
+		
+		properties.stream()
+			.map(property -> {
+				var propertyParameter = new Parameters.ParametersParameterComponent().setName("property");
+				
+				// property.code
+				propertyParameter.addPart(
+					new Parameters.ParametersParameterComponent()
+						.setName("code")
+						.setValue(property.getCodeElement())
+				);
+				
+				// property.value
+				propertyParameter.addPart(
+					new Parameters.ParametersParameterComponent()
+						.setName("value")
+						.setValue(property.getValue())
+				);
+				
+				return propertyParameter; 
+			})
+			.forEach(getParameters()::addParameter);
 	}
-	
-	
-	
-	
 	
 }
