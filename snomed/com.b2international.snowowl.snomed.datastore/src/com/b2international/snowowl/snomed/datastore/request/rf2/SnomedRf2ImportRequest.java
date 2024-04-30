@@ -382,9 +382,16 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 				
 				header = false;
 			} else {
-				final String effectiveTimeKey = getEffectiveTimeKey(line[1]);
 				final ImportDefectBuilder defectBuilder = defectAcceptor.on(Integer.toString(lineNumber));
-				resolver.register(line, effectiveTimeSlices.getOrCreate(effectiveTimeKey), defectBuilder);
+				if (line.length > 1) {
+					final String effectiveTimeKey = getEffectiveTimeKey(line[1]);
+					resolver.register(line, effectiveTimeSlices.getOrCreate(effectiveTimeKey), defectBuilder);
+				} else if (line.length == 1) {
+					// report error if line is not empty but there is no effective time column present
+					defectBuilder.error("Incorrect/broken RF2 line detected");
+				} else {
+					// line is empty, skip it (TODO do we need a warning here?)
+				}
 			}
 
 			lineNumber++;
