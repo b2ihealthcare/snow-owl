@@ -33,10 +33,6 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.DBMaker.Maker;
@@ -100,6 +96,10 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * @since 6.0.0
@@ -383,14 +383,14 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 				header = false;
 			} else {
 				final ImportDefectBuilder defectBuilder = defectAcceptor.on(Integer.toString(lineNumber));
-				if (line.length > 1) {
+				if (line.length == 0) {
+					// line is empty, skip it (TODO do we need a warning here?)
+				} else if (line.length == resolver.getHeaderColumns().length) {
 					final String effectiveTimeKey = getEffectiveTimeKey(line[1]);
 					resolver.register(line, effectiveTimeSlices.getOrCreate(effectiveTimeKey), defectBuilder);
-				} else if (line.length == 1) {
-					// report error if line is not empty but there is no effective time column present
-					defectBuilder.error("Incorrect/broken RF2 line detected");
 				} else {
-					// line is empty, skip it (TODO do we need a warning here?)
+					// report error if line has column number differences compared to the expected number of header columns
+					defectBuilder.error("RF2 line has different number of values (%s) than the expected number of header columns (%s)", line.length, resolver.getHeaderColumns().length);
 				}
 			}
 
