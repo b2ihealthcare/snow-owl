@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2017-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,25 +105,24 @@ final class MapDBRf2EffectiveTimeSlice extends BaseRf2EffectiveTimeSlice {
 	}
 	
 	@Override
-	public void register(String containerId, Rf2ContentType<?> type, String[] values, ImportDefectBuilder defectBuilder) {
+	public void register(long containerId, Rf2ContentType<?> type, String[] values, ImportDefectBuilder defectBuilder) {
 		
 		String[] valuesWithType = new String[values.length + 1];
 		valuesWithType[0] = type.getType();
 		System.arraycopy(values, 0, valuesWithType, 1, values.length);
 
 		final String componentId = values[0];
-		final long containerIdL = Long.parseLong(containerId);
 
 		// track refset members via membersByReferencedComponent map
 		if (Rf2RefSetContentType.class.isAssignableFrom(type.getClass())) {
-			if (!membersByReferencedComponent.containsKey(containerIdL)) {
-				membersByReferencedComponent.put(containerIdL, newHashSet());
+			if (!membersByReferencedComponent.containsKey(containerId)) {
+				membersByReferencedComponent.put(containerId, newHashSet());
 			}
-			membersByReferencedComponent.get(containerIdL).add(componentId);
+			membersByReferencedComponent.get(containerId).add(componentId);
 		} else {
 			// register other non-concept components in the dependency graph to force strongly connected subgraphs
-			if (!IComponent.ROOT_ID.equals(containerId)) {
-				registerDependencies(containerIdL, PrimitiveSets.newLongOpenHashSet(Long.parseLong(componentId)));
+			if (IComponent.ROOT_IDL != containerId) {
+				registerDependencies(containerId, PrimitiveSets.newLongOpenHashSet(Long.parseLong(componentId)));
 			}
 		}
 		

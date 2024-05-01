@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2017-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,8 +38,15 @@ public interface Rf2ContentType<T extends SnomedComponent> {
 	default void register(String[] values, Rf2EffectiveTimeSlice slice, ImportDefectBuilder defectBuilder) {
 		
 		final String containerId = getContainerId(values);
-		slice.register(containerId, this, values, defectBuilder);
-		slice.registerDependencies(getDependentComponentId(values), getDependencies(values));
+		try {
+			final long containerIdL = Long.parseLong(containerId);
+			
+			slice.register(containerIdL, this, values, defectBuilder);
+			slice.registerDependencies(getDependentComponentId(values), getDependencies(values));
+		} catch (NumberFormatException e) {
+			defectBuilder.error("Non-SCTID (%s) present in container column of RF2 content type of '%s'", containerId, getType());
+			return;
+		}
 	}
 
 	default long getDependentComponentId(String[] values) {
