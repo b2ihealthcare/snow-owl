@@ -362,11 +362,11 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		
 		boolean header = true;
 		Rf2ContentType<?> resolver = null;
-		int lineNumber = 1;
 		
 		MappingIterator<String[]> mi = oReader.readValues(in);
 		while (mi.hasNext()) {
 			String[] line = mi.next();
+			int lineNumber = mi.getCurrentLocation().getLineNr();
 			
 			if (header) {
 				for (Rf2ContentType<?> contentType : Rf2Format.getContentTypes()) {
@@ -394,8 +394,6 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 					defectBuilder.error("RF2 line has different number of values (%s) than the expected number of header columns (%s)", line.length, resolver.getHeaderColumns().length);
 				}
 			}
-
-			lineNumber++;
 		}
 	}
 
