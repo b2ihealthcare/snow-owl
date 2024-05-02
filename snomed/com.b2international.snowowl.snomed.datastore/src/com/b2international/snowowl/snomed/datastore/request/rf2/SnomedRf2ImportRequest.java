@@ -413,7 +413,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	private DB createDb() {
 		try {
 			Maker dbMaker = DBMaker 
-					.fileDB(Files.createTempDirectory(rf2Archive.toString()).resolve("rf2-import.db").toFile())
+					.fileDB(Files.createTempDirectory(rf2Archive.getAttachmentIdString()).resolve("rf2-import.db").toFile())
 					.fileDeleteAfterClose()
 					.fileMmapEnable()
 					.fileMmapPreclearDisable();
