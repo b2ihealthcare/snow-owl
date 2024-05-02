@@ -23,7 +23,10 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -89,6 +92,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.google.common.base.Charsets;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
@@ -330,7 +334,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		final ObjectReader oReader = csvMapper.readerFor(String[].class).with(schema);
 
 		final Stopwatch w = Stopwatch.createStarted();
-		try (final ZipFile zip = new ZipFile(rf2Archive)) {
+		try (final ZipFile zip = new ZipFile(rf2Archive, Charsets.UTF_8)) {
 			for (ZipEntry entry : Collections.list(zip.entries())) {
 				final String fileName = Paths.get(entry.getName()).getFileName().toString().toLowerCase();
 				if (fileName.endsWith(TXT_EXT)) {
