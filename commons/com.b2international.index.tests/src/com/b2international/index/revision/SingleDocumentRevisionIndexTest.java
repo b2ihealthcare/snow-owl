@@ -54,6 +54,21 @@ public class SingleDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		indexRevision(MAIN, data);
 		assertEquals(data, getRevision(MAIN, RevisionData.class, STORAGE_KEY1));
 	}
+	
+	@Test
+	public void stageNewRevisionMultipleTimes() throws Exception {
+		final RevisionData data = new RevisionData(STORAGE_KEY1, "fieldA", "fieldB");
+		StagingArea staging = index().prepareCommit(MAIN);
+		staging.stageNew(data, false);
+		
+		staging.stageNew(data, true);
+		assertEquals(staging.getNumberOfStagedObjects(), 1);
+		assertEquals(data, staging.getNewObject(RevisionData.class, STORAGE_KEY1));
+		
+		staging.stageNew(data, false);
+		assertEquals(staging.getNumberOfStagedObjects(), 1);
+		assertEquals(data, staging.getNewObject(RevisionData.class, STORAGE_KEY1));
+	}
 
 	@Test
 	public void deleteRevision() throws Exception {
