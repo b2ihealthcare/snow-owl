@@ -1604,9 +1604,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 				.build();
 		
 			List<JsonNode> hits = reader.search(query).getHits();
-			hits.forEach(node -> {
-				System.err.println(node);
-			});
+			assertThat(hits).hasSize(1);
 			return null;
 		});
 		
@@ -1634,7 +1632,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 				.build();
 			
 			List<JsonNode> hits = reader.search(query).getHits();
-			hits.forEach(node -> System.err.println(node));
+			assertThat(hits).hasSize(1);
 			return null;
 		});
 		
@@ -1655,7 +1653,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 				.build();
 			
 			List<JsonNode> hits = reader.search(query).getHits();
-			hits.forEach(node -> System.err.println(node));
+			assertThat(hits).hasSize(1);
 			return null;
 		});
 		
