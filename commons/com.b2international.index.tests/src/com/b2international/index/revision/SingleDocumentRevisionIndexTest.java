@@ -62,11 +62,11 @@ public class SingleDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		staging.stageNew(data, false);
 		
 		staging.stageNew(data, true);
-		assertEquals(staging.getNumberOfStagedObjects(), 1);
+		assertEquals(1, staging.getNumberOfStagedObjects());
 		assertEquals(data, staging.getNewObject(RevisionData.class, STORAGE_KEY1));
 		
 		staging.stageNew(data, false);
-		assertEquals(staging.getNumberOfStagedObjects(), 1);
+		assertEquals(1, staging.getNumberOfStagedObjects());
 		assertEquals(data, staging.getNewObject(RevisionData.class, STORAGE_KEY1));
 	}
 
