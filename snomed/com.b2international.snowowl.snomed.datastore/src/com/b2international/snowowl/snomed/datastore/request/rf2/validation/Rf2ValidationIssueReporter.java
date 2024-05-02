@@ -74,11 +74,11 @@ public final class Rf2ValidationIssueReporter {
 	}
 
 	public void logWarnings(Logger log, int numberOfIssuesToLog) {
-		allWarnings().limit(numberOfIssuesToLog).forEachOrdered(defect -> log.warn(defect.getMessage()));
+		allWarnings().limit(numberOfIssuesToLog).forEachOrdered(defect -> log.warn(defect.toString()));
 	}
 	
 	public void logErrors(Logger log, int numberOfIssuesToLog) {
-		allErrors().limit(numberOfIssuesToLog).forEachOrdered(defect -> log.error(defect.getMessage()));
+		allErrors().limit(numberOfIssuesToLog).forEachOrdered(defect -> log.error(defect.toString()));
 	}
 
 	public boolean hasErrors() {

@@ -23,10 +23,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -310,9 +307,9 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		defectAcceptor.getDefects()
 			.forEach(defect -> {
 				if (defect.isError()) {
-					log.error(defect.getMessage());
+					log.error(defect.toString());
 				} else if (defect.isWarning()) {
-					log.warn(defect.getMessage());
+					log.warn(defect.toString());
 				}
 			});
 	}
