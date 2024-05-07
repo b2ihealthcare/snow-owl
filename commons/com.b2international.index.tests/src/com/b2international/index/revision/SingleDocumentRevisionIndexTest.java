@@ -63,12 +63,18 @@ public class SingleDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		
 		staging.stageNew(data, true);
 		assertEquals(1, staging.getNumberOfStagedObjects());
-		assertEquals(data, staging.getNewObject(RevisionData.class, STORAGE_KEY1));
+		var stagedObject = staging.getStagedObject(RevisionData.class, STORAGE_KEY1);
+		assertEquals(false, stagedObject.isCommit());
+		assertEquals(data, stagedObject.getObject());
+		assertEquals(true, stagedObject.isAdded());
 		
 		final RevisionData updatedData = new RevisionData(STORAGE_KEY1, "fieldC", "fieldB");
 		staging.stageNew(updatedData, true);
 		assertEquals(1, staging.getNumberOfStagedObjects());
-		assertEquals(updatedData, staging.getNewObject(RevisionData.class, STORAGE_KEY1));
+		stagedObject = staging.getStagedObject(RevisionData.class, STORAGE_KEY1);
+		assertEquals(true, stagedObject.isCommit());
+		assertEquals(updatedData, stagedObject.getObject());
+		assertEquals(true, stagedObject.isChanged());
 	}
 
 	@Test
