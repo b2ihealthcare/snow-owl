@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.fhir.core.request.valueset;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
-
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 
 import org.elasticsearch.common.Strings;
 
@@ -35,6 +35,7 @@ import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.fhir.core.codesystems.FilterOperator;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.ResourceResponseEntry;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
@@ -49,6 +50,9 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Hashing;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * @since 8.0
@@ -88,7 +92,10 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 		} catch (NotFoundException e) {
 			// if there is no Value Set present for the given URL, then try to parse the URL to a meaningful value if possible and evaluate it
 			if (uri.startsWith("http://")) {
-				return computeFhirValueSetUsingUrl(context, uri);
+				ValueSet implicitVs = computeFhirValueSetUsingUrl(context, uri);
+				if (implicitVs != null) {
+					return implicitVs;
+				}
 			}
 			
 			throw e;
@@ -162,6 +169,14 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 			String fhirVsValue = query.replace("fhir_vs=", "");
 			if (fhirVsValue.startsWith("ecl/")) {
 				String ecl = fhirVsValue.replace("ecl/", "");
+				
+				// make sure we decode the ECL before using it
+				try {
+					ecl = URLDecoder.decode(ecl, StandardCharsets.UTF_8.toString());
+				} catch (UnsupportedEncodingException e) {
+					throw new BadRequestException("Failed to decode ECL expression: " + e.getMessage());
+				}
+				
 				req.filterByQuery(ecl);
 				// configure Value Set for ECL
 				valueSet
