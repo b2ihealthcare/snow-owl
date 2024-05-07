@@ -68,7 +68,9 @@ public final class SnomedOWLExpressionConverter {
 		"SubClassOf", 
 		"EquivalentClasses", 
 		"SubObjectPropertyOf", 
-		"SubDataPropertyOf");
+		"SubDataPropertyOf",
+		"SubAnnotationPropertyOf"
+	);
 	
 	private final Supplier<AxiomRelationshipConversionService> conversionService;
 	
