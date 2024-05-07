@@ -237,8 +237,7 @@ public abstract class AbstractFhirController extends AbstractRestService {
 			return fhirResource.as(resourceClass);
 		
 		} catch (FHIRParserException e) {
-			throw new BadRequestException(String.format("Failed to parse request body as a complete %s resource.", 
-				resourceClass.getSimpleName()));
+			throw new BadRequestException(String.format("Failed to parse request body as a complete %s resource: %s", resourceClass.getSimpleName(), e.getMessage()));
 		}
 	}
 	
@@ -321,6 +320,14 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	    	FhirException fhirException = FhirException.createFhirError(GENERIC_USER_MESSAGE + " Exception: " + ex.getMessage(), OperationOutcomeCode.MSG_BAD_SYNTAX);
 	    	return fhirException.toOperationOutcome();
 	    }
+	}
+	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public @ResponseBody OperationOutcome handle(final SyntaxException ex) {
+    	FhirException fhirException = FhirException.createFhirError(ex.getMessage(), OperationOutcomeCode.MSG_BAD_SYNTAX);
+    	fhirException.withAdditionalInfo(ex.getAdditionalInfo());
+    	return fhirException.toOperationOutcome();
 	}
 	
 	@ExceptionHandler
