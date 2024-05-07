@@ -30,6 +30,7 @@ import org.snomed.otf.owltoolkit.domain.Relationship;
 import org.snomed.otf.owltoolkit.domain.Relationship.ConcreteValue;
 
 import com.b2international.commons.time.TimeUtil;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.google.common.base.Stopwatch;
@@ -38,6 +39,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
+import com.google.common.collect.Sets;
 
 /**
  * @since 6.23
@@ -51,7 +53,14 @@ public final class SnomedOWLRelationshipConverter {
 	public SnomedOWLRelationshipConverter(final Set<Long> ungroupedAttributes, final Collection<Long> objectAttributes, final Collection<Long> dataAttributes) {
 		this.conversionService = Suppliers.memoize(() -> {
 			final Stopwatch stopwatch = Stopwatch.createStarted();
-			final AxiomRelationshipConversionService service = withTccl(() -> new AxiomRelationshipConversionService(ungroupedAttributes, objectAttributes, dataAttributes));
+			
+			Collection<Long> objectAttributeParents = Sets.newHashSet(objectAttributes);
+			Collection<Long> datatAttributeParents = Sets.newHashSet(dataAttributes);
+			
+			objectAttributeParents.add(Long.valueOf(Concepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE));
+			datatAttributeParents.add(Long.valueOf(Concepts.CONCEPT_MODEL_DATA_ATTRIBUTE));
+			
+			final AxiomRelationshipConversionService service = withTccl(() -> new AxiomRelationshipConversionService(ungroupedAttributes, objectAttributeParents, datatAttributeParents));
 			LOG.debug("SNOMED OWL Toolkit conversion service initialization took {}", TimeUtil.toString(stopwatch));
 			return service;
 		});
