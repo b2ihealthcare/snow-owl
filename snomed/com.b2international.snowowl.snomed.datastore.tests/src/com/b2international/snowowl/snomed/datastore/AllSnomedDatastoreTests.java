@@ -82,6 +82,7 @@ import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEv
 	SnomedDescriptionUtilsTest.class,
 	// Validate Rule Evaluators
 	SnomedQueryValidationRuleEvaluatorTest.class,
+	SnomedOWLExpressionConverterTest.class,	
 })
 public class AllSnomedDatastoreTests {
 
