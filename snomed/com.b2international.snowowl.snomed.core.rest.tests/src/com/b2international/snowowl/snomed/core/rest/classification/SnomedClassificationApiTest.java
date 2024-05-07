@@ -582,6 +582,43 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		assertEquals(1, getPersistedInferredRelationshipCount(codeSystemPath, childConceptId));
 	}
 	
+	@Test
+	public void issue_SO_6106_testSubAnnotationPropertyOfAxiomClassification() throws Exception {
+		String parentConceptId = createNewConcept(branchPath);
+		String childConceptId = createNewConcept(branchPath, parentConceptId);
+
+		createNewRefSetMember(branchPath, childConceptId, Concepts.REFSET_OWL_AXIOM, Map.of(
+			SnomedRf2Headers.FIELD_OWL_EXPRESSION, "SubAnnotationPropertyOf(: " + childConceptId + " :" + parentConceptId + ")"));
+		
+		String classificationId = getClassificationJobId(beginClassification(branchPath));
+		waitForClassificationJob(branchPath, classificationId)
+			.statusCode(200)
+			.body("status", equalTo(ClassificationStatus.COMPLETED.name()));
+		
+		InputStream inputStream = getRelationshipChanges(branchPath, classificationId)
+			.statusCode(200)
+			.extract()
+			.asInputStream();
+		
+		Collection<RelationshipChange> changes = MAPPER.readValue(inputStream, RelationshipChanges.class).getItems();
+		Multimap<String, RelationshipChange> changesBySource = Multimaps.index(changes, c -> c.getRelationship().getSourceId());
+		
+		Collection<RelationshipChange> parentRelationshipChanges = changesBySource.get(parentConceptId);
+		Collection<RelationshipChange> childRelationshipChanges = changesBySource.get(childConceptId);
+		
+		for (RelationshipChange change : parentRelationshipChanges) {
+			assertEquals(ChangeNature.NEW, change.getChangeNature());
+			assertEquals(Concepts.IS_A, change.getRelationship().getTypeId());
+			assertEquals(Concepts.ROOT_CONCEPT, change.getRelationship().getDestinationId());
+		}
+		
+		for (RelationshipChange change : childRelationshipChanges) {
+			assertEquals(ChangeNature.NEW, change.getChangeNature());
+			assertEquals(Concepts.IS_A, change.getRelationship().getTypeId());
+			assertEquals(parentConceptId, change.getRelationship().getDestinationId());
+		}
+	}
+	
 	private static void assertInferredIsAExists(FluentIterable<RelationshipChange> changesIterable, String childConceptId, String parentConceptId) {
 		assertTrue("Inferred IS A between " + childConceptId + " and " + parentConceptId + " not found.", 
 				changesIterable.anyMatch(relationshipChange -> {
