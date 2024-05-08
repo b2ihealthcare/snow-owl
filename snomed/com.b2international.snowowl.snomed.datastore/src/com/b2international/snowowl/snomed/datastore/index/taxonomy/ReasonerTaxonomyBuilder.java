@@ -719,13 +719,14 @@ public final class ReasonerTaxonomyBuilder {
 				final StringTokenizer tok = new StringTokenizer(expression.toLowerCase(Locale.ENGLISH), "(): ");
 				boolean isSubPropertyOf = false;
 				
-				// OWL axiom types that we are expecting here, four of which requires special handling:
+				// OWL axiom types that we are expecting here, five of which requires special handling:
 				// 
 				// [ ] SubClassOf(...)
 				// [ ] EquivalentClasses(...)
 				// [+] SubObjectPropertyOf(ObjectPropertyChain(:246093002 :738774007) :246093002)
 				// [+] SubObjectPropertyOf(:x :y)
 				// [+] SubDataPropertyOf(:x :y)
+				// [+] SubAnnotationPropertyOf(:x :y)
 				// [+] TransitiveObjectProperty(:774081006)
 				// [ ] ReflexiveObjectProperty(...)
 				try {
