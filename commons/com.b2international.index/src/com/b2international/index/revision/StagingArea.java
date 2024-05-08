@@ -51,6 +51,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.JsonPatch;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.*;
 
@@ -221,8 +222,8 @@ public final class StagingArea {
 	 * @return an Object of T type registered as NEW under the given key identifier, or <code>null</code> if no such object is registered.
 	 */
 	public <T> T getNewObject(Class<T> type, String key) {
-		StagedObject stagedObject = stagedObjects.get(ObjectId.of(type, key));
-		return stagedObject == null ? null : type.cast(stagedObject.getObject());
+		StagedObject stagedObject = getStagedObject(type, key);
+		return stagedObject == null || !stagedObject.isAdded() ? null : type.cast(stagedObject.getObject());
 	}
 	
 	/**
@@ -316,6 +317,18 @@ public final class StagingArea {
 	public Stream<RevisionDiff> getChangedRevisions(Class<? extends Revision> type, Set<String> changedPropertyNames) {
 		return getChangedRevisions(type)
 				.filter(diff -> diff.hasRevisionPropertyChanges(changedPropertyNames));
+	}
+	
+	/**
+	 * 
+	 * @param <T>
+	 * @param type
+	 * @param key
+	 * @return the specified {@link StagedObject} for the given type and key
+	 */
+	@VisibleForTesting
+	<T> StagedObject getStagedObject(Class<T> type, String key) {
+		return stagedObjects.get(ObjectId.of(type, key));
 	}
 	
 	/**
@@ -733,7 +746,10 @@ public final class StagingArea {
 		if (stagedObjects.containsKey(objectId)) {
 			StagedObject currentStagedObject = stagedObjects.get(objectId);
 			if (!currentStagedObject.isCommit() && currentStagedObject.getObject() instanceof Revision && newDocument instanceof Revision) {
-				stagedObjects.put(objectId, changed(newDocument, new RevisionDiff((Revision) currentStagedObject.getObject(), (Revision) newDocument), commit));
+				RevisionDiff diff = new RevisionDiff((Revision) currentStagedObject.getObject(), (Revision) newDocument);
+				if (diff.hasChanges()) {
+					stagedObjects.put(objectId, changed(newDocument, diff, commit));
+				}
 			} else {
 				stagedObjects.put(objectId, added(newDocument, null, commit));
 			}
@@ -1351,7 +1367,7 @@ public final class StagingArea {
 		ADDED, CHANGED, REMOVED
 	}
 	
-	private final class StagedObject {
+	final class StagedObject {
 		
 		private final Object object;
 		private final StageKind stageKind;
