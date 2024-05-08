@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -57,6 +58,9 @@ import com.google.common.collect.Iterables;
 public abstract class EclEvaluationRequest<C extends ServiceProvider> implements Request<C, Promise<Expression>> {
 
 	private static final long serialVersionUID = 1L;
+	
+	private static final Pattern WILD_ANY = Pattern.compile("(\\*)+");
+	private static final Pattern REGEX_ANY = Pattern.compile("(\\.\\*)+");
 
 	private final PolymorphicDispatcher<Promise<Expression>> dispatcher = PolymorphicDispatcher.createForSingleTarget("eval", 2, 2, this);
 	
@@ -505,10 +509,18 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 						.synonyms(false)
 						.build());
 			case WILD:
-				final String regex = term.replace("*", ".*");
-				return termRegexExpression(regex, true);
+				if (WILD_ANY.matcher(term).matches()) {
+					return Expressions.matchAll();
+				} else {
+					final String regex = term.replace("*", ".*");
+					return termRegexExpression(regex, true);
+				}
 			case REGEX:
-				return termRegexExpression(term, false);
+				if (REGEX_ANY.matcher(term).matches()) {
+					return Expressions.matchAll();
+				} else {
+					return termRegexExpression(term, false);
+				}
 			case EXACT:
 				return termCaseInsensitiveExpression(term);
 			default:

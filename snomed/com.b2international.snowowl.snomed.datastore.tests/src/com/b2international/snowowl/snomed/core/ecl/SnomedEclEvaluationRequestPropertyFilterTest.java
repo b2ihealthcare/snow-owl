@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.core.ecl;
 
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.*;
 
@@ -269,6 +269,26 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 		final Expression actual = eval("* {{ term = wild:\"*random term with optional < ES regexp character\" }}");
 		Expression expected = SnomedDocument.Expressions.ids(Set.of());
 		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void termWildAnyCharacterShouldNotCreateQueryClause() throws Exception {
+		final Expression actualTwo = eval("* {{ term = wild:\"**\" }}");
+		final Expression actualThree = eval("* {{ term = wild:\"***\" }}");
+		Expression expected = Expressions.matchAll();
+		assertEquals(expected, actualTwo);
+		assertEquals(expected, actualThree);
+	}
+	
+	@Test
+	public void termRegexAnyCharacterShouldNotCreateQueryClause() throws Exception {
+		final Expression actualOne = eval("* {{ term = regex:\".*\" }}");
+		final Expression actualTwo = eval("* {{ term = regex:\".*.*\" }}");
+		final Expression actualThree = eval("* {{ term = regex:\".*.*.*\" }}");
+		Expression expected = Expressions.matchAll();
+		assertEquals(expected, actualOne);
+		assertEquals(expected, actualTwo);
+		assertEquals(expected, actualThree);
 	}
 	
 	@Test
