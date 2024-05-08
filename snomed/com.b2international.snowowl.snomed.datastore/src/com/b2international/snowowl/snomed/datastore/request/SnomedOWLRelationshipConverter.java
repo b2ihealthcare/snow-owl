@@ -48,10 +48,21 @@ public final class SnomedOWLRelationshipConverter {
 
 	private final Supplier<AxiomRelationshipConversionService> conversionService;
 
-	public SnomedOWLRelationshipConverter(final Set<Long> ungroupedAttributes, final Collection<Long> objectAttributes, final Collection<Long> dataAttributes) {
+	public SnomedOWLRelationshipConverter(
+		final Set<Long> ungroupedAttributes, 
+		final Collection<Long> objectAttributes, 
+		final Collection<Long> dataAttributes,
+		final Collection<Long> annotationAttributes
+	) {
 		this.conversionService = Suppliers.memoize(() -> {
 			final Stopwatch stopwatch = Stopwatch.createStarted();
-			final AxiomRelationshipConversionService service = withTccl(() -> new AxiomRelationshipConversionService(ungroupedAttributes, objectAttributes, dataAttributes));
+			final AxiomRelationshipConversionService service = withTccl(() -> new AxiomRelationshipConversionService(
+				ungroupedAttributes, 
+				objectAttributes, 
+				dataAttributes,
+				annotationAttributes)
+			);
+			
 			LOG.debug("SNOMED OWL Toolkit conversion service initialization took {}", TimeUtil.toString(stopwatch));
 			return service;
 		});
