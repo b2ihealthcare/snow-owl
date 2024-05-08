@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.rest.classification;
 
 import static com.b2international.snowowl.snomed.core.rest.SnomedClassificationRestRequests.*;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
+import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
@@ -588,9 +589,13 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 	public void issue_SO_6106_testSubAnnotationPropertyOfAxiomClassification() throws Exception {
 		String parentConceptId = createNewConcept(branchPath);
 		String childConceptId = createNewConcept(branchPath, parentConceptId);
+		
+		SnomedConcept childConcept = getConcept(childConceptId, "relationships()");
+		childConcept.getRelationships()
+			.forEach(r -> deleteComponent(branchPath, SnomedComponentType.RELATIONSHIP, r.getId(), false));
 
 		createNewRefSetMember(branchPath, childConceptId, Concepts.REFSET_OWL_AXIOM, Map.of(
-			SnomedRf2Headers.FIELD_OWL_EXPRESSION, "SubAnnotationPropertyOf(: " + childConceptId + " :" + parentConceptId + ")"));
+			SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("SubAnnotationPropertyOf(:%s :%s)", childConceptId, parentConceptId)));
 		
 		String classificationId = getClassificationJobId(beginClassification(branchPath));
 		waitForClassificationJob(branchPath, classificationId)
