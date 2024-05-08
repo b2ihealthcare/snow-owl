@@ -750,7 +750,7 @@ public final class ReasonerTaxonomyBuilder {
 						isSubPropertyOf = true;
 					}
 					
-					// Collect the OWL axiom only if it is not of type "Sub<Object|Data>PropertyOf"
+					// Collect the OWL axiom only if it is not of type "Sub<Object|Data|Annotation>PropertyOf"
 					if (!isSubPropertyOf) {
 						axioms.add(expression);
 					}
@@ -787,7 +787,7 @@ public final class ReasonerTaxonomyBuilder {
 						
 						if (isSubPropertyOf) {
 							/*
-							 * XXX: Register "Sub<Object|Data>PropertyOf" axioms as "stated parents", so that we
+							 * XXX: Register "Sub<Object|Data|Annotation>PropertyOf" axioms as "stated parents", so that we
 							 * can create both the original axiom _and_ a SubClassOf axiom for a (punted)
 							 * OWL class representing the property concept.
 							 */
