@@ -752,6 +752,8 @@ public final class ReasonerTaxonomyBuilder {
 							}
 						} else if ("subdatapropertyof".equals(firstToken)) {
 							isSubPropertyOf = true;
+						} else if ("subannotationpropertyof".equals(firstToken)) {
+							isSubPropertyOf = true;
 						}
 						
 						// Collect the OWL axiom only if it is not of type "Sub<Object|Data>PropertyOf"
