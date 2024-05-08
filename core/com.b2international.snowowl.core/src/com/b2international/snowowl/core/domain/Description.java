@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 
@@ -47,6 +48,7 @@ public final class Description implements Comparable<Description> {
 		return language;
 	}
 	
+	@JsonIgnore
 	public <T> T getInternalDescription() {
 		return (T) internalDescription;
 	}
