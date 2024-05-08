@@ -171,7 +171,7 @@
         <setEntry value="org.protege.editor.owl@default:default"/>
         <setEntry value="org.reactivestreams.reactive-streams@default:default"/>
         <setEntry value="org.semanticweb.owl.owlapi@default:default"/>
-        <setEntry value="org.snomed.otf.snomed-owl-toolkit@default:default"/>
+        <setEntry value="com.b2international.snomed-owl-toolkit@default:default"/>
         <setEntry value="org.w3c.css.sac@default:default"/>
         <setEntry value="org.w3c.dom.events@default:default"/>
         <setEntry value="org.w3c.dom.smil@default:default"/>

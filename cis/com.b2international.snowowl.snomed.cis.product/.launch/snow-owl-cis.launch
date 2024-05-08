@@ -158,7 +158,7 @@
         <setEntry value="org.objectweb.asm@default:default"/>
         <setEntry value="org.objenesis@default:default"/>
         <setEntry value="org.reactivestreams.reactive-streams@default:default"/>
-        <setEntry value="org.snomed.otf.snomed-owl-toolkit@default:default"/>
+        <setEntry value="com.b2international.snomed-owl-toolkit@default:default"/>
         <setEntry value="org.w3c.css.sac@default:default"/>
         <setEntry value="org.yaml.snakeyaml@default:default"/>
         <setEntry value="slf4j.api@default:default"/>

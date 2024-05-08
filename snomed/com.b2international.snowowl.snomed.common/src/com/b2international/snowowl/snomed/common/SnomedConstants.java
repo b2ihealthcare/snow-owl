@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2024 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -273,6 +273,9 @@ public abstract class SnomedConstants {
 		// Concept model attribute hierarchy roots, starting with INT 20180131
 		public static final String CONCEPT_MODEL_OBJECT_ATTRIBUTE = "762705008";
 		public static final String CONCEPT_MODEL_DATA_ATTRIBUTE = "762706009";
+		
+		// Concept model attribute hierarchy roots, starting with INT 20240301
+		public static final String ANNOTATION_ATTRIBUTE = "1295447006";
 		
 		// Concepts that require special care when classifying
 		public static final String ROLE_GROUP = "609096000";
