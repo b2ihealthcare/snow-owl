@@ -174,7 +174,6 @@ public class FhirValueSetSnomedExpandTest extends FhirRestTest {
 	@Test
 	public void expandSnomedViaPostRequiresUrlEncoding() throws Exception {
 		var encodedEcl = RestExtensions.encodeQueryParameter("* {{ D term = wild:'*immersion*', active = true, typeId=900000000000013009}}{{ C active = true}}");
-		System.err.println(encodedEcl);
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.contentType(APPLICATION_FHIR_JSON)
 			.accept(APPLICATION_FHIR_JSON)
