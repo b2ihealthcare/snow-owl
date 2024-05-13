@@ -113,6 +113,8 @@ public class Es8QueryBuilder {
 			visit((PrefixPredicate) expression);
 		} else if (expression instanceof RegexpPredicate) {
 			visit((RegexpPredicate) expression);
+		} else if (expression instanceof WildcardPredicate) {
+			visit((WildcardPredicate) expression);
 		} else if (expression instanceof StringSetPredicate) {
 			visit((StringSetPredicate) expression);
 		} else if (expression instanceof LongSetPredicate) {
@@ -469,6 +471,10 @@ public class Es8QueryBuilder {
 	
 	private void visit(RegexpPredicate regexp) {
 		deque.push(QueryBuilders.regexp(r -> r.boost(this.boost).field(toFieldPath(regexp)).value(regexp.getArgument()).caseInsensitive(regexp.isCaseInsensitive()).flags(RegexpFlag.NONE.name())));
+	}
+	
+	private void visit(WildcardPredicate wildcard) {
+		deque.push(QueryBuilders.wildcard(r -> r.boost(this.boost).field(toFieldPath(wildcard)).value(wildcard.getArgument()).caseInsensitive(wildcard.isCaseInsensitive())));
 	}
 	
 	private void visit(RangePredicate<?> range) {

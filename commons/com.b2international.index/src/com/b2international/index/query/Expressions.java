@@ -229,6 +229,14 @@ public class Expressions {
 		return new RegexpPredicate(field, regexp, caseInsensitive);
 	}
 	
+	public static WildcardPredicate wildcard(String field, String wildcard) {
+		return wildcard(field, wildcard, false);
+	}
+	
+	public static WildcardPredicate wildcard(String field, String wildcard, boolean caseInsensitive) {
+		return new WildcardPredicate(field, wildcard, caseInsensitive);
+	}
+	
 	public static Expression dismaxWithScoreCategories(Expression...disjuncts) {
 		return dismaxWithScoreCategories(List.of(disjuncts));
 	}

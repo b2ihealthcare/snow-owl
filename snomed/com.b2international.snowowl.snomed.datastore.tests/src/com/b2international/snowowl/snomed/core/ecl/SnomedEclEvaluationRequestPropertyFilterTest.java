@@ -292,6 +292,56 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 	}
 	
 	@Test
+	public void termWildEscapedAnyCharacterShouldNotGenerateInvalidRegexQuery() throws Exception {
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding with * character")
+				.conceptId(Concepts.ALL_SNOMEDCT_CONTENT)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.build());
+		
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding without the any character")
+				.conceptId(Concepts.ALL_PRECOORDINATED_CONTENT)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.build());
+		
+		final Expression actual = eval("* {{ term = wild:'*\\\\**\' }}");
+		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ALL_SNOMEDCT_CONTENT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void termRegexEscapedAnyCharacter() throws Exception {
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding with * character")
+				.conceptId(Concepts.ALL_SNOMEDCT_CONTENT)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.build());
+		
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding without the any character")
+				.conceptId(Concepts.ALL_PRECOORDINATED_CONTENT)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.build());
+		
+		final Expression actual = eval("* {{ term = regex:'.*[\\*].*\' }}");
+		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ALL_SNOMEDCT_CONTENT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
 	public void disjunctionActiveAndModuleId() throws Exception {
 		final Expression actual = eval("* {{ c active = true OR moduleId = " + Concepts.MODULE_SCT_CORE + " }}");
 		final Expression expected = Expressions.bool()
