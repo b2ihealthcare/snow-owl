@@ -453,8 +453,8 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 
 		String classificationId = getClassificationJobId(beginClassification(branchPath));
 		waitForClassificationJob(branchPath, classificationId)
-		.statusCode(200)
-		.body("status", equalTo(ClassificationStatus.COMPLETED.name()));
+			.statusCode(200)
+			.body("status", equalTo(ClassificationStatus.COMPLETED.name()));
 
 		/* 
 		 * Expecting that childConceptId will get two inferred IS A-s pointing to parentConceptId and equivalentConceptId, respectively, 

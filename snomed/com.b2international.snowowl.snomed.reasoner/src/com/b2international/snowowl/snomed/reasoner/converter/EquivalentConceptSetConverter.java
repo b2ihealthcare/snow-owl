@@ -17,10 +17,7 @@ package com.b2international.snowowl.snomed.reasoner.converter;
 
 import static com.google.common.collect.Lists.newArrayList;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.b2international.collections.longs.LongIterator;
@@ -118,12 +115,13 @@ public final class EquivalentConceptSetConverter
 			final Map<String, SnomedConcept> conceptsById = Maps.uniqueIndex(concepts, SnomedConcept::getId);
 
 			for (final EquivalentConceptSet item : itemsForCurrentBranch) {
-				final List<SnomedConcept> equivalentConcepts = item.getEquivalentConcepts().getItems();
+				final List<SnomedConcept> equivalentConcepts = new ArrayList<>(item.getEquivalentConcepts().getItems());
 				for (int i = 0; i < equivalentConcepts.size(); i++) {
 					final SnomedConcept placeholderConcept = equivalentConcepts.get(i);
 					final SnomedConcept expandedConcept = conceptsById.get(placeholderConcept.getId());
 					equivalentConcepts.set(i, expandedConcept);
 				}
+				item.setEquivalentConcepts(new SnomedConcepts(equivalentConcepts, item.getEquivalentConcepts().getSearchAfter(), item.getEquivalentConcepts().getLimit(), item.getEquivalentConcepts().getTotal()));
 			}
 		}
 	}
