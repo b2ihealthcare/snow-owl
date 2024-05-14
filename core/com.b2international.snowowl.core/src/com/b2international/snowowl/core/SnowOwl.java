@@ -74,7 +74,7 @@ public final class SnowOwl {
 	private static final String LOG_CONFIG_FILE = "serviceability.xml"; //$NON-NLS-1$
 	
 	// System property for additional packages to scan
-	private static final String SO_EXTRA_PACKAGES = "so.extra.packages"; //$NON-NLS-1$
+	private static final String SO_COMPONENT_SCAN = "so.component.scan"; //$NON-NLS-1$
 	private static final Splitter PACKAGE_SPLITTER = Splitter.on(',').omitEmptyStrings();
 	
 	private AtomicBoolean running = new AtomicBoolean(false);
@@ -110,10 +110,10 @@ public final class SnowOwl {
 		final LinkedHashSet<String> packagesToScan = newLinkedHashSet();
 		packagesToScan.add("com.b2international");
 		
-		final String extraPackages = System.getProperty(SO_EXTRA_PACKAGES);
-		if (!StringUtils.isEmpty(extraPackages)) {
+		final String additionalPackages = System.getProperty(SO_COMPONENT_SCAN);
+		if (!StringUtils.isEmpty(additionalPackages)) {
 			PACKAGE_SPLITTER
-				.split(extraPackages)
+				.split(additionalPackages)
 				.forEach(packagesToScan::add);
 		}
 		
