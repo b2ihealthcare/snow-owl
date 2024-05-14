@@ -33,11 +33,11 @@ import com.google.common.base.MoreObjects;
 @JsonInclude(Include.NON_NULL)
 public class ListCollectionResource<T> implements CollectionResource<T> {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 	
 	private final List<T> items;
 
-	protected ListCollectionResource(List<T> items) {
+	protected ListCollectionResource(Collection<T> items) {
 		this.items = Collections3.toImmutableList(items);
 	}
 
@@ -52,22 +52,9 @@ public class ListCollectionResource<T> implements CollectionResource<T> {
 	 * @param items
 	 * @return
 	 */
-	public static <T> CollectionResource<T> of(List<T> items) {
-		return new ListCollectionResource<T>(items);
-	}
-	
-	/**
-	 * Creates a new {@link CollectionResource} for the given items.
-	 * 
-	 * @param items
-	 * @return
-	 */
 	@JsonCreator
 	public static <T> CollectionResource<T> of(@JsonProperty("items") Collection<T> items) {
-		if (items instanceof List) {
-			return of((List<T>)items);
-		}
-		return of(List.copyOf(items));
+		return new ListCollectionResource<T>(items);
 	}
 	
 	@Override
