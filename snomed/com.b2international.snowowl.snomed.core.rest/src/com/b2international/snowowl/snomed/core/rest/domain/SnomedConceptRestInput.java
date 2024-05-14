@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,22 +74,32 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Sno
 	public SnomedConceptCreateRequestBuilder toRequestBuilder() {
 		final SnomedConceptCreateRequestBuilder req = super.toRequestBuilder();
 		
+		for (SnomedDescriptionRestInput restDescription : getDescriptions()) {
+			// Propagate namespaceConceptId from concept
+			if (null == restDescription.getNamespaceConceptId()) {
+				restDescription.setNamespaceConceptId(getNamespaceConceptId());
+			}
+			
+			// Propagate namespace from concept
+			if (null == restDescription.getNamespaceId()) {
+				restDescription.setNamespaceId(getNamespaceId());
+			}
+
+			req.addDescription(restDescription.toRequestBuilder());
+		}
+		
 		for (SnomedRelationshipRestInput restRelationship : getRelationships()) {
-			// Propagate namespace from concept if not present
+			// Propagate namespaceConceptId from concept
+			if (null == restRelationship.getNamespaceConceptId()) {
+				restRelationship.setNamespaceConceptId(getNamespaceConceptId());
+			}
+			
+			// Propagate namespace from concept
 			if (null == restRelationship.getNamespaceId()) {
 				restRelationship.setNamespaceId(getNamespaceId());
 			}
 			
 			req.addRelationship(restRelationship.toRequestBuilder());
-		}
-		
-		for (SnomedDescriptionRestInput restDescription : getDescriptions()) {
-			// Propagate namespace from concept if not present
-			if (null == restDescription.getNamespaceId()) {
-				restDescription.setNamespaceId(getNamespaceId());
-			}
-			
-			req.addDescription(restDescription.toRequestBuilder());
 		}
 		
 		for (SnomedRefSetMemberRestInput restMember : getMembers()) {
