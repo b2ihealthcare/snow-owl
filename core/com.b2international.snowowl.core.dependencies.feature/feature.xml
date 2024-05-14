@@ -1128,4 +1128,11 @@ Visit us at https://b2ihealthcare.com
          version="0.0.0"
          unpack="false"/>
 
+   <plugin
+         id="org.jsr-305"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
 </feature>
