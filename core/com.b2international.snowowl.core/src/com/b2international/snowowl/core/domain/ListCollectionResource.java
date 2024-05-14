@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 package com.b2international.snowowl.core.domain;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
+import com.b2international.commons.collections.Collections3;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -38,7 +38,7 @@ public class ListCollectionResource<T> implements CollectionResource<T> {
 	private final List<T> items;
 
 	protected ListCollectionResource(List<T> items) {
-		this.items = items == null ? Collections.<T> emptyList() : items;
+		this.items = Collections3.toImmutableList(items);
 	}
 
 	@Override
