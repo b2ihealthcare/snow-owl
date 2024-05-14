@@ -131,7 +131,10 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		
 		final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), fileName).statusCode(201)
 				.extract().header("Location"));
-		waitForImportJob(branchPath, importId).statusCode(200).body("status", equalTo(RemoteJobState.FINISHED.name()));
+		waitForImportJob(branchPath, importId)
+			.statusCode(200)
+			.body("id", equalTo(importId))
+			.body("status", equalTo(RemoteJobState.FINISHED.name()));
 	}
 
 	@Test
@@ -143,7 +146,10 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		);
 		final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), "SnomedCT_Release_INT_20150131_new_concept.zip").statusCode(201)
 				.extract().header("Location"));
-		waitForImportJob(branchPath, importId).statusCode(200).body("status", equalTo(RemoteJobState.FAILED.name()));
+		waitForImportJob(branchPath, importId)
+			.statusCode(200)
+			.body("id", equalTo(importId))
+			.body("status", equalTo(RemoteJobState.FAILED.name()));
 	}
 	
 	@Test
@@ -567,7 +573,10 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 			);
 			final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), "SnomedCT_Release_INT_20210502_concept_wo_eff_time.zip").statusCode(201)
 					.extract().header("Location"));
-			waitForImportJob(branchPath, importId).statusCode(200).body("status", equalTo(RemoteJobState.FAILED.name()));
+			waitForImportJob(branchPath, importId)
+				.statusCode(200)
+				.body("id", equalTo(importId))
+				.body("status", equalTo(RemoteJobState.FAILED.name()));
 		} finally {
 			SnomedRf2ImportRequestBuilder.enableVersionsOnChildBranches();
 		}
@@ -594,6 +603,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		final String importId = lastPathSegment(location); 
 		waitForImportJob(branchPath, importId)
 			.statusCode(200)
+			.body("id", equalTo(importId))
 			.body("status", equalTo(RemoteJobState.FINISHED.name()));
 		
 		CommitInfos authorCommits = RepositoryRequests.commitInfos()
@@ -687,6 +697,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 				.extract().header("Location"));
 		waitForImportJob(branchPath, importId)
 			.statusCode(200)
+			.body("id", equalTo(importId))
 			.body("status", equalTo(RemoteJobState.FINISHED.name()))
 			.body("response.error", equalTo("There are '1' issues with the import file."));
 	}
@@ -789,7 +800,10 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		
 		final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), importArchiveFileName).statusCode(201)
 				.extract().header("Location"));
-		waitForImportJob(branchPath, importId).statusCode(200).body("status", equalTo(RemoteJobState.FINISHED.name()));
+		waitForImportJob(branchPath, importId)
+			.statusCode(200)
+			.body("id", equalTo(importId))
+			.body("status", equalTo(RemoteJobState.FINISHED.name()));
 
 		ValidatableResponse response2 = branching.getBranch(branch);
 
