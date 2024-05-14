@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2020-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.jobs.RemoteJobState;
@@ -187,7 +186,7 @@ public class SnomedRf2ImportRestService extends AbstractRestService {
 		} else if (job.isSuccessful()) {
 			response = job.getResultAs(mapper, ImportResponse.class);
 		}
-		return new SnomedRf2ImportConfiguration(IDs.sha1(job.getId()), job.getState(), error, response);
+		return new SnomedRf2ImportConfiguration(job.getId(), job.getState(), error, response);
 	}
 	
 }
