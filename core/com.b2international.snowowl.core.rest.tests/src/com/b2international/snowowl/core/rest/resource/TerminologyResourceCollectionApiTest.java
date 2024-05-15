@@ -17,7 +17,7 @@ package com.b2international.snowowl.core.rest.resource;
 
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.assertGetVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
-import static com.b2international.snowowl.test.commons.collections.TerminologyResourceCollectionRestRequests.assertTerminologyResourceCollectionCreate;
+import static com.b2international.snowowl.test.commons.collections.TerminologyResourceCollectionRestRequests.*;
 import static com.b2international.snowowl.test.commons.collections.TerminologyResourceCollectionRestRequests.assertTerminologyResourceCollectionGet;
 import static com.b2international.snowowl.test.commons.collections.TerminologyResourceCollectionRestRequests.createTerminologyResourceCollection;
 import static com.b2international.snowowl.test.commons.collections.TerminologyResourceCollectionRestRequests.prepareTerminologyResourceCollectionCreateBody;
@@ -133,6 +133,15 @@ public class TerminologyResourceCollectionApiTest {
 		assertTerminologyResourceCollectionGet(collectionId, "content()")
 			.statusCode(200)
 			.body("content.items.id", hasItem(bundleId));
+		
+		assertTerminologyResourceCollectionSearch(
+			Json.object(
+				// XXX adding bundleId here as well to simulate that we request a non-collection type resource as well
+				"id", Json.array(collectionId, bundleId) 
+			)
+		)
+			.statusCode(200)
+			.body("items.id", hasItem(collectionId));
 	}
 	
 	@Test
