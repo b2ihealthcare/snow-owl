@@ -292,7 +292,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 	}
 	
 	@Test
-	public void termWildEscapedAnyCharacterShouldNotGenerateInvalidRegexQuery() throws Exception {
+	public void termWildEscapedAnyCharacter() throws Exception {
 		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
 				.id(generateDescriptionId())
 				.active(true)
@@ -311,7 +311,7 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 				.typeId(Concepts.TEXT_DEFINITION)
 				.build());
 		
-		final Expression actual = eval("* {{ term = wild:'*\\\\**\' }}");
+		final Expression actual = eval("* {{ term = wild:\"*\\\\**\" }}");
 		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ALL_SNOMEDCT_CONTENT));
 		assertEquals(expected, actual);
 	}
