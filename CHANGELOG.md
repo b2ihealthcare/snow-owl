@@ -1,6 +1,43 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 9.2.0
+
+### API
+- New `ETag`, `If-None-Match` and `Cache-Control` HTTP header support (#1270)
+  * Content HTTP responses now have an `ETag` header value generated based the queried branch reference
+  * Cache-Control header value is also being returned using the `api.cache_control` configuration setting 
+    * Default value is `s-maxage=0,max-age=0,must-revalidate` which ensures that caching can happen but the cached response has to be revalidated before using
+  * `If-None-Match` header is now also supported to allow clients to send the `ETag` value and receive a `HTTP 304 Not Modified` when revalidating an earlier response. This allows the cached response to be used until it is not overridden by the server with a new response.
+
+
+### Bugs/Improvements
+- [index] support wildcard index queries (b904b47)
+- [index] allow ObjectNode type in index documentation mapping classes (#1274)
+- [index] ensure that fast-forward merges do no produce unnecessary zero change revisions (#1281)
+- [core] `api.rate_limit.capacity` replaces the now deprecated `api.rate_limit.overdraft` configuration setting (#1270)
+- [core] fixed some serialization issues affecting certain collection types in 3rd party plugins (#)
+- [core] add `-Dso.component.scan` JVM argument to allow 3rd party plugins to use their own namespaces for their classpaths (#1294)
+- [snomed] RF2 import release archive validation improvements (70b6a06, 6c615e8, b297247)
+- [snomed] fix incorrect temporary directory name when building internal representation of an RF2 release during an RF2 import (a0831c7)
+- [snomed] ensure that SubAnnotationPropertyOf axioms are properly handled in the SNOMED CT tooling (#1288, #1290, #1292)
+- [snomed] fixed an issue where an incorrect identifier was returned in the RF2 import resource than the one used to request it (#1296)
+- [ecl] ensure that any term matches do not produce unnecessary low-level wildcard/regex query clauses (8391852)
+- [ecl] wild lexical searches now use the wildcard index query for better user experience (030304a)
+- [api] properly response with an HTTP 400 Bad Request response when a required query parameter is missing (#1273)
+- [api] fixed an issue where `moduleId` was not propagated to nested member create requests causing an HTTP 400 Bad Request response (#1276)
+- [api] fixed an issue where `namespaceConceptId` was not propagated to nested description and relationship create requests causing incorrect namespace value to be used for the components (#1295)
+- [fhir] fixed an issue where `includeDesignations=true` did not append the member designations in certain FHIR ValueSet$expand requests (#1275)
+- [fhir] fixed an issue where the `POST /ValueSet/$expand operation` fails with an internal server error when displayLanguage is not present (e9d1866)
+- [fhir] report ECL syntax details in FHIR OperationOutcome responses (3b62aaf)
+- [fhir] make sure the ECL part in an implicit SNOMED CT Value Set url is always get decoded before evaluation (1667d1e)
+
+### Dependencies
+- Upgrade bucket4j to 8.10.1
+- Replace embedded jsr305 v3.0.2 with dedicated dependency (#1279)
+
+Huge thanks to @abelardy providing feedback to improve ECL evaluation and FHIR ValueSet$expand operation implementations!
+
 ## 9.1.2
 
 ### Bugs/Improvements
