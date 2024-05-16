@@ -27,7 +27,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelatio
 import com.google.common.collect.Iterables;
 
 /**
- * @since 7.24.3
+ * @since 9.2.0
  */
 public class SnomedOWLExpressionConverterTest {
 

@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Min;
 
 /**
- * @since 9.2
+ * @since 9.2.0
  */
 public class RateLimitConfig {
 

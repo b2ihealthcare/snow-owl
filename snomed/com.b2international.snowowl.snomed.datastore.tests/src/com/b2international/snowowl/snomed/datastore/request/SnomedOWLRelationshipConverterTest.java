@@ -27,7 +27,7 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 
 /**
- * @since 7.24.3
+ * @since 9.2.0
  */
 public class SnomedOWLRelationshipConverterTest {
 

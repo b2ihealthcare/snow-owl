@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 
 /**
- * @since 9.2 
+ * @since 9.2.0 
  */
 public final class Description implements Comparable<Description> {
 

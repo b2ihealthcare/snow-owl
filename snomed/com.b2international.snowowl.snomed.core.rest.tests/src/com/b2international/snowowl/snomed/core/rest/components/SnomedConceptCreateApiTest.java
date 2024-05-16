@@ -58,7 +58,7 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Iterables;
 
 /**
- * @since 9.2
+ * @since 9.2.0
  */
 public class SnomedConceptCreateApiTest extends AbstractSnomedApiTest {
 

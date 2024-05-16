@@ -28,7 +28,7 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 
 /**
- * @since 9.2
+ * @since 9.2.0
  */
 public class WildcardQueryTest extends BaseIndexTest {
 

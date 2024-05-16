@@ -34,7 +34,7 @@ import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 
 /**
- * @since 9.2
+ * @since 9.2.0
  */
 public class SnomedApiCacheControlTest extends AbstractSnomedApiTest {
 
