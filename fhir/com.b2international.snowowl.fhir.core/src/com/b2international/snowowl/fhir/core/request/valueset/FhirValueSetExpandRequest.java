@@ -36,6 +36,7 @@ import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.fhir.core.codesystems.FilterOperator;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.ResourceResponseEntry;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
@@ -247,11 +248,16 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 			.after(concepts.getSearchAfter());
 		
 		for (Concept concept : concepts) {
-			expansion.addContains(Contains.builder()
-					.code(concept.getId())
-					.system(baseUrl)
-					.display(concept.getTerm())
-					.build());
+			var contains = Contains.builder()
+				.system(baseUrl)
+				.code(concept.getId())
+				.display(concept.getTerm());
+			
+			if (Boolean.TRUE.equals(request.getIncludeDesignations())) {
+				contains.designations(Designation.fromDescriptions(concept.getDescriptions()));
+			}
+			
+			expansion.addContains(contains.build());
 		}
 		
 		return valueSet

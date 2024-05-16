@@ -110,6 +110,34 @@ public class FhirValueSetSnomedExpandTest extends FhirRestTest {
 	}
 	
 	@Test
+	public void expandSnomedCodeSystemURL_IncludeDesignations() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("url", RestExtensions.encodeQueryParameter(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/900000000000207008?fhir_vs=ecl/<!138875005"))
+			.queryParam("includeDesignations", true)
+			.when().get("/ValueSet/$expand")
+			.then()
+			.statusCode(200)
+			.body("resourceType", equalTo("ValueSet"))
+			.body("id", notNullValue())
+			.body("expansion.total", equalTo(16)) // minified dataset only has 16 top level nodes
+			.body("expansion.contains[0].code", equalTo("105590001"))
+			.body("expansion.contains[0].system", equalTo(SNOMEDCT_URL))
+			.body("expansion.contains[0].display", equalTo("Substance (substance)"))
+			.body("expansion.contains[0].designation[0].value", equalTo("Substance"))
+			.body("expansion.contains[0].designation[0].language", equalTo("en"))
+			.body("expansion.contains[0].designation[1].value", equalTo("Substance"))
+			.body("expansion.contains[0].designation[1].language", equalTo("en-x-900000000000508004"))
+			.body("expansion.contains[0].designation[2].value", equalTo("Substance"))
+			.body("expansion.contains[0].designation[2].language", equalTo("en-x-900000000000509007"))
+			.body("expansion.contains[0].designation[3].value", equalTo("Substance (substance)"))
+			.body("expansion.contains[0].designation[3].language", equalTo("en"))
+			.body("expansion.contains[0].designation[4].value", equalTo("Substance (substance)"))
+			.body("expansion.contains[0].designation[4].language", equalTo("en-x-900000000000508004"))
+			.body("expansion.contains[0].designation[5].value", equalTo("Substance (substance)"))
+			.body("expansion.contains[0].designation[5].language", equalTo("en-x-900000000000509007"));
+	}
+	
+	@Test
 	public void expandSnomedCodeSystemURL_FhirVsRefSetRoot() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.queryParam("activeOnly", true)
@@ -122,7 +150,7 @@ public class FhirValueSetSnomedExpandTest extends FhirRestTest {
 			.body("expansion.total", equalTo(0))
 			.body("expansion.contains.code", nullValue());
 	}
-
+	
 	@Test
 	public void expandSnomedCodeSystemURL_AfterAndNext() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)

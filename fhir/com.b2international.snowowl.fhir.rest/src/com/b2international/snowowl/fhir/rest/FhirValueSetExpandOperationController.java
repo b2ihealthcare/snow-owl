@@ -159,6 +159,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 			.count(count)
 			.displayLanguage(displayLanguage == null ? null : new Code(displayLanguage))
 			.withHistorySupplements(withHistorySupplements)
+			.includeDesignations(includeDesignations)
 			.build();
 		
 		return expand(expandRequest, nextUriBuilder, accept, _format, _pretty);
@@ -378,6 +379,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 			.count(count)
 			.displayLanguage(displayLanguage == null ? null : new Code(displayLanguage))
 			.withHistorySupplements(withHistorySupplements)
+			.includeDesignations(includeDesignations)
 			.build();
 		
 		return expand(expandRequest, nextUriBuilder, accept, _format, _pretty);
