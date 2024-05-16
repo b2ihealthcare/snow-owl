@@ -27,7 +27,7 @@ All notable changes to this project will be documented in this file.
 - [api] properly response with an HTTP 400 Bad Request response when a required query parameter is missing (#1273)
 - [api] fixed an issue where `moduleId` was not propagated to nested member create requests causing an HTTP 400 Bad Request response (#1276)
 - [api] fixed an issue where `namespaceConceptId` was not propagated to nested description and relationship create requests causing incorrect namespace value to be used for the components (#1295)
-- [fhir] fixed an issue where `includeDesignations=true` did not append the member designations in certain FHIR ValueSet$expand requests (#1275)
+- [fhir] fixed an issue where `includeDesignations=true` did not append the member designations in certain FHIR ValueSet$expand requests (#1275, dfba2b2)
 - [fhir] fixed an issue where the `POST /ValueSet/$expand operation` fails with an internal server error when displayLanguage is not present (e9d1866)
 - [fhir] report ECL syntax details in FHIR OperationOutcome responses (3b62aaf)
 - [fhir] make sure the ECL part in an implicit SNOMED CT Value Set url is always get decoded before evaluation (1667d1e)
@@ -36,7 +36,7 @@ All notable changes to this project will be documented in this file.
 - Upgrade bucket4j to 8.10.1
 - Replace embedded jsr305 v3.0.2 with dedicated dependency (#1279)
 
-Huge thanks to @abelardy providing feedback to improve ECL evaluation and FHIR ValueSet$expand operation implementations!
+Huge thanks to @abelardy for testing and providing feedback to improve ECL evaluation and FHIR ValueSet$expand operation implementations!
 
 ## 9.1.2
 
