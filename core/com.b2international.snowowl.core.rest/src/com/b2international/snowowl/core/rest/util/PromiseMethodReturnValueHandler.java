@@ -33,6 +33,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.events.util.Response;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.collect.Iterables;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -99,8 +100,10 @@ public class PromiseMethodReturnValueHandler implements HandlerMethodReturnValue
 			// see Spring Security issue not being able to properly prevent duplicate caching headers
 			// https://github.com/spring-projects/spring-security/issues/12865 
 			responseHeaders.forEach((entry) -> {
-				// XXX using set header here, for most of our use cases we only need a single response header, so overwrite anything that has been injected by Spring earlier
-				webRequest.getNativeResponse(HttpServletResponse.class).setHeader(entry.getKey(), entry.getValue());
+				if (!IEventBus.SEND_STACK_HEADER.equals(entry.getKey())) {
+					// XXX using set header here, for most of our use cases we only need a single response header, so overwrite anything that has been injected by Spring earlier
+					webRequest.getNativeResponse(HttpServletResponse.class).setHeader(entry.getKey(), entry.getValue());
+				}
 			});
 			
 			result.setResult(response);
