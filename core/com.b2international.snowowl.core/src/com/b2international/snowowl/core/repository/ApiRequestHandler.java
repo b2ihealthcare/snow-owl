@@ -87,7 +87,7 @@ public final class ApiRequestHandler implements IHandler<IMessage> {
 			message.fail(e.getCause());
 		} catch (ApiException e) {
 			if (IEventBus.RECORD_SEND_STACK) {
-				System.err.println(message.headers().get("sendStack"));
+				System.err.println(message.headers().get(IEventBus.SEND_STACK_HEADER));
 			}
 			
 			message.fail(e);
