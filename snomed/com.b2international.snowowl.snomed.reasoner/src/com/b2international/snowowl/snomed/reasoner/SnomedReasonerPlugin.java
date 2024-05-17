@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 import com.b2international.index.Index;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryConfigurer;
 import com.b2international.snowowl.core.setup.Environment;
@@ -29,6 +30,7 @@ import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationTracker;
+import com.b2international.snowowl.snomed.reasoner.equivalence.IEquivalentConceptMerger;
 import com.b2international.snowowl.snomed.reasoner.index.*;
 
 /**
@@ -45,8 +47,10 @@ public final class SnomedReasonerPlugin extends Plugin implements TerminologyRep
 			final int maximumReasonerRuns = snomedConfig.getMaxReasonerRuns();
 			final long classificationCleanUpInterval = snomedConfig.getClassificationCleanUpInterval();
 			final ClassificationTracker classificationTracker = new ClassificationTracker(repositoryIndex, maximumReasonerRuns, TimeUnit.MINUTES.toMillis(classificationCleanUpInterval));
-			
 			env.services().registerService(ClassificationTracker.class, classificationTracker);
+			
+			final ClassPathScanner scanner = env.service(ClassPathScanner.class);
+			env.services().registerService(IEquivalentConceptMerger.Registry.class, new IEquivalentConceptMerger.Registry(scanner));
 		}
 	}
 	

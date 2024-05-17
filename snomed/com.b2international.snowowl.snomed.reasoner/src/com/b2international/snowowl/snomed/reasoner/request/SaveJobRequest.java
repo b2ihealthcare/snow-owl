@@ -26,11 +26,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.validation.constraints.NotNull;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
-import jakarta.validation.constraints.NotEmpty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +46,6 @@ import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.locks.Locks;
-import com.b2international.snowowl.core.plugin.Extensions;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -68,6 +64,9 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
+
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Represents a request that saves pre-recorded changes of a classification,
@@ -439,15 +438,10 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, AccessCon
 			return Collections.emptySet();
 		}
 		
-		IEquivalentConceptMerger merger = Extensions.getFirstPriorityExtension(
-				IEquivalentConceptMerger.EXTENSION_POINT, 
-				IEquivalentConceptMerger.class);
-		if (merger == null) {
-			merger = new IEquivalentConceptMerger.Default();
-		}
-		
-		final String mergerName = merger.getClass().getSimpleName();
-		LOG.info("Reasoner service will use {} for equivalent concept merging.", mergerName);
+		final IEquivalentConceptMerger.Registry mergerRegistry = context.service(IEquivalentConceptMerger.Registry.class);
+		final IEquivalentConceptMerger merger = mergerRegistry.getHighestPriority();
+		final String mergerName = merger.getName();
+		LOG.info("Reasoner service will use '{}' implementation for equivalent concept merging.", mergerName);
 		
 		final Set<String> conceptIdsToSkip = merger.merge(equivalentConcepts);
 		final Set<String> conceptIdsToKeep = equivalentConcepts.keySet()

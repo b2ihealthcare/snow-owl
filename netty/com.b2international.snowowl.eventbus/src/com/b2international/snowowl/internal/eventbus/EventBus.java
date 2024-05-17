@@ -164,7 +164,7 @@ public class EventBus implements IEventBus {
 				
 				final String sendStack = sw.toString();
 				Map<String, String> headersWithStack = newHashMap(message.headers());
-				headersWithStack.put("sendStack", sendStack);
+				headersWithStack.put(SEND_STACK_HEADER, sendStack);
 				message.headers = Map.copyOf(headersWithStack);
 				
 			} catch (IOException unexpected) {
