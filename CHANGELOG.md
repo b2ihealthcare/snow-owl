@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 9.2.1
+
+### Bugs/Improvements
+- [core] improve error reporting in transport layer (#1297)
+- [classification] add back equivalent concept merging capabilities from 6.x (#1277)
+- [build] migrate to Node.js 20 in GitHub Actions (e128578)
+- [docs] remove obsolete documentation files (4965bf3)
+
 ## 9.2.0
 
 ### API
@@ -9,7 +17,6 @@ All notable changes to this project will be documented in this file.
   * Cache-Control header value is also being returned using the `api.cache_control` configuration setting 
     * Default value is `s-maxage=0,max-age=0,must-revalidate` which ensures that caching can happen but the cached response has to be revalidated before using
   * `If-None-Match` header is now also supported to allow clients to send the `ETag` value and receive a `HTTP 304 Not Modified` when revalidating an earlier response. This allows the cached response to be used until it is not overridden by the server with a new response.
-
 
 ### Bugs/Improvements
 - [index] support wildcard index queries (b904b47)
