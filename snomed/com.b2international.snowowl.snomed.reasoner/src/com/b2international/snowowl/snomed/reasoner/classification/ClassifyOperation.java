@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.Notifications;
 import com.b2international.snowowl.core.id.IDs;
@@ -58,36 +59,31 @@ public abstract class ClassifyOperation<T> {
 	protected final String reasonerId;
 	protected final String userId;
 	protected final List<SnomedConcept> additionalConcepts;
-	protected final String repositoryId;
-	protected final String branch;
+	protected final ResourceURI resourceUri;
 	protected final String parentLockContext;
 
 	public ClassifyOperation(final String reasonerId, 
 			final String userId, 
 			final List<SnomedConcept> additionalConcepts,
-			final String repositoryId, 
-			final String branch) {
+			final ResourceURI resourceUri) {
 		
 		this(reasonerId, 
 				userId, 
 				additionalConcepts, 
-				repositoryId, 
-				branch, 
+				resourceUri,
 				DatastoreLockContextDescriptions.CLASSIFY_WITH_REVIEW);
 	}
 	
 	public ClassifyOperation(final String reasonerId, 
 			final String userId, 
 			final List<SnomedConcept> additionalConcepts,
-			final String repositoryId, 
-			final String branch,
+			final ResourceURI resourceUri,
 			final String parentLockContext) {	
 
 		this.reasonerId = reasonerId;
 		this.userId = userId;
 		this.additionalConcepts = additionalConcepts;
-		this.repositoryId = repositoryId;
-		this.branch = branch;
+		this.resourceUri = resourceUri;
 		this.parentLockContext = parentLockContext;
 	}
 
@@ -145,7 +141,7 @@ public abstract class ClassifyOperation<T> {
 				.setUserId(userId)
 				.addAllConcepts(additionalConcepts)
 				.setParentLockContext(parentLockContext)
-				.build(branch)
+				.build(resourceUri)
 				.get(ApplicationContext.getServiceForClass(Environment.class));
 
 			while (true) {
