@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2022-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ public class LockChangeRequestBuilder
 	private String description;
 	private String parentDescription = DatastoreLockContextDescriptions.ROOT;
 	private String userId;
+	private Long timeout = 3000L; // to keep backward compatibility in this API, 3 seconds of lock timeout is applied here
 	private List<Lockable> targets = List.of();
 
 
@@ -59,6 +60,11 @@ public class LockChangeRequestBuilder
 		return getSelf();
 	}
 	
+	public LockChangeRequestBuilder setTimeout(Long timeout) {
+		this.timeout = timeout;
+		return getSelf();
+	}
+	
 	public LockChangeRequestBuilder setTargets(final Lockable... targets) {
 		this.targets = Collections3.toImmutableList(targets);
 		return getSelf();
@@ -66,6 +72,6 @@ public class LockChangeRequestBuilder
 
 	@Override
 	protected Request<ServiceProvider, Boolean> doBuild() {
-		return new LockChangeRequest(lock, description, parentDescription, userId, targets);
+		return new LockChangeRequest(lock, description, parentDescription, userId, timeout, targets);
 	}
 }
