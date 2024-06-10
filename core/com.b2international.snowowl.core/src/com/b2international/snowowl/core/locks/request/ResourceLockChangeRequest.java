@@ -40,18 +40,22 @@ final class ResourceLockChangeRequest implements Request<BranchContext, Boolean>
 	@NotEmpty
 	private final String parentDescription;
 
+	private final Long timeout;
+	
 	// Nullable
 	private String userId;
 
 	/*package*/ ResourceLockChangeRequest(
 		final boolean lock, 
 		final String description, 
-		final String parentDescription, 
+		final String parentDescription,
+		final Long timeout,
 		final String userId
 	) {
 		this.lock = lock;
 		this.description = description;
 		this.parentDescription = parentDescription;
+		this.timeout = timeout;
 		this.userId = userId;
 	}
 
@@ -59,7 +63,7 @@ final class ResourceLockChangeRequest implements Request<BranchContext, Boolean>
 	public Boolean execute(final BranchContext context) throws LockedException, IllegalArgumentException {
 		final String repositoryId = context.service(Repository.class).id();
 		final List<Lockable> targets = List.of(new Lockable(repositoryId, context.path()));
-		final LockChangeRequest delegateLockRequest = new LockChangeRequest(lock, description, parentDescription, userId, targets);
+		final LockChangeRequest delegateLockRequest = new LockChangeRequest(lock, description, parentDescription, userId, timeout, targets);
 		return delegateLockRequest.execute(context);
 	}
 }
