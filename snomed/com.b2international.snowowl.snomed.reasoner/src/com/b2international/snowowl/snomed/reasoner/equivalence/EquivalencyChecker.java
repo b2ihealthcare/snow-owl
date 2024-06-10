@@ -21,6 +21,8 @@ import java.util.stream.Collectors;
 
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongKeyLongMap;
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassifyOperation;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
@@ -42,11 +44,10 @@ public final class EquivalencyChecker extends ClassifyOperation<LongKeyLongMap> 
 	public EquivalencyChecker(final String reasonerId, 
 			final String userId, 
 			final List<SnomedConcept> additionalConcepts,
-			final String repositoryId, 
-			final String branch,
+			final ResourceURI resourceUri,
 			final String parentLockContext) {
 
-		super(reasonerId, userId, additionalConcepts, repositoryId, branch, parentLockContext);
+		super(reasonerId, userId, additionalConcepts, resourceUri, parentLockContext);
 	}
 
 	@Override
@@ -60,7 +61,7 @@ public final class EquivalencyChecker extends ClassifyOperation<LongKeyLongMap> 
 
 		final ClassificationTask classificationTask = ClassificationRequests.prepareGetClassification(classificationId)
 				.setExpand("equivalentConceptSets()")
-				.build(repositoryId)
+				.build(SnomedTerminologyComponentConstants.TOOLING_ID)
 				.execute(getEventBus())
 				.getSync();
 
