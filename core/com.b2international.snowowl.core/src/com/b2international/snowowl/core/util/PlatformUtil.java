@@ -193,5 +193,13 @@ public class PlatformUtil {
 	public static boolean isOSX() {
 		return Platform.OS_MACOSX.equals(Platform.getOS());
 	}
+	
+	/**
+	 * Returns <code>true</code> if the underlying system is a Windows 11, <code>false</code> otherwise. 
+	 * @return
+	 */
+	public static boolean isWindows11() {
+        return System.getProperty("os.name").equals("Windows 11");
+    }
 
 }
