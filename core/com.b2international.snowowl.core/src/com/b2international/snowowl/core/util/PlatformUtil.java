@@ -182,7 +182,7 @@ public class PlatformUtil {
 	 * @return
 	 */
 	public static boolean isWindows11() {
-        return System.getProperty("os.name").equals("Windows 11");
-    }
+		return System.getProperty("os.name").equals("Windows 11");
+	}
 
 }
