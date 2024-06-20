@@ -22,13 +22,14 @@ import java.util.Objects;
 
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 9.3
  */
-public final class SnomedOWLRelationship implements Serializable {
+public final class SnomedOWLRelationship implements OwlRelationship, Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -54,6 +55,7 @@ public final class SnomedOWLRelationship implements Serializable {
 	 * @return
 	 */
 	@JsonProperty
+	@Override
 	public String getDestinationId() {
 		return ifNotNull(getDestination(), SnomedConcept::getId);
 	}
@@ -73,11 +75,13 @@ public final class SnomedOWLRelationship implements Serializable {
 	 * @return
 	 */
 	@JsonProperty("value")
+	@Override
 	public RelationshipValue getValueAsObject() {
 		return value;
 	}
 	
 	@JsonIgnore
+	@Override
 	public boolean hasValue() {
 		return (value != null);
 	}
@@ -96,6 +100,7 @@ public final class SnomedOWLRelationship implements Serializable {
 	 * @return the relationship type identifier
 	 */
 	@JsonProperty
+	@Override
 	public String getTypeId() {
 		return ifNotNull(getType(), SnomedConcept::getId);
 	}
@@ -114,6 +119,7 @@ public final class SnomedOWLRelationship implements Serializable {
 	 * 
 	 * @return the relationship group, or 0 if this relationship can not be grouped, or is in an unnumbered, singleton group
 	 */
+	@Override
 	public Integer getRelationshipGroup() {
 		return relationshipGroup;
 	}
@@ -190,11 +196,29 @@ public final class SnomedOWLRelationship implements Serializable {
 			&& Objects.equals(getRelationshipGroup(), other.getRelationshipGroup());
 	}
 	
+	public static SnomedOWLRelationship createFrom(final SnomedRelationship r) {
+		if (r.hasValue()) {
+			return create(r.getTypeId(), r.getValueAsObject(), r.getRelationshipGroup());
+		} else {
+			return create(r.getTypeId(), r.getDestinationId(), r.getRelationshipGroup());
+		}
+	}
+	
 	public static SnomedOWLRelationship create(final String typeId, final String destinationId, final int relationshipGroup) {
 		SnomedOWLRelationship owlRelationship = new SnomedOWLRelationship();
 		
 		owlRelationship.setTypeId(typeId);
 		owlRelationship.setDestinationId(destinationId);
+		owlRelationship.setRelationshipGroup(relationshipGroup);
+		
+		return owlRelationship;
+	}
+	
+	public static SnomedOWLRelationship create(final String typeId, final RelationshipValue value, final int relationshipGroup) {
+		SnomedOWLRelationship owlRelationship = new SnomedOWLRelationship();
+		
+		owlRelationship.setTypeId(typeId);
+		owlRelationship.setValueAsObject(value);
 		owlRelationship.setRelationshipGroup(relationshipGroup);
 		
 		return owlRelationship;
