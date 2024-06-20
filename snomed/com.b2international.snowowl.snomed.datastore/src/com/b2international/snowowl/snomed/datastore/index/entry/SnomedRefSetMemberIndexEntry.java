@@ -230,11 +230,11 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				.referencedComponentType(input.getReferencedComponent().getComponentType());
 		
 		if (input.getEquivalentOWLRelationships() != null) {
-			builder.classAxiomRelationships(input.getEquivalentOWLRelationships());
+			builder.classAxiomRelationships(SnomedOWLRelationshipDocument.createFrom(input.getEquivalentOWLRelationships()));
 		} else if (input.getClassOWLRelationships() != null) {
-			builder.classAxiomRelationships(input.getClassOWLRelationships());
+			builder.classAxiomRelationships(SnomedOWLRelationshipDocument.createFrom(input.getClassOWLRelationships()));
 		} else if (input.getGciOWLRelationships() != null) {
-			builder.gciAxiomRelationships(input.getGciOWLRelationships());
+			builder.gciAxiomRelationships(SnomedOWLRelationshipDocument.createFrom(input.getGciOWLRelationships()));
 		}
 		
 		for (Entry<String, Object> entry : input.getProperties().entrySet()) {

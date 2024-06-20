@@ -31,7 +31,7 @@ import org.snomed.otf.owltoolkit.domain.Relationship.ConcreteValue;
 
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
+import com.b2international.snowowl.snomed.core.domain.refset.OwlRelationship;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -72,13 +72,13 @@ public final class SnomedOWLRelationshipConverter {
 		final boolean gci, 
 		final boolean isPrimitive, 
 		final String conceptId, 
-		final List<SnomedOWLRelationshipDocument> owlRelationships) {
+		final List<? extends OwlRelationship> owlRelationships) {
 		
 		final AxiomRepresentation axiomRepresentation = new AxiomRepresentation();
 		final Long conceptIdLong = Long.valueOf(conceptId);
 		final ListMultimap<Integer, Relationship> relationships = ArrayListMultimap.create();
 
-		for (final SnomedOWLRelationshipDocument owlRelationship : owlRelationships) {
+		for (final OwlRelationship owlRelationship : owlRelationships) {
 
 			final Relationship relationship;
 			if (owlRelationship.hasValue()) {
