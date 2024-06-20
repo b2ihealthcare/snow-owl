@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,10 +36,13 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedOWLRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedConceptRequestCache;
 import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Strings;
@@ -195,16 +198,19 @@ public final class SnomedReferenceSetMemberConverter extends BaseRevisionResourc
 		
 		String owlExpression = entry.getOwlExpression();
 		if (Concepts.REFSET_OWL_AXIOM.equals(entry.getRefsetId()) &&
-				expand().containsKey("owlRelationships") && 
+				expand().containsKey(SnomedReferenceSetMember.Expand.OWL_RELATIONSHIPS) && 
 				!Strings.isNullOrEmpty(owlExpression)) {
+			
+			Options expandOptions = expand().getOptions(SnomedReferenceSetMember.Expand.OWL_RELATIONSHIPS);
+			
 			if (!CompareUtils.isEmpty(entry.getClassAxiomRelationships())) {
 				if (owlExpression.startsWith("EquivalentClasses")) {
-					member.setEquivalentOWLRelationships(entry.getClassAxiomRelationships());
+					member.setEquivalentOWLRelationships(toOwlRelationships(entry.getClassAxiomRelationships(), expandOptions));
 				} else {
-					member.setClassOWLRelationships(entry.getClassAxiomRelationships());
+					member.setClassOWLRelationships(toOwlRelationships(entry.getClassAxiomRelationships(), expandOptions));
 				}
 			} else if (!CompareUtils.isEmpty(entry.getGciAxiomRelationships())) {
-				member.setGciOWLRelationships(entry.getGciAxiomRelationships());
+				member.setGciOWLRelationships(toOwlRelationships(entry.getGciAxiomRelationships(), expandOptions));
 			}
 		}
 		
@@ -212,6 +218,71 @@ public final class SnomedReferenceSetMemberConverter extends BaseRevisionResourc
 		return member;
 	}
 	
+	private List<SnomedOWLRelationship> toOwlRelationships(List<SnomedOWLRelationshipDocument> owlRelationshipDocs, Options expandOptions) {
+		if (owlRelationshipDocs == null) {
+			return null;
+		}
+		
+		List<SnomedOWLRelationship> owlRelationships = owlRelationshipDocs.stream().map(this::toOwlRelationship).toList();
+		
+		expandType(owlRelationships, expandOptions);
+		expandDestination(owlRelationships, expandOptions);
+		
+		return owlRelationships;
+	}
+	
+	private SnomedOWLRelationship toOwlRelationship(SnomedOWLRelationshipDocument owlRelationshipDoc) {
+		SnomedOWLRelationship owlRelationship = new SnomedOWLRelationship();
+		
+		owlRelationship.setDestinationId(owlRelationshipDoc.getDestinationId());
+		owlRelationship.setTypeId(owlRelationshipDoc.getTypeId());
+		owlRelationship.setRelationshipGroup(owlRelationshipDoc.getRelationshipGroup());
+		owlRelationship.setValueAsObject(owlRelationshipDoc.getValueAsObject());
+		
+		return owlRelationship;
+	}
+	
+	private void expandType(List<SnomedOWLRelationship> results, Options expandOptions) {
+		if (expandOptions.containsKey(SnomedOWLRelationship.Expand.TYPE)) {
+			final Options typeOptions = expandOptions.get(SnomedOWLRelationship.Expand.TYPE, Options.class);
+			final Iterable<String> typeConceptIds = FluentIterable.from(results).transform(SnomedOWLRelationship::getTypeId);
+			
+			context().service(SnomedConceptRequestCache.class)
+				.request(context(), typeConceptIds, typeOptions.getOptions("expand"), locales(), typeConceptsById -> {
+					for (SnomedOWLRelationship relationship : results) {
+						final String typeId = relationship.getTypeId();
+						if (typeConceptsById.containsKey(typeId)) {
+							final SnomedConcept typeConcept = typeConceptsById.get(typeId);
+							((SnomedOWLRelationship) relationship).setType(typeConcept);
+						}
+					}
+				});
+
+		}
+	}
+
+	private void expandDestination(List<SnomedOWLRelationship> results, Options expandOptions) {
+		if (expandOptions.containsKey(SnomedOWLRelationship.Expand.DESTINATION)) {
+			final Options destinationOptions = expandOptions.get(SnomedOWLRelationship.Expand.DESTINATION, Options.class);
+			final Iterable<String> destinationConceptIds = FluentIterable.from(results)
+				.filter(r -> !r.hasValue()) // skip expand on relationships with value
+				.transform(SnomedOWLRelationship::getDestinationId);
+			
+			context().service(SnomedConceptRequestCache.class)
+				.request(context(), destinationConceptIds, destinationOptions.getOptions("expand"), locales(), destinationConceptsById -> {
+					for (SnomedOWLRelationship relationship : results) {
+						final String destinationId = relationship.getDestinationId();
+						// containsKey handles any null values here
+						if (destinationConceptsById.containsKey(destinationId)) {
+							final SnomedConcept destinationConcept = destinationConceptsById.get(destinationId);
+							((SnomedOWLRelationship) relationship).setDestination(destinationConcept);
+						}
+					}
+				});
+			
+		}
+	}
+
 	private void setReferencedComponent(SnomedReferenceSetMember member, String referencedComponentId, String referencedComponentType) {
 		// XXX: partial field loading support
 		if (referencedComponentType == null || referencedComponentId == null) return;

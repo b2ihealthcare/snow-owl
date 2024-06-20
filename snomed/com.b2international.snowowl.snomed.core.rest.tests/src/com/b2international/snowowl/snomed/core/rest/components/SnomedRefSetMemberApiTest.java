@@ -55,15 +55,11 @@ import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.refset.DataType;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.core.domain.refset.*;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
@@ -436,8 +432,8 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		
 		assertThat(member.getClassOWLRelationships())
 			.containsOnly(
-				SnomedOWLRelationshipDocument.create(Concepts.IS_A, "410680006", 0),
-				SnomedOWLRelationshipDocument.create("734136001", "900000000000470007", 1)
+				SnomedOWLRelationship.create(Concepts.IS_A, "410680006", 0),
+				SnomedOWLRelationship.create("734136001", "900000000000470007", 1)
 			);
 		
 		final Json updateRequestBody = Json.object(
@@ -455,9 +451,9 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		
 		assertThat(updatedMember.getClassOWLRelationships())
 			.containsOnly(
-				SnomedOWLRelationshipDocument.create(Concepts.IS_A, "410680006", 0),
-				SnomedOWLRelationshipDocument.create("734136001", "900000000000470007", 1),
-				SnomedOWLRelationshipDocument.create("371881003", "900000000000450001", 1)
+				SnomedOWLRelationship.create(Concepts.IS_A, "410680006", 0),
+				SnomedOWLRelationship.create("734136001", "900000000000470007", 1),
+				SnomedOWLRelationship.create("371881003", "900000000000450001", 1)
 			);
 	}
 	
