@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,7 @@ import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.*;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
@@ -425,7 +426,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		String memberId = assertCreated(createComponent(branchPath, SnomedComponentType.MEMBER, createRequestBody));
 
 		final SnomedReferenceSetMember member = SnomedRequests.prepareGetMember(memberId)
-				.setExpand("owlRelationships()")
+				.setExpand("owlRelationships(expand(type(),destination()))")
 				.build(branchPath.getPath())
 				.execute(getBus())
 				.getSync();
@@ -435,6 +436,17 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 				SnomedOWLRelationship.create(Concepts.IS_A, "410680006", 0),
 				SnomedOWLRelationship.create("734136001", "900000000000470007", 1)
 			);
+		
+		// successful expansion check
+		assertThat(member.getClassOWLRelationships())
+			.extracting(SnomedOWLRelationship::getType)
+			.extracting(SnomedConcept::isActive)
+			.containsOnly(true);
+		
+		assertThat(member.getClassOWLRelationships())
+			.extracting(SnomedOWLRelationship::getDestination)
+			.extracting(SnomedConcept::isActive)
+			.containsOnly(true);
 		
 		final Json updateRequestBody = Json.object(
 			SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.owlAxiom4(conceptId),

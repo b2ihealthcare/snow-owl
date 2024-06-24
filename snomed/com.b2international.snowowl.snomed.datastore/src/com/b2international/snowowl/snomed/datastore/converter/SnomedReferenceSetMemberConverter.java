@@ -201,7 +201,7 @@ public final class SnomedReferenceSetMemberConverter extends BaseRevisionResourc
 				expand().containsKey(SnomedReferenceSetMember.Expand.OWL_RELATIONSHIPS) && 
 				!Strings.isNullOrEmpty(owlExpression)) {
 			
-			Options expandOptions = expand().getOptions(SnomedReferenceSetMember.Expand.OWL_RELATIONSHIPS);
+			Options expandOptions = expand().getOptions(SnomedReferenceSetMember.Expand.OWL_RELATIONSHIPS).getOptions("expand");
 			
 			if (!CompareUtils.isEmpty(entry.getClassAxiomRelationships())) {
 				if (owlExpression.startsWith("EquivalentClasses")) {
