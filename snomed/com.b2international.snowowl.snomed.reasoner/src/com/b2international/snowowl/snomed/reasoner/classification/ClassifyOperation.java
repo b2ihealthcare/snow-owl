@@ -26,8 +26,8 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.Notifications;
 import com.b2international.snowowl.core.id.IDs;
@@ -36,7 +36,6 @@ import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.jobs.RemoteJobNotification;
 import com.b2international.snowowl.core.jobs.RemoteJobs;
-import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
@@ -89,11 +88,13 @@ public abstract class ClassifyOperation<T> {
 
 	/**
 	 * Allocates a reasoner instance, performs the requested operation, then releases the borrowed instance back to the pool.
+	 * 
+	 * @param context the context where the operation should run
 	 * @param monitor an {@link IProgressMonitor} to monitor operation progress
 	 * @return the value returned by {@link #processResults(IProgressMonitor, long)}
 	 * @throws OperationCanceledException
 	 */
-	public T run(final IProgressMonitor monitor) throws OperationCanceledException {
+	public final T run(final ServiceProvider context, final IProgressMonitor monitor) throws OperationCanceledException {
 
 		monitor.beginTask("Classification in progress...", IProgressMonitor.UNKNOWN);
 
@@ -110,7 +111,7 @@ public abstract class ClassifyOperation<T> {
 							.one()
 							.filterById(jobId)
 							.buildAsync()
-							.execute(getEventBus()))
+							.execute(context.service(IEventBus.class)))
 					.map(RemoteJobs::first)
 					.map(Optional<RemoteJobEntry>::get)
 					.filter(RemoteJobEntry::isDone);
@@ -142,7 +143,7 @@ public abstract class ClassifyOperation<T> {
 				.addAllConcepts(additionalConcepts)
 				.setParentLockContext(parentLockContext)
 				.build(resourceUri)
-				.get(ApplicationContext.getServiceForClass(Environment.class));
+				.get(context);
 
 			while (true) {
 
@@ -164,15 +165,15 @@ public abstract class ClassifyOperation<T> {
 							break;
 						case FINISHED:
 							try {
-								return processResults(classificationId);
+								return processResults(context, classificationId);
 							} finally {
-								deleteEntry(jobId);
+								deleteEntry(context, jobId);
 							}
 						case CANCELED:
-							deleteEntry(jobId);
+							deleteEntry(context, jobId);
 							throw new OperationCanceledException();
 						case FAILED:
-							deleteEntry(jobId);
+							deleteEntry(context, jobId);
 							throw new SnowowlRuntimeException("Failed to retrieve the results of the classification.");
 						default:
 							throw new IllegalStateException("Unexpected state '" + jobEntry.getState() + "'.");
@@ -188,22 +189,19 @@ public abstract class ClassifyOperation<T> {
 		}
 	}
 
-	private void deleteEntry(final String classificationId) {
+	private void deleteEntry(final ServiceProvider context, final String classificationId) {
 		JobRequests.prepareDelete(classificationId)
 				.buildAsync()
-				.execute(getEventBus());
-	}
-
-	protected IEventBus getEventBus() {
-		return ApplicationContext.getServiceForClass(IEventBus.class);
+				.execute(context);
 	}
 
 	/**
 	 * Performs an arbitrary operation using the reasoner. Subclasses should implement this method to perform any operation on the
 	 * results of a classification run.
 	 * 
+	 * @param context
 	 * @param classificationId the classification's unique identifier
 	 * @return the extracted results of the classification
 	 */
-	protected abstract T processResults(String classificationId);
+	protected abstract T processResults(final ServiceProvider context, String classificationId);
 }

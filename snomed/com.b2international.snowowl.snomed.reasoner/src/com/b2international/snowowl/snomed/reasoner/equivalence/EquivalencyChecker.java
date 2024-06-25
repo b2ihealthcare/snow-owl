@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassifyOperation;
@@ -51,7 +52,7 @@ public final class EquivalencyChecker extends ClassifyOperation<LongKeyLongMap> 
 	}
 
 	@Override
-	protected LongKeyLongMap processResults(final String classificationId) {
+	protected LongKeyLongMap processResults(final ServiceProvider context, final String classificationId) {
 
 		final Set<String> conceptIdsToCheck = additionalConcepts.stream()
 				.map(SnomedConcept::getId)
@@ -62,8 +63,7 @@ public final class EquivalencyChecker extends ClassifyOperation<LongKeyLongMap> 
 		final ClassificationTask classificationTask = ClassificationRequests.prepareGetClassification(classificationId)
 				.setExpand("equivalentConceptSets()")
 				.build(SnomedTerminologyComponentConstants.TOOLING_ID)
-				.execute(getEventBus())
-				.getSync();
+				.get(context);
 
 		if (!ClassificationStatus.COMPLETED.equals(classificationTask.getStatus())) {
 			throw new ReasonerApiException("Selected reasoner could not start or failed to finish its job.");
