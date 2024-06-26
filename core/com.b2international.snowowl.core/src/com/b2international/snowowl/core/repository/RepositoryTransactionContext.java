@@ -20,6 +20,7 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.xtext.util.Pair;
@@ -27,6 +28,7 @@ import org.eclipse.xtext.util.Tuples;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.AlreadyExistsException;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.CycleDetectedException;
 import com.b2international.index.Index;
@@ -304,11 +306,34 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		if (!ensurePresent.isEmpty()) {
 			// check if any of the listed IDs are already present in the index and if NOT, report ComponentNotFoundException for the first registered ID (same behavior as before with explicit checks)
 			for (Class<? extends Revision> type : ensurePresent.keySet()) {
-				final Collection<String> idsToCheck = ensurePresent.get(type).stream().filter(id -> !IComponent.ROOT_ID.equals(id)).toList();
-				final Map<String, ?> existingComponents = Maps.uniqueIndex(fetchComponents(idsToCheck, type), Revision::getId);
-				for (String idToCheck : idsToCheck) {
-					if (!existingComponents.containsKey(idToCheck)) {
-						throw new ComponentNotFoundException(DocumentMapping.getDocType(type), idToCheck).toBadRequestException();
+				final Set<String> idsToCheck = ensurePresent.get(type).stream().filter(id -> !IComponent.ROOT_ID.equals(id)).collect(Collectors.toSet());
+				
+				// first check if there are any deletion that are present in the ID set, if yes, then those IDs won't be available anymore, report a transaction error
+				var deletedIds = staging.getRemovedObjects(Revision.class)
+					.map(Revision::getId)
+					.filter(idsToCheck::contains)
+					.collect(Collectors.toSet());
+				
+				if (!deletedIds.isEmpty()) {
+					throw new BadRequestException("Transaction would delete components that are still referenced by other components.")
+						.withAdditionalInfo(Map.of("ids", deletedIds));
+				}
+				
+				// then remove all new/changed objects that are already present in the tx staging area, those can be considered ensured
+				staging.getNewObjects(Revision.class)
+					.map(Revision::getId)
+					.forEach(idsToCheck::remove);
+				staging.getChangedObjects(Revision.class)
+					.map(Revision::getId)
+					.forEach(idsToCheck::remove);
+				
+				// then if there are any remaining IDs to check, fetch them from the store
+				if (!idsToCheck.isEmpty()) {
+					final Map<String, ?> existingComponents = Maps.uniqueIndex(fetchComponents(idsToCheck, type), Revision::getId);				
+					for (String idToCheck : idsToCheck) {
+						if (!existingComponents.containsKey(idToCheck)) {
+							throw new ComponentNotFoundException(DocumentMapping.getDocType(type), idToCheck).toBadRequestException();
+						}
 					}
 				}
 			}
