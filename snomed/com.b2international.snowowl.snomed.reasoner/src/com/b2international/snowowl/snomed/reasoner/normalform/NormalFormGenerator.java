@@ -55,12 +55,7 @@ import com.b2international.snowowl.snomed.reasoner.diff.concretedomain.ConcreteD
 import com.b2international.snowowl.snomed.reasoner.diff.relationship.StatementFragmentOrdering;
 import com.google.common.base.Predicates;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 
 /**
  * Transforms a subsumption hierarchy and a set of non-ISA relationships into
@@ -77,6 +72,7 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 	private final LongKeyMap<Collection<StatementFragment>> statementCache = PrimitiveMaps.newLongKeyOpenHashMap();
 	private final LongKeyMap<Collection<ConcreteDomainFragment>> concreteDomainCache = PrimitiveMaps.newLongKeyOpenHashMap();
 	private final Map<Long, NodeGraph> transitiveNodeGraphs = newHashMap();
+	private final boolean inferConcreteDomainRefsetMembers;
 	
 	/**
 	 * Creates a new distribution normal form generator instance.
@@ -85,8 +81,9 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 	 *                         the reasoner, as well as the pre-classification
 	 *                         contents of the branch (may not be {@code null})
 	 */
-	public NormalFormGenerator(final ReasonerTaxonomy reasonerTaxonomy) {
+	public NormalFormGenerator(final ReasonerTaxonomy reasonerTaxonomy, final boolean inferConcreteDomainRefsetMembers) {
 		this.reasonerTaxonomy = reasonerTaxonomy;
+		this.inferConcreteDomainRefsetMembers = inferConcreteDomainRefsetMembers;
 	}
 
 	@Override
@@ -402,8 +399,13 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 		}
 
 		for (final ConcreteDomainFragment unionGroupMember : unionGroupMembers) {
-			final NormalFormValue normalFormValue = new NormalFormValue(unionGroupMember, reasonerTaxonomy);
-			zeroUnionGroups.add(new NormalFormUnionGroup(normalFormValue));
+			if (inferConcreteDomainRefsetMembers) {
+				final NormalFormConcreteDomainMemberValue normalFormValue = new NormalFormConcreteDomainMemberValue(unionGroupMember, reasonerTaxonomy);
+				zeroUnionGroups.add(new NormalFormUnionGroup(normalFormValue));
+			} else {
+				final NormalFormValue normalFormValue = new NormalFormValue(unionGroupMember, reasonerTaxonomy);
+				zeroUnionGroups.add(new NormalFormUnionGroup(normalFormValue));
+			}
 		}
 
 		return zeroUnionGroups.build();
@@ -531,11 +533,23 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 				});
 	}
 
-	@Deprecated
 	private Iterable<ConcreteDomainFragment> membersFromGroupSet(final NormalFormGroupSet targetGroupSet) {
-		// We will consume CD member fragments, but no longer suggest to create new ones.
-		return List.of();
+		// We will consume CD member fragments, but no longer suggest to create new ones, unless explicitly requested via inferConcreteDomainRefsetMembers option
+		return inferConcreteDomainRefsetMembers ? FluentIterable.from(targetGroupSet).transformAndConcat(this::membersFromGroup) : List.of();
 	}
+	
+	private Iterable<ConcreteDomainFragment> membersFromGroup(final NormalFormGroup group) {
+		return FluentIterable
+				.from(group.getUnionGroups())
+				.transformAndConcat(unionGroup -> membersFromUnionGroup(unionGroup, group.getGroupNumber()));
+	}
+
+	private Iterable<ConcreteDomainFragment> membersFromUnionGroup(final NormalFormUnionGroup unionGroup, final int groupNumber) {
+		return FluentIterable
+				.from(unionGroup.getProperties())
+				.filter(NormalFormConcreteDomainMemberValue.class)
+				.transform(property -> property.getFragment().withGroupNumber(groupNumber));
+ 	}
 
 	private Collection<StatementFragment> getTargetRelationships(final long conceptId) {
 		final Iterable<StatementFragment> targetIsARelationships = getTargetIsARelationships(conceptId);

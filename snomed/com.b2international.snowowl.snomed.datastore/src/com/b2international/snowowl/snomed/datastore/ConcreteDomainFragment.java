@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,5 +114,16 @@ public final class ConcreteDomainFragment implements Serializable {
 		builder.append(memberId);
 		builder.append("]");
 		return builder.toString();
+	}
+
+	public ConcreteDomainFragment withGroupNumber(int groupNumber) {
+		return new ConcreteDomainFragment(
+			getMemberId(),
+			getRefSetId(),
+			groupNumber,
+			getSerializedValue(),
+			getTypeId(),
+			isReleased()
+		);
 	}
 }
