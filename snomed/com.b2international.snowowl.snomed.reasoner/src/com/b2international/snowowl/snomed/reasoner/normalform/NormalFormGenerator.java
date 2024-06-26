@@ -541,12 +541,10 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 	private Iterable<ConcreteDomainFragment> membersFromGroup(final NormalFormGroup group) {
 		return FluentIterable
 				.from(group.getUnionGroups())
-				.transformAndConcat(unionGroup -> membersFromUnionGroup(unionGroup, 
-					group.getGroupNumber(), 
-					unionGroup.getUnionGroupNumber()));
+				.transformAndConcat(unionGroup -> membersFromUnionGroup(unionGroup, group.getGroupNumber()));
 	}
 
-	private Iterable<ConcreteDomainFragment> membersFromUnionGroup(final NormalFormUnionGroup unionGroup, final int groupNumber, final int unionGroupNumber) {
+	private Iterable<ConcreteDomainFragment> membersFromUnionGroup(final NormalFormUnionGroup unionGroup, final int groupNumber) {
 		return FluentIterable
 				.from(unionGroup.getProperties())
 				.filter(NormalFormConcreteDomainMemberValue.class)
