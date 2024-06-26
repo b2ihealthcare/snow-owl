@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 	
 		// check that the module does exist in the system
 		if (!id.equals(moduleId)) {
-			context.lookup(moduleId, SnomedConceptDocument.class);
+			context.ensurePresent(SnomedConceptDocument.class, moduleId);
 		}
 		
 		if (effectiveTime == null) {
