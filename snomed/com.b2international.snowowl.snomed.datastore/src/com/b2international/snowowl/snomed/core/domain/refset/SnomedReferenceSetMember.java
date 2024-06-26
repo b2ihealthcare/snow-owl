@@ -231,7 +231,7 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 		return SnomedRequests.prepareNewMember()
 				.setId(getId())
 				.setActive(isActive())
-				.setReferencedComponentId(containerId)
+				.setReferencedComponentId(containerId != null ? containerId : getReferencedComponentId())
 				.setRefsetId(getRefsetId())
 				.setModuleId(getModuleId())
 				.setProperties(getProperties())
