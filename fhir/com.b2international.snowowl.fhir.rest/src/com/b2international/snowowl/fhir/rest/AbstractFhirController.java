@@ -23,12 +23,12 @@ import java.util.Map;
 import org.linuxforhealth.fhir.model.format.Format;
 import org.linuxforhealth.fhir.model.generator.exception.FHIRGeneratorException;
 import org.linuxforhealth.fhir.model.parser.exception.FHIRParserException;
+import org.linuxforhealth.fhir.model.r5.generator.FHIRGenerator;
+import org.linuxforhealth.fhir.model.r5.parser.FHIRParser;
 import org.linuxforhealth.fhir.model.r5.resource.Bundle;
 import org.linuxforhealth.fhir.model.r5.resource.Parameters;
 import org.linuxforhealth.fhir.model.r5.resource.Resource;
 import org.linuxforhealth.fhir.model.r5.type.Uri;
-import org.linuxforhealth.fhir.model.r5.generator.FHIRGenerator;
-import org.linuxforhealth.fhir.model.r5.parser.FHIRParser;
 import org.linuxforhealth.fhir.model.r5.visitor.Visitable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +56,7 @@ import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.converter.BundleConverter_50;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
@@ -313,7 +314,7 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public @ResponseBody OperationOutcome handle(final Exception ex) {
-		if (Throwables.getRootCause(ex).getMessage().toLowerCase().contains("broken pipe")) {
+		if ("broken pipe".equals(Strings.nullToEmpty(Throwables.getRootCause(ex).getMessage()).toLowerCase())) {
 	        return null; // socket is closed, cannot return any response    
 	    } else {
 	    	LOG.error("Exception during processing of a request", ex);
