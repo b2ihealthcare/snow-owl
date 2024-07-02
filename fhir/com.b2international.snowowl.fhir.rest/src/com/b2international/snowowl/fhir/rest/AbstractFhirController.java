@@ -39,6 +39,7 @@ import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 
 /**
@@ -80,7 +81,7 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public @ResponseBody OperationOutcome handle(final Exception ex) {
-		if (Throwables.getRootCause(ex).getMessage().toLowerCase().contains("broken pipe")) {
+		if ("broken pipe".equals(Strings.nullToEmpty(Throwables.getRootCause(ex).getMessage()).toLowerCase())) {
 	        return null; // socket is closed, cannot return any response    
 	    } else {
 	    	LOG.error("Exception during processing of a request", ex);
