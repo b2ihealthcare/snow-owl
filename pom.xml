@@ -54,8 +54,8 @@
 
 		<!-- Artifact distribution -->
 		<maven.repository.id>nexus_deployment</maven.repository.id>
-		<maven.releases.repository>https://nexus.b2i.sg/repository/maven-releases</maven.releases.repository>
-		<maven.snapshots.repository>https://nexus.b2i.sg/repository/maven-snapshots</maven.snapshots.repository>
+		<maven.releases.repository>https://artifacts.b2ihealthcare.com/repository/maven-releases</maven.releases.repository>
+		<maven.snapshots.repository>https://artifacts.b2ihealthcare.com/repository/maven-snapshots</maven.snapshots.repository>
 
 	</properties>
 
@@ -104,7 +104,7 @@
 		</repository>
 		<repository>
 			<id>b2i-releases</id>
-			<url>https://nexus.b2i.sg/repository/maven-releases</url>
+			<url>https://artifacts.b2ihealthcare.com/repository/maven-releases</url>
 			<releases>
 				<enabled>true</enabled>
 			</releases>
@@ -114,7 +114,7 @@
 		</repository>
 		<repository>
 			<id>b2i-snapshots</id>
-			<url>https://nexus.b2i.sg/repository/maven-snapshots</url>
+			<url>https://artifacts.b2ihealthcare.com/repository/maven-snapshots</url>
 			<releases>
 				<enabled>false</enabled>
 			</releases>
