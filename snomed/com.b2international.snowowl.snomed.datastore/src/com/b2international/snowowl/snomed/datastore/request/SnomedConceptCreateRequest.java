@@ -60,6 +60,9 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	@NotNull
 	private SubclassDefinitionStatus subclassDefinitionStatus = SubclassDefinitionStatus.NON_DISJOINT_SUBCLASSES;
 
+	@NotNull
+	private Boolean ignoreDuplicatePreferredTerms;
+	
 	SnomedConceptCreateRequest() {}
 	
 	void setSubclassDefinitionStatus(SubclassDefinitionStatus subclassDefinitionStatus) {
@@ -80,6 +83,10 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	
 	void setRefSet(SnomedRefSetCreateRequest refSet) {
 		this.refSetRequest = refSet;
+	}
+	
+	void setIgnoreDuplicatePreferredTerms(Boolean ignoreDuplicatePreferredTerms) {
+		this.ignoreDuplicatePreferredTerms = ignoreDuplicatePreferredTerms;
 	}
 	
 	@Override
@@ -173,9 +180,11 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 			throw new BadRequestException("At least one fully specified name and one preferred term must be supplied with the concept.");
 		}
 
-		for (final com.google.common.collect.Multiset.Entry<String> languageRefSetIdOccurence : preferredLanguageRefSetIds.entrySet()) {
-			if (languageRefSetIdOccurence.getCount() > 1) {
-				throw new BadRequestException("More than one preferred term has been added for language reference set %s.", languageRefSetIdOccurence.getElement());				
+		if (!ignoreDuplicatePreferredTerms) {
+			for (final com.google.common.collect.Multiset.Entry<String> languageRefSetIdOccurence : preferredLanguageRefSetIds.entrySet()) {
+				if (languageRefSetIdOccurence.getCount() > 1) {
+					throw new BadRequestException("More than one preferred term has been added for language reference set %s.", languageRefSetIdOccurence.getElement());				
+				}
 			}
 		}
 	}

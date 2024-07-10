@@ -37,6 +37,7 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 	private List<SnomedRelationshipCreateRequest> relationships = newArrayList();
 	private SnomedRefSetCreateRequest refSet;
 	private SubclassDefinitionStatus subclassDefinitionStatus = SubclassDefinitionStatus.NON_DISJOINT_SUBCLASSES;
+	private Boolean ignoreDuplicatePreferredTerms = Boolean.FALSE;
 	
 	SnomedConceptCreateRequestBuilder() { 
 		super();
@@ -112,6 +113,12 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 		return getSelf();
 	}
 	
+	// other arguments
+	
+	public void setIgnoreDuplicatePreferredTerms(Boolean ignoreDuplicatePreferredTerms) {
+		this.ignoreDuplicatePreferredTerms = ignoreDuplicatePreferredTerms == null ? Boolean.FALSE : ignoreDuplicatePreferredTerms;
+	}
+	
 	@Override
 	protected BaseSnomedComponentCreateRequest createRequest() {
 		return new SnomedConceptCreateRequest();
@@ -125,6 +132,7 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 		req.setDescriptions(descriptions);
 		req.setRelationships(relationships);
 		req.setRefSet(refSet);
+		req.setIgnoreDuplicatePreferredTerms(ignoreDuplicatePreferredTerms);
 	}
 
 }
