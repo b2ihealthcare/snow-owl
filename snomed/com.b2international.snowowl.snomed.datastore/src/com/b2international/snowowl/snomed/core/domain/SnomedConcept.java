@@ -35,6 +35,7 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -499,6 +500,10 @@ public final class SnomedConcept extends SnomedCoreComponent {
 	
 	@Override
 	public Request<TransactionContext, String> toCreateRequest(String containerId) {
+		return toCreateRequestBuilder().build();
+	}
+
+	public SnomedConceptCreateRequestBuilder toCreateRequestBuilder() {
 		return SnomedRequests.prepareNewConcept()
 				.setActive(isActive())
 				.addMembers(getMembers())
@@ -507,8 +512,7 @@ public final class SnomedConcept extends SnomedCoreComponent {
 				.setDefinitionStatusId(getDefinitionStatusId())
 				.setId(getId())
 				.setModuleId(getModuleId())
-				.setSubclassDefinitionStatus(getSubclassDefinitionStatus())
-				.build();
+				.setSubclassDefinitionStatus(getSubclassDefinitionStatus());
 	}
 	
 	@Override
