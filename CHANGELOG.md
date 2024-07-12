@@ -1,6 +1,18 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 9.2.2
+
+### Bugs/Improvements
+- [core] add method to detect Win 11 OS (#1300)
+- [core] consider transaction changeset when checking referential integrity checks, like ensure presence of a certain component before commit (#1303)
+- [api] support `timeout` parameter configuration in Lock Java API with a default value of `3s` (#1298)
+- [api] support expansion of type and destination fields for expanded owlRelationships on axiom members (#1301)
+- [api] support disabling duplicate preferred term check on a per request basis (#1308)
+- [fhir] fixed an issue that caused internal server error logs not being reported to the log stream when using the FHIR API (5701a72)
+- [classification] restore old concrete domain member inference logic when old concrete domain support is enabled in the system (#1302)
+- [releng] change `b2i.sg` URLs to `b2ihealthcare.com` (e.g. https://artifacts.b2ihealthcare.com) (#1304)
+
 ## 9.2.1
 
 ### Bugs/Improvements
@@ -177,6 +189,12 @@ Huge thanks to @abelardy for testing and providing feedback to improve ECL evalu
 
 ### Dependencies
 - Bump supported Elasticsearch libraries to (7.17.16 #1252, 8.10.3 #1230)
+
+## 8.13.1
+
+### Bugs/Improvements
+- [fhir] fixed an issue that caused internal server error logs not being reported to the log stream when using the FHIR API
+- [releng] change `b2i.sg` URLs to `b2ihealthcare.com` (e.g. https://artifacts.b2ihealthcare.com) (#1307)
 
 ## 8.13.0
 
