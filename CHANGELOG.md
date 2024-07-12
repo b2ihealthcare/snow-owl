@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.13.1
+
+### Bugs/Improvements
+- [fhir] fixed an issue that caused internal server error logs not being reported to the log stream when using the FHIR API
+
 ## 8.13.0
 
 ### Local Code Systems
