@@ -25,6 +25,7 @@ public final class InactivationProperties implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
+	private Boolean inactivationIndicatorStatus;
 	private SnomedConcept inactivationIndicator;
 	private List<AssociationTarget> associationTargets;
 	
@@ -34,6 +35,12 @@ public final class InactivationProperties implements Serializable {
 	public InactivationProperties(String inactivationIndicatorId, List<AssociationTarget> associationTargets) {
 		setInactivationIndicatorId(inactivationIndicatorId);
 		setAssociationTargets(associationTargets);
+	}
+	
+	public InactivationProperties(String inactivationIndicatorId, List<AssociationTarget> associationTargets, Boolean inactivationIndicatorStatus) {
+		setInactivationIndicatorId(inactivationIndicatorId);
+		setAssociationTargets(associationTargets);
+		setInactivationIndicatorStatus(inactivationIndicatorStatus);
 	}
 	
 	/**
@@ -69,6 +76,14 @@ public final class InactivationProperties implements Serializable {
 	
 	public void setAssociationTargets(List<AssociationTarget> associationTargets) {
 		this.associationTargets = associationTargets;
+	}
+
+	public Boolean getInactivationIndicatorStatus() {
+		return inactivationIndicatorStatus;
+	}
+
+	public void setInactivationIndicatorStatus(Boolean inactivationIndicatorStatus) {
+		this.inactivationIndicatorStatus = inactivationIndicatorStatus;
 	}
 	
 }
