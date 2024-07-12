@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bugs/Improvements
 - [fhir] fixed an issue that caused internal server error logs not being reported to the log stream when using the FHIR API
+- [releng] change `b2i.sg` URLs to `b2ihealthcare.com` (e.g. https://artifacts.b2ihealthcare.com) (#1307)
 
 ## 8.13.0
 
