@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @since 9.3
+ * @since 9.2.2
  */
 public final class SnomedOWLRelationship implements OwlRelationship, Serializable {
 
@@ -36,7 +36,7 @@ public final class SnomedOWLRelationship implements OwlRelationship, Serializabl
 	/**
 	 * Enumerates expandable property keys.
 	 * 
-	 * @since 9.3
+	 * @since 9.2.2
 	 */
 	public static final class Expand {
 		public static final String TYPE = "type";

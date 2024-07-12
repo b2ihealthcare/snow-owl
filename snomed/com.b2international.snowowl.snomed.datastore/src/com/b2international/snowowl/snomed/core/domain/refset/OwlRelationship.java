@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.core.domain.refset;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 
 /**
- * @since 9.3 
+ * @since 9.2.2 
  */
 public interface OwlRelationship {
 

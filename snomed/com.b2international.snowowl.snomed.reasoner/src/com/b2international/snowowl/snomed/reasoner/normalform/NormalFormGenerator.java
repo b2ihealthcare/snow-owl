@@ -1,6 +1,6 @@
 /*
- * Copyright 2009-2017 International Health Terminology Standards Development Organisation
- * Copyright 2011-2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2009-2024 International Health Terminology Standards Development Organisation
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
