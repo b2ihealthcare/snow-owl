@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Netty Eventbus
 Bundle-SymbolicName: com.b2international.snowowl.eventbus;singleton:=true
-Bundle-Version: 9.2.2.qualifier
+Bundle-Version: 9.2.2
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: com.google.guava;bundle-version="[32.1.3,33.0.0)",
