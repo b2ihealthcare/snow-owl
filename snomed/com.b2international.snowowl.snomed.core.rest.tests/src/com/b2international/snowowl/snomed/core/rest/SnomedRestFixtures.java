@@ -437,6 +437,18 @@ public abstract class SnomedRestFixtures {
 			.then()
 			.statusCode(204);
 	}
+	
+	public static void activateRelationship(IBranchPath relationshipPath, String relationshipId) {
+		updateComponent(
+			relationshipPath, 
+			SnomedComponentType.RELATIONSHIP, 
+			relationshipId, 
+			Json.object(
+				"active", true,
+				"commitComment", "Activated relationship"
+			)
+		).statusCode(204);
+	}
 
 	public static void inactivateRelationship(IBranchPath relationshipPath, String relationshipId) {
 		updateComponent(
