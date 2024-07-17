@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.core.rest.ext;
 import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.INT_CODESYSTEM;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
+import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.updateComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedMergingRestRequests.createMerge;
 import static com.b2international.snowowl.snomed.core.rest.SnomedMergingRestRequests.waitForMergeJob;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
@@ -33,10 +34,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -82,6 +80,7 @@ import com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRest
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import com.google.inject.util.Modules;
 
 /**
  * @since 4.7
@@ -1673,10 +1672,6 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		
 		IBranchPath mainPath = BranchPathUtils.createMainPath();
 		String relationshipId = createNewRelationship(mainPath, intConceptId, Concepts.IS_A, Concepts.PROCEDURE_SITE_DIRECT);
-
-		//Create INT version
-		String intVersion1 = getNextAvailableEffectiveDateAsString(SNOMEDCT);
-		createVersion(SNOMEDCT, intVersion1, intVersion1).statusCode(201);
 		
 		// version INT
 		String firstSIVersion = getNextAvailableEffectiveDateAsString(SNOMEDCT);
@@ -1719,9 +1714,80 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		String thirdSIVersion = getNextAvailableEffectiveDateAsString(SNOMEDCT);
 		createVersion(SNOMEDCT, thirdSIVersion, thirdSIVersion).statusCode(201);
 		
-		CodeSystem thirdUpgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(SNOMEDCT, thirdSIVersion));
+		//Without a bug fix this will produce a conflict and the upgrade will fail
+		createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(SNOMEDCT, thirdSIVersion));
 	}
+	
+	@Test
+	public void upgrade33InactivateDonatedRelationshipOnIntAndExt() throws Exception {
+		// prepare extension on the latest int version
+		CodeSystem extension = createExtension(latestInternationalVersion, branchPath.lastSegment());
+		String extensionModuleId = createModule(extension);
+		Map<String, Object> properties = Map.of("moduleIds", List.of(extensionModuleId));
+	
+		CodeSystemRequests.prepareUpdateCodeSystem(extension.getShortName()).setAdditionalProperties(properties);
 
+		//Create international concept with a relationship
+		String intConceptId = createConcept(new CodeSystemURI(SNOMEDCT), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE)
+				.with("namespaceId", ""));
+		
+		
+		IBranchPath mainPath = BranchPathUtils.createMainPath();
+		String relationshipId = createNewRelationship(mainPath, intConceptId, Concepts.IS_A, Concepts.PROCEDURE_SITE_DIRECT);
+		
+		// version INT
+		String firstSIVersion = getNextAvailableEffectiveDateAsString(SNOMEDCT);
+		createVersion(SNOMEDCT, firstSIVersion, firstSIVersion).statusCode(201);
+
+		// create upgrade to the latest SI version
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(SNOMEDCT, firstSIVersion));
+		
+		//Inactivate relationship on EXT and change its mnodule to the extension module
+		updateComponent(
+				BranchPathUtils.createPath(upgradeCodeSystem.getBranchPath()), 
+				SnomedComponentType.RELATIONSHIP, 
+				relationshipId, 
+				Json.object(
+					"active", false,
+					"moduleId", extensionModuleId,
+					"commitComment", "Inactivated relationship"
+				)
+			).statusCode(204);
+		
+		Boolean success = CodeSystemRequests.prepareComplete(upgradeCodeSystem.getShortName())
+				.build(upgradeCodeSystem.getRepositoryId())
+				.execute(getBus())
+				.getSync(1, TimeUnit.MINUTES);
+		assertTrue(success);
+		
+		//Create new version after upgrade
+		String extVersion = getNextAvailableEffectiveDateAsString(extension.getShortName());
+		createVersion(extension.getShortName(), extVersion, extVersion).statusCode(201);
+		
+		//Inactivate relationship on INT
+		inactivateRelationship(mainPath, relationshipId);
+		
+		// version INT & upgrade EXT again
+		String secondSIVersion = getNextAvailableEffectiveDateAsString(SNOMEDCT);
+		createVersion(SNOMEDCT, secondSIVersion, secondSIVersion).statusCode(201);
+		
+		CodeSystem secondUpgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(SNOMEDCT, secondSIVersion));
+		Boolean result = CodeSystemRequests.prepareComplete(secondUpgradeCodeSystem.getShortName())
+				.build(upgradeCodeSystem.getRepositoryId())
+				.execute(getBus())
+				.getSync(1, TimeUnit.MINUTES);
+		assertTrue(result);
+		
+		// Activate relationship on INT
+		activateRelationship(mainPath, relationshipId);
+		
+		//Version INT and upgrade EXT again
+		String thirdSIVersion = getNextAvailableEffectiveDateAsString(SNOMEDCT);
+		createVersion(SNOMEDCT, thirdSIVersion, thirdSIVersion).statusCode(201);
+		
+		//Without a bug fix this will produce a conflict and the upgrade will fail
+		createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(SNOMEDCT, thirdSIVersion));
+	}
 	
 	private void assertState(String branchPath, String compareWith, BranchState expectedState) {
 		BaseRevisionBranching branching = ApplicationContext.getServiceForClass(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(BaseRevisionBranching.class);
