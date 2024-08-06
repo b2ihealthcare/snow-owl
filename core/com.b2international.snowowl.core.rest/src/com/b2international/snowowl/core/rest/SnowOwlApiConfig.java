@@ -181,6 +181,16 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	@Bean
 	@Scope(scopeName = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
 	public ObjectMapper objectMapper(@Autowired HttpServletRequest request) {
+		return objectMapperFromRequest(request);
+	}
+	
+	@Bean
+	@Scope(scopeName = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.INTERFACES)
+	public Provider<ObjectMapper> objectMapperProvider(@Autowired HttpServletRequest request) {
+		return () -> objectMapperFromRequest(request);
+	}
+
+	private ObjectMapper objectMapperFromRequest(HttpServletRequest request) {
 		return objectMappers.getUnchecked(toConfig(
 			extractBooleanQueryParameterValue(request, INCLUDE_NULL),
 			extractBooleanQueryParameterValue(request, PRETTY)

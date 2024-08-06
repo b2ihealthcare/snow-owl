@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2019-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.net.HttpHeaders;
+import com.google.inject.Provider;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -62,7 +63,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public abstract class RepositoryValidationRestService extends AbstractRestService {
 	
 	@Autowired
-	private ObjectMapper objectMapper;
+	private Provider<ObjectMapper> objectMapper;
 	
 	@Operation(
 			summary="Retrieve all validation runs from the termserver", 
@@ -158,10 +159,12 @@ public abstract class RepositoryValidationRestService extends AbstractRestServic
 			@RequestHeader(value=HttpHeaders.ACCEPT, defaultValue=AbstractRestService.JSON_MEDIA_TYPE,  required=false)
 			final String contentType) {
 		final IEventBus bus = getBus();
+		final ObjectMapper mapper = objectMapper.get();
 		
 		return getValidationRun(validationId).thenWith(validationJob -> {
-			final ResourceURI codeSystemURI = getCodeSystemURIFromJob(validationJob);
+			final ResourceURI codeSystemURI = getCodeSystemURIFromJob(validationJob, mapper);
 			if (AbstractRestService.CSV_MEDIA_TYPE.equals(contentType)) {
+				
 				return ValidationRequests.issues().prepareSearch()
 						.isWhitelisted(false)
 						.all()
