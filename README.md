@@ -34,7 +34,7 @@ Features include:
     * Simple to use plug-in system makes it easy to develop and add new terminology tooling/API or any other functionality
 * Built on top of [Elasticsearch](https://www.elastic.co/elasticsearch) (highly scalable, distributed, open source search engine)
     * Connect to your existing cluster or use the embedded instance (supports up to Elasticsearch 8.x)
-    * All the power of Elasticsearch is available (full-text search support, monitoring, analytics and many more)
+    * All the power of Elasticsearch is available (full-text search features, monitoring, machine-learning, analytics and many more)
 
 # Download
 
