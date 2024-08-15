@@ -65,7 +65,7 @@
 				<type>jar</type>
 			</dependency>
 			<dependency>
-				<groupId>org.slf4j</groupId>
+				<groupId>com.b2international.snowowl</groupId>
 				<artifactId>log4j-over-slf4j</artifactId>
 				<version>2.0.11</version>
 				<type>jar</type>
@@ -80,12 +80,6 @@
 				<groupId>ch.qos.logback</groupId>
 				<artifactId>logback-core</artifactId>
 				<version>1.4.14</version>
-				<type>jar</type>
-			</dependency>
-			<dependency>
-				<groupId>ch.qos.reload4j</groupId>
-				<artifactId>reload4j</artifactId>
-				<version>1.2.25</version>
 				<type>jar</type>
 			</dependency>
 			<!-- Jackson CSV/JSON/YAML/XML parsing libraries -->
