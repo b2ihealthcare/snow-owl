@@ -28,7 +28,7 @@ Features include:
     * With its modular design, the server can maintain multiple terminologies (including local codes, mapping sets, value sets)
 * Various set of APIs
     * SNOMED CT API (RESTful and native Java API)
-    * FHIR API R5 [spec](https://hl7.org/fhir/R5/index.html) (R4B and R4 are also supported for certain resource types)
+    * FHIR Terminology Service API R4/R4B/R5 [spec](https://hl7.org/fhir/R4/index.html)
     * CIS API 1.0 [see reference implementation](https://github.com/IHTSDO/component-identifier-service)
 * Highly extensible and configurable
     * Simple to use plug-in system makes it easy to develop and add new terminology tooling/API or any other functionality
