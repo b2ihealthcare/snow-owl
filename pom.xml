@@ -210,6 +210,12 @@
 							<id>org.slf4j.jcl</id>
 							<removeAll />
 						</filter>
+						<!--Remove log4j 1.x jars-->
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>org.apache.log4j</id>
+							<removeAll />
+						</filter>
 					</filters>
 					<environments>
 						<environment>
