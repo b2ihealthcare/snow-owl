@@ -11,7 +11,7 @@
 	</parent>
 	
 	<properties>
-		<elasticsearch8.version>8.12.2</elasticsearch8.version>
+		<elasticsearch8.version>8.15.0</elasticsearch8.version>
 	</properties>
 	
 	<dependencies>
