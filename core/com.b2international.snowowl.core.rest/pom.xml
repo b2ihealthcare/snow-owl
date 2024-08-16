@@ -16,7 +16,7 @@
 		<spring.security.version>6.2.5</spring.security.version>
 		<springdoc.version>2.6.0</springdoc.version>
 		<!-- Make sure this version matches the one present in the target-platform for swagger-annotations and models -->
-		<swagger.core.version>2.2.20</swagger.core.version>
+		<swagger.core.version>2.2.22</swagger.core.version>
 		<!-- Node.js version to use for building the API docs site -->
 		<node.version>v20.16.0</node.version>
 		<npm.version>10.8.2</npm.version>

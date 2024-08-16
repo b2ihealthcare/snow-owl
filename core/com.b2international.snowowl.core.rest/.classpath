@@ -18,7 +18,7 @@
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-boot-3.3.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/springdoc-openapi-starter-common-2.6.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/springdoc-openapi-starter-webmvc-api-2.6.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/swagger-core-jakarta-2.2.20.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/swagger-core-jakarta-2.2.22.jar"/>
 	<classpathentry kind="src" output="target/classes" path="src"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
