@@ -57,7 +57,7 @@ public final class IndexResource extends ExternalResource {
 	 */
 	public static final String ES_USE_TEST_CONTAINER_VARIABLE = "so.index.es.useDocker";
 	
-	public static final String DEFAULT_ES_DOCKER_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:8.12.2";
+	public static final String DEFAULT_ES_DOCKER_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:8.15.0";
 
 	private static final AtomicBoolean INIT = new AtomicBoolean(false);
 	
