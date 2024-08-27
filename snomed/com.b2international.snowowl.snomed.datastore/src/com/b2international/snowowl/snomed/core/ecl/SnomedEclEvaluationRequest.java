@@ -174,8 +174,7 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 			.build()
 			.search(searcher);
 		
-		final Set<String> conceptIds = Set.copyOf(descriptionHits.getHits());
-		return SnomedDocument.Expressions.ids(conceptIds);
+		return SnomedDocument.Expressions.ids(descriptionHits.getHits());
 	}
 	
 	private static Expression executeMemberSearch(BranchContext context, Expression memberExpression) {
@@ -194,8 +193,7 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 			.build()
 			.search(searcher);
 		
-		final Set<String> conceptIds = Set.copyOf(memberHits.getHits());
-		return SnomedDocument.Expressions.ids(conceptIds);
+		return SnomedDocument.Expressions.ids(memberHits.getHits());
 	}
 
 	protected Promise<Expression> eval(BranchContext context, final ActiveFilter activeFilter) {
