@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,6 +77,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 	private List<SnomedReferenceSetMember> members;
 
 	private SnomedReferenceSet refSet;
+	private Set<SnomedRefSetType> memberTypesToUpdate;
 	
 	SnomedConceptUpdateRequest(String componentId) {
 		super(componentId);
@@ -106,6 +107,10 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		this.refSet = refSet;
 	}
 	
+	void setMemberTypesToUpdate(Set<SnomedRefSetType> memberTypesToUpdate) {
+		this.memberTypesToUpdate = memberTypesToUpdate;
+	}
+
 	@Override
 	public Boolean execute(TransactionContext context) {
 		final int pageSize = context.getPageSize();
@@ -224,9 +229,16 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 	}
 
 	private Set<String> getPreviousMemberIds(BranchContext context, String conceptId, int pageSize) {
+		// An empty set means none of the existing members should be considered
+		if (memberTypesToUpdate != null && memberTypesToUpdate.isEmpty()) {
+			return ImmutableSet.of();
+		}
+		
 		return SnomedRequests.prepareSearchMember()
 			.setLimit(pageSize)
 			.filterByReferencedComponent(conceptId)
+			// This filter handles the "null" and "non-empty set" cases
+			.filterByRefSetType(memberTypesToUpdate)
 			.stream(context)
 			.flatMap(SnomedReferenceSetMembers::stream)
 			.filter(getFilter())
@@ -239,7 +251,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			.filter(getFilter())
 			.collect(Collectors.toSet());
 	}
-
+	
 	private Predicate<SnomedReferenceSetMember> getFilter() {
 		return m -> !FILTERED_REFSET_IDS.contains(m.getRefsetId());
 	}

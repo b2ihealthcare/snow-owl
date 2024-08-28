@@ -65,7 +65,7 @@
 				<type>jar</type>
 			</dependency>
 			<dependency>
-				<groupId>org.slf4j</groupId>
+				<groupId>com.b2international.snowowl</groupId>
 				<artifactId>log4j-over-slf4j</artifactId>
 				<version>2.0.11</version>
 				<type>jar</type>
@@ -220,13 +220,13 @@
 			<dependency>
 				<groupId>io.swagger.core.v3</groupId>
 				<artifactId>swagger-annotations-jakarta</artifactId>
-				<version>2.2.20</version>
+				<version>2.2.22</version>
 				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>io.swagger.core.v3</groupId>
 				<artifactId>swagger-models-jakarta</artifactId>
-				<version>2.2.20</version>
+				<version>2.2.22</version>
 				<type>jar</type>
 			</dependency>
 			<!-- Embedded into the web application module so that Spring can detect and deploy the necessary resources, see c.b.snowowl.core.rest, added here only to prevent adding it to tp accidentally

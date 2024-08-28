@@ -5,21 +5,21 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>core-parent</artifactId>
-		<version>9.2.3-SNAPSHOT</version>
+		<version>9.2.4-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>com.b2international.snowowl.core.rest</artifactId>
 	<packaging>eclipse-plugin</packaging>
 
 	<properties>
-		<spring.version>6.1.4</spring.version>
-		<spring.security.version>6.2.2</spring.security.version>
-		<springdoc.version>2.3.0</springdoc.version>
+		<spring.version>6.1.12</spring.version>
+		<spring.security.version>6.2.5</spring.security.version>
+		<springdoc.version>2.6.0</springdoc.version>
 		<!-- Make sure this version matches the one present in the target-platform for swagger-annotations and models -->
-		<swagger.core.version>2.2.20</swagger.core.version>
+		<swagger.core.version>2.2.22</swagger.core.version>
 		<!-- Node.js version to use for building the API docs site -->
-		<node.version>v20.11.0</node.version>
-		<npm.version>10.3.0</npm.version>
+		<node.version>v20.16.0</node.version>
+		<npm.version>10.8.2</npm.version>
 	</properties>
 
 	<!-- NOTE: in case of dependency changes, please update the includeArtifactIds section in the maven-dependency-plugin configuration as well, listing all (exact and transitive) dependency artifactIds -->
@@ -33,7 +33,7 @@
 		<dependency>
 			<groupId>io.swagger.core.v3</groupId>
 			<artifactId>swagger-core-jakarta</artifactId>
-			<version>2.2.20</version>
+			<version>${swagger.core.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -57,13 +57,13 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot</artifactId>
-			<version>3.2.1</version>
+			<version>3.3.2</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-autoconfigure</artifactId>
-			<version>3.2.1</version>
+			<version>3.3.2</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

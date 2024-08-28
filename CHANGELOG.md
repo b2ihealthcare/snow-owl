@@ -1,6 +1,18 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 9.2.3
+
+### Bugs/Improvements
+- [api] Java API improvements to allow updating concept members selectively only for certain refset types (#1311)
+- [logging] remove log4j jars and use proper SLF4J bridge (#1315)
+- [security] mitigate vulnerabilities CVE-2024-23444, CVE-2024-23450, CVE-2024-37890, CVE-2024-4068, CVE-2024-29415, CVE-2024-33883, CVE-2024-29041, CVE-2024-29180, CVE-2024-28849, CVE-2024-39338, CVE-2024-22257, CVE-2024-22259, CVE-2024-22262
+
+### Dependencies
+- Bumped Elasticsearch to 7.17.23 
+- Bumped Elasticsearch Java Client to 8.15.0
+- Removed Apache Log4j 1.2.25
+
 ## 9.2.2
 
 ### Bugs/Improvements
