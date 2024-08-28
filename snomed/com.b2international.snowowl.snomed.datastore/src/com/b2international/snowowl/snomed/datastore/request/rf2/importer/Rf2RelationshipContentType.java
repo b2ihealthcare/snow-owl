@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2017-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,14 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
+import java.util.Objects;
+
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.request.io.ImportDefectAcceptor.ImportDefectBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationDefects;
 
@@ -82,8 +85,8 @@ final class Rf2RelationshipContentType implements Rf2ContentType<SnomedRelations
 		final String modifierId = values[9];
 		
 		defectBuilder
-			.whenEqual(sourceId, destinationId)
-			.error("%s for relationship: %s", Rf2ValidationDefects.RELATIONSHIP_SOURCE_DESTINATION_EQUALS.getLabel(), relationshipId);
+			.when(Concepts.IS_A.equals(typeId) && Objects.equals(sourceId, destinationId))
+			.error("%s for IS A relationship: %s", Rf2ValidationDefects.RELATIONSHIP_SOURCE_DESTINATION_EQUALS.getLabel(), relationshipId);
 		
 		validateByComponentCategory(defectBuilder, relationshipId, ComponentCategory.RELATIONSHIP);
 		validateConceptIds(defectBuilder, sourceId, destinationId, typeId, characteristicTypeId, modifierId);

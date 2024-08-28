@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2023-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ public class ResourceLockChangeRequestBuilder
 	private String description;
 	private String parentDescription = DatastoreLockContextDescriptions.ROOT;
 	private String userId;
+	private Long timeout = 3000L; // to keep backward compatibility in this API, 3 seconds of lock timeout is applied here
 
 	/*package*/ ResourceLockChangeRequestBuilder(final boolean lock) {
 		this.lock = lock;
@@ -52,9 +53,14 @@ public class ResourceLockChangeRequestBuilder
 		this.userId = userId;
 		return getSelf();
 	}
+	
+	public ResourceLockChangeRequestBuilder setTimeout(final Long timeout) {
+		this.timeout = timeout;
+		return getSelf();
+	}
 
 	@Override
 	protected Request<BranchContext, Boolean> doBuild() {
-		return new ResourceLockChangeRequest(lock, description, parentDescription, userId);
+		return new ResourceLockChangeRequest(lock, description, parentDescription, timeout, userId);
 	}
 }

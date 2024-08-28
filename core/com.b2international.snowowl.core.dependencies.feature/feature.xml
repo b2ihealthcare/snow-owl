@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.core.dependencies.feature"
       label="Snow Owl Core Dependencies"
-      version="9.1.3.qualifier"
+      version="9.2.4.qualifier"
       provider-name="B2i Healthcare">
 
    <description url="https://b2ihealthcare.com">
@@ -982,13 +982,6 @@ Visit us at https://b2ihealthcare.com
          unpack="false"/>
 
    <plugin
-         id="org.apache.log4j"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.glassfish.expressly"
          download-size="0"
          install-size="0"
@@ -1123,6 +1116,13 @@ Visit us at https://b2ihealthcare.com
 
    <plugin
          id="org.osgi.util.xml"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jsr-305"
          download-size="0"
          install-size="0"
          version="0.0.0"

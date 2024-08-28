@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.b2international.snowowl</groupId>
 	<artifactId>snowowl-parent</artifactId>
-	<version>9.1.3-SNAPSHOT</version>
+	<version>9.2.4-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -36,8 +36,8 @@
 
 		<!-- Artifact distribution -->
 		<maven.repository.id>nexus_deployment</maven.repository.id>
-		<maven.releases.repository>https://nexus.b2i.sg/repository/maven-releases</maven.releases.repository>
-		<maven.snapshots.repository>https://nexus.b2i.sg/repository/maven-snapshots</maven.snapshots.repository>
+		<maven.releases.repository>https://artifacts.b2ihealthcare.com/repository/maven-releases</maven.releases.repository>
+		<maven.snapshots.repository>https://artifacts.b2ihealthcare.com/repository/maven-snapshots</maven.snapshots.repository>
 
 	</properties>
 
@@ -210,6 +210,12 @@
 							<id>org.slf4j.jcl</id>
 							<removeAll />
 						</filter>
+						<!--Remove log4j 1.x jars-->
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>org.apache.log4j</id>
+							<removeAll />
+						</filter>
 					</filters>
 					<environments>
 						<environment>
@@ -356,7 +362,7 @@
 		-->
 		<repository>
 			<id>b2i-releases</id>
-			<url>https://nexus.b2i.sg/repository/maven-releases</url>
+			<url>https://artifacts.b2ihealthcare.com/repository/maven-releases</url>
 			<releases>
 				<enabled>true</enabled>
 			</releases>
@@ -366,7 +372,7 @@
 		</repository>
 		<repository>
 			<id>b2i-snapshots</id>
-			<url>https://nexus.b2i.sg/repository/maven-snapshots</url>
+			<url>https://artifacts.b2ihealthcare.com/repository/maven-snapshots</url>
 			<releases>
 				<enabled>false</enabled>
 			</releases>

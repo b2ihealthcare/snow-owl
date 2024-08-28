@@ -17,20 +17,16 @@ package com.b2international.snowowl.core;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Sets.newLinkedHashSet;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
-
-import jakarta.validation.Validator;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -38,6 +34,7 @@ import org.eclipse.core.runtime.URIUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.commons.config.ConfigurationFactory;
 import com.b2international.commons.config.FileConfigurationSourceProvider;
 import com.b2international.commons.validation.ApiValidation;
@@ -47,8 +44,11 @@ import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.core.setup.Plugins;
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+
+import jakarta.validation.Validator;
 
 /**
  * @since 3.3
@@ -73,6 +73,9 @@ public final class SnowOwl {
 	private static final String DEFAULT_DATA_PATH = "resources"; //$NON-NLS-1$
 	private static final String LOG_CONFIG_FILE = "serviceability.xml"; //$NON-NLS-1$
 	
+	// System property for additional packages to scan
+	private static final String SO_COMPONENT_SCAN = "so.component.scan"; //$NON-NLS-1$
+	private static final Splitter PACKAGE_SPLITTER = Splitter.on(',').omitEmptyStrings();
 	
 	private AtomicBoolean running = new AtomicBoolean(false);
 	private AtomicBoolean preRunCompleted = new AtomicBoolean(false);
@@ -103,9 +106,19 @@ public final class SnowOwl {
 		}
 		System.setProperty("org.eclipse.jetty.util.log.class", "org.eclipse.jetty.util.log.Slf4jLog");
 		
-		// FIXME support reading packagesToScan from snowowl.yml configuration file
+		// TODO: support reading packagesToScan from snowowl.yml configuration file?
+		final LinkedHashSet<String> packagesToScan = newLinkedHashSet();
+		packagesToScan.add("com.b2international");
+		
+		final String additionalPackages = System.getProperty(SO_COMPONENT_SCAN);
+		if (!StringUtils.isEmpty(additionalPackages)) {
+			PACKAGE_SPLITTER
+				.split(additionalPackages)
+				.forEach(packagesToScan::add);
+		}
+		
 		// register classpath scanner as the first item in the context so other services will be discovered properly
-		final ClassPathScanner scanner = new ClassPathScanner("com.b2international");
+		final ClassPathScanner scanner = new ClassPathScanner(packagesToScan.toArray(String[]::new));
 		ApplicationContext.getInstance().registerService(ClassPathScanner.class, scanner);
 		
 		List<Plugin> plugins = ImmutableList.<Plugin>builder()

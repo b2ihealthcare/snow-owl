@@ -27,7 +27,11 @@
 	</logger>
 	
 	<logger level="ERROR" additivity="false" name="org.eclipse.jetty.ee10.annotations.AnnotationParser" />
+	
+	<!-- Suppresses "ELK supports DataHasValue only partially" warnings -->
 	<logger level="ERROR" additivity="false" name="org.semanticweb.elk.reasoner.indexing.hierarchy.IndexObjectConverter" />
+	<!-- Suppresses "ELK does not support <axiom type>. Axiom ignored" warnings -->
+	<logger level="ERROR" additivity="false" name="org.semanticweb.elk.reasoner.indexing.hierarchy.ChangeIndexingProcessor" />
 
 	<root level="INFO">
 		<appender-ref ref="LOG_FILE" />

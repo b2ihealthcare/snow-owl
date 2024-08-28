@@ -1,1 +1,0 @@
-# Export SNOMED CT to RF2

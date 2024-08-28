@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2019-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,9 @@ public final class SnomedOWLExpressionConverter {
 		"SubClassOf", 
 		"EquivalentClasses", 
 		"SubObjectPropertyOf", 
-		"SubDataPropertyOf");
+		"SubDataPropertyOf",
+		"SubAnnotationPropertyOf"
+	);
 	
 	private final Supplier<AxiomRelationshipConversionService> conversionService;
 	

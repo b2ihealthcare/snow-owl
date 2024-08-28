@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 	private List<SnomedRelationshipCreateRequest> relationships = newArrayList();
 	private SnomedRefSetCreateRequest refSet;
 	private SubclassDefinitionStatus subclassDefinitionStatus = SubclassDefinitionStatus.NON_DISJOINT_SUBCLASSES;
+	private Boolean ignoreDuplicatePreferredTerms = Boolean.FALSE;
 	
 	SnomedConceptCreateRequestBuilder() { 
 		super();
@@ -112,6 +113,13 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 		return getSelf();
 	}
 	
+	// other arguments
+	
+	public SnomedConceptCreateRequestBuilder setIgnoreDuplicatePreferredTerms(Boolean ignoreDuplicatePreferredTerms) {
+		this.ignoreDuplicatePreferredTerms = ignoreDuplicatePreferredTerms == null ? Boolean.FALSE : ignoreDuplicatePreferredTerms;
+		return getSelf();
+	}
+	
 	@Override
 	protected BaseSnomedComponentCreateRequest createRequest() {
 		return new SnomedConceptCreateRequest();
@@ -125,6 +133,7 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 		req.setDescriptions(descriptions);
 		req.setRelationships(relationships);
 		req.setRefSet(refSet);
+		req.setIgnoreDuplicatePreferredTerms(ignoreDuplicatePreferredTerms);
 	}
 
 }

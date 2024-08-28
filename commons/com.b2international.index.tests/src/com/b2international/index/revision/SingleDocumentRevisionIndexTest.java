@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,28 @@ public class SingleDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		final RevisionData data = new RevisionData(STORAGE_KEY1, "field1Changed", "field2Changed");
 		indexRevision(MAIN, data);
 		assertEquals(data, getRevision(MAIN, RevisionData.class, STORAGE_KEY1));
+	}
+	
+	@Test
+	public void stageNewRevisionMultipleTimes() throws Exception {
+		final RevisionData data = new RevisionData(STORAGE_KEY1, "fieldA", "fieldB");
+		StagingArea staging = index().prepareCommit(MAIN);
+		staging.stageNew(data, false);
+		
+		staging.stageNew(data, true);
+		assertEquals(1, staging.getNumberOfStagedObjects());
+		var stagedObject = staging.getStagedObject(RevisionData.class, STORAGE_KEY1);
+		assertEquals(false, stagedObject.isCommit());
+		assertEquals(data, stagedObject.getObject());
+		assertEquals(true, stagedObject.isAdded());
+		
+		final RevisionData updatedData = new RevisionData(STORAGE_KEY1, "fieldC", "fieldB");
+		staging.stageNew(updatedData, true);
+		assertEquals(1, staging.getNumberOfStagedObjects());
+		stagedObject = staging.getStagedObject(RevisionData.class, STORAGE_KEY1);
+		assertEquals(true, stagedObject.isCommit());
+		assertEquals(updatedData, stagedObject.getObject());
+		assertEquals(true, stagedObject.isChanged());
 	}
 
 	@Test

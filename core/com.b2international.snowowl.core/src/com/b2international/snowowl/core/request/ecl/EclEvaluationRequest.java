@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2022-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -57,6 +58,9 @@ import com.google.common.collect.Iterables;
 public abstract class EclEvaluationRequest<C extends ServiceProvider> implements Request<C, Promise<Expression>> {
 
 	private static final long serialVersionUID = 1L;
+	
+	private static final Pattern WILD_ANY = Pattern.compile("(\\*)+");
+	private static final Pattern REGEX_ANY = Pattern.compile("(\\.\\*)+");
 
 	private final PolymorphicDispatcher<Promise<Expression>> dispatcher = PolymorphicDispatcher.createForSingleTarget("eval", 2, 2, this);
 	
@@ -505,10 +509,17 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 						.synonyms(false)
 						.build());
 			case WILD:
-				final String regex = term.replace("*", ".*");
-				return termRegexExpression(regex, true);
+				if (WILD_ANY.matcher(term).matches()) {
+					return Expressions.matchAll();
+				} else {
+					return termWildExpression(term, true);
+				}
 			case REGEX:
-				return termRegexExpression(term, false);
+				if (REGEX_ANY.matcher(term).matches()) {
+					return Expressions.matchAll();
+				} else {
+					return termRegexExpression(term, false);
+				}
 			case EXACT:
 				return termCaseInsensitiveExpression(term);
 			default:
@@ -544,6 +555,10 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 		return throwUnsupported("Unable to provide case insensitive term expression for term filter: " + term);		
 	}
 
+	protected Expression termWildExpression(String wild, boolean caseInsensitive) {
+		return throwUnsupported("Unable to provide wild term expression for term filter: " + wild);
+	}
+	
 	protected Expression termRegexExpression(String regex, boolean caseInsensitive) {
 		return throwUnsupported("Unable to provide regex term expression for term filter: " + regex);
 	}

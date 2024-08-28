@@ -15,20 +15,16 @@
  */
 package com.b2international.snowowl.core.domain;
 
-import java.util.Comparator;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 
 /**
- * @since 9.2 
+ * @since 9.2.0 
  */
 public final class Description implements Comparable<Description> {
 
-	@JsonIgnore
-	private static final Comparator<Description> DEFAULT_COMPARATOR = Comparator.comparing(Description::getTerm).thenComparing(Description::getLanguage);
-	
 	private final String term;
 	private final String language;
 	
@@ -52,6 +48,7 @@ public final class Description implements Comparable<Description> {
 		return language;
 	}
 	
+	@JsonIgnore
 	public <T> T getInternalDescription() {
 		return (T) internalDescription;
 	}
@@ -63,7 +60,14 @@ public final class Description implements Comparable<Description> {
 	
 	@Override
 	public int compareTo(Description other) {
-		return DEFAULT_COMPARATOR.compare(this, other);
+		if (other == null) return -1;
+		
+		var termCompareResult = Strings.nullToEmpty(term).compareTo(Strings.nullToEmpty(other.term));
+		if (termCompareResult != 0) {
+			return termCompareResult;
+		} else {
+			return Strings.nullToEmpty(language).compareTo(Strings.nullToEmpty(other.language));
+		}
 	}
 	
 }

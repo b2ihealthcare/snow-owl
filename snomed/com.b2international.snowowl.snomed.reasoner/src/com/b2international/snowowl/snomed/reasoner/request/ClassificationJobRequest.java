@@ -149,7 +149,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 			final DelegateOntology ontology = (DelegateOntology) ontologyManager.createOntology(ontologyIRI);
 			final ReasonerTaxonomyInferrer inferrer = new ReasonerTaxonomyInferrer(reasonerId, ontology, context);
 			final ReasonerTaxonomy inferredTaxonomy = inferrer.addInferences(taxonomy);
-			final NormalFormGenerator normalFormGenerator = new NormalFormGenerator(inferredTaxonomy);
+			final NormalFormGenerator normalFormGenerator = new NormalFormGenerator(inferredTaxonomy, concreteDomainSupported);
 			
 			tracker.classificationCompleted(classificationId, inferredTaxonomy, normalFormGenerator);
 

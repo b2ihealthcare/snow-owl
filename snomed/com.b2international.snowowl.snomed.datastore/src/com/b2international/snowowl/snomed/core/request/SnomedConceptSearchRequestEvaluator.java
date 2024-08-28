@@ -17,8 +17,10 @@ package com.b2international.snowowl.snomed.core.request;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
@@ -144,10 +146,15 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 	public static SortedSet<Description> generateGenericDescriptions(SnomedDescriptions descriptions) {
 		return descriptions.stream()
 				.flatMap(description -> {
-					final String languageCode = description.getLanguageCode();
-					return description.getAcceptabilityMap().keySet().stream()
+					// FIXME falling back to en when the languageCode is not available on concept descriptions
+					// descriptions expand is needed but only when the requestor truly needs them, but that requires a bit larger set of changes
+					final String languageCode = Optional.ofNullable(description.getLanguageCode()).orElse("en");
+					var acceptabilityDesignations = description.getAcceptabilityMap().keySet().stream()
 							.map(refsetId -> new ExtendedLocale(languageCode, null, refsetId))
 							.map(language -> new Description(description.getTerm(), language.toString()).withInternalDescription(description));
+					// the first item should be the base description designation with its RF2 languageCode
+					// TODO additional fixes are needed here due to differences in termserver implementations
+					return Stream.concat(Stream.of(new Description(description.getTerm(), languageCode).withInternalDescription(description)), acceptabilityDesignations);
 				})
 				.collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
 	}

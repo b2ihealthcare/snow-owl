@@ -33,10 +33,6 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.DBMaker.Maker;
@@ -96,10 +92,15 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.google.common.base.Charsets;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * @since 6.0.0
@@ -310,9 +311,9 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		defectAcceptor.getDefects()
 			.forEach(defect -> {
 				if (defect.isError()) {
-					log.error(defect.getMessage());
+					log.error(defect.toString());
 				} else if (defect.isWarning()) {
-					log.warn(defect.getMessage());
+					log.warn(defect.toString());
 				}
 			});
 	}
@@ -333,7 +334,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		final ObjectReader oReader = csvMapper.readerFor(String[].class).with(schema);
 
 		final Stopwatch w = Stopwatch.createStarted();
-		try (final ZipFile zip = new ZipFile(rf2Archive)) {
+		try (final ZipFile zip = new ZipFile(rf2Archive, Charsets.UTF_8)) {
 			for (ZipEntry entry : Collections.list(zip.entries())) {
 				final String fileName = Paths.get(entry.getName()).getFileName().toString().toLowerCase();
 				if (fileName.endsWith(TXT_EXT)) {
@@ -361,11 +362,11 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		
 		boolean header = true;
 		Rf2ContentType<?> resolver = null;
-		int lineNumber = 1;
 		
 		MappingIterator<String[]> mi = oReader.readValues(in);
 		while (mi.hasNext()) {
 			String[] line = mi.next();
+			int lineNumber = mi.getCurrentLocation().getLineNr();
 			
 			if (header) {
 				for (Rf2ContentType<?> contentType : Rf2Format.getContentTypes()) {
@@ -382,12 +383,17 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 				
 				header = false;
 			} else {
-				final String effectiveTimeKey = getEffectiveTimeKey(line[1]);
 				final ImportDefectBuilder defectBuilder = defectAcceptor.on(Integer.toString(lineNumber));
-				resolver.register(line, effectiveTimeSlices.getOrCreate(effectiveTimeKey), defectBuilder);
+				if (line.length == 0) {
+					// line is empty, skip it (TODO do we need a warning here?)
+				} else if (line.length == resolver.getHeaderColumns().length) {
+					final String effectiveTimeKey = getEffectiveTimeKey(line[1]);
+					resolver.register(line, effectiveTimeSlices.getOrCreate(effectiveTimeKey), defectBuilder);
+				} else {
+					// report error if line has column number differences compared to the expected number of header columns
+					defectBuilder.error("RF2 line has different number of values (%s) than the expected number of header columns (%s)", line.length, resolver.getHeaderColumns().length);
+				}
 			}
-
-			lineNumber++;
 		}
 	}
 
@@ -407,7 +413,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	private DB createDb() {
 		try {
 			Maker dbMaker = DBMaker 
-					.fileDB(Files.createTempDirectory(rf2Archive.toString()).resolve("rf2-import.db").toFile())
+					.fileDB(Files.createTempDirectory(rf2Archive.getAttachmentIdString()).resolve("rf2-import.db").toFile())
 					.fileDeleteAfterClose()
 					.fileMmapEnable()
 					.fileMmapPreclearDisable();

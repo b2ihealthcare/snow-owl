@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -230,11 +230,11 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				.referencedComponentType(input.getReferencedComponent().getComponentType());
 		
 		if (input.getEquivalentOWLRelationships() != null) {
-			builder.classAxiomRelationships(input.getEquivalentOWLRelationships());
+			builder.classAxiomRelationships(SnomedOWLRelationshipDocument.createFrom(input.getEquivalentOWLRelationships()));
 		} else if (input.getClassOWLRelationships() != null) {
-			builder.classAxiomRelationships(input.getClassOWLRelationships());
+			builder.classAxiomRelationships(SnomedOWLRelationshipDocument.createFrom(input.getClassOWLRelationships()));
 		} else if (input.getGciOWLRelationships() != null) {
-			builder.gciAxiomRelationships(input.getGciOWLRelationships());
+			builder.gciAxiomRelationships(SnomedOWLRelationshipDocument.createFrom(input.getGciOWLRelationships()));
 		}
 		
 		for (Entry<String, Object> entry : input.getProperties().entrySet()) {

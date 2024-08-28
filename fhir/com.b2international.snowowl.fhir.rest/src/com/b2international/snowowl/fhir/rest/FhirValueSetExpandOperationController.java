@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -159,6 +159,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 			.count(count)
 			.displayLanguage(displayLanguage == null ? null : new Code(displayLanguage))
 			.withHistorySupplements(withHistorySupplements)
+			.includeDesignations(includeDesignations)
 			.build();
 		
 		return expand(expandRequest, nextUriBuilder, accept, _format, _pretty);
@@ -258,7 +259,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 			request.getUrl().getUriValue(), 
 			request.getFilter(), 
 			request.getActiveOnly(), 
-			request.getDisplayLanguage().getCodeValue(), 
+			request.getDisplayLanguage() == null ? null : request.getDisplayLanguage().getCodeValue(), 
 			request.getIncludeDesignations(), 
 			request.getWithHistorySupplements(), 
 			request.getCount(), 
@@ -378,6 +379,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 			.count(count)
 			.displayLanguage(displayLanguage == null ? null : new Code(displayLanguage))
 			.withHistorySupplements(withHistorySupplements)
+			.includeDesignations(includeDesignations)
 			.build();
 		
 		return expand(expandRequest, nextUriBuilder, accept, _format, _pretty);

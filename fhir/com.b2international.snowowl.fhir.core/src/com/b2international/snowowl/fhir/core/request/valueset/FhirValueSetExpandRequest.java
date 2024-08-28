@@ -15,7 +15,13 @@
  */
 package com.b2international.snowowl.fhir.core.request.valueset;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.elasticsearch.common.Strings;
 import org.hl7.fhir.r5.model.Bundle;
@@ -24,6 +30,7 @@ import org.hl7.fhir.r5.model.Enumerations.FilterOperator;
 import org.hl7.fhir.r5.model.Enumerations.PublicationStatus;
 import org.hl7.fhir.r5.model.Parameters;
 import org.hl7.fhir.r5.model.ValueSet;
+import org.hl7.fhir.r5.model.ValueSet.ConceptReferenceDesignationComponent;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.NotFoundException;
@@ -34,11 +41,13 @@ import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
+import com.b2international.snowowl.core.domain.Description;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.fhir.core.R5ObjectFields;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.operations.ValueSetExpandParameters;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.b2international.snowowl.fhir.core.request.codesystem.FhirRequest;
@@ -80,7 +89,10 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 		} catch (NotFoundException e) {
 			// if there is no Value Set present for the given URL, then try to parse the URL to a meaningful value if possible and evaluate it
 			if (uri.startsWith("http://")) {
-				return computeFhirValueSetUsingUrl(context, uri);
+				ValueSet implicitVs = computeFhirValueSetUsingUrl(context, uri);
+				if (implicitVs != null) {
+					return implicitVs;
+				}
 			}
 			
 			throw e;
@@ -155,6 +167,14 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 			String fhirVsValue = query.replace("fhir_vs=", "");
 			if (fhirVsValue.startsWith("ecl/")) {
 				String ecl = fhirVsValue.replace("ecl/", "");
+				
+				// make sure we decode the ECL before using it
+				try {
+					ecl = URLDecoder.decode(ecl, StandardCharsets.UTF_8.toString());
+				} catch (UnsupportedEncodingException e) {
+					throw new BadRequestException("Failed to decode ECL expression: " + e.getMessage());
+				}
+				
 				req.filterByQuery(ecl);
 				// configure Value Set for ECL
 				valueSet
@@ -228,12 +248,20 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 			.setUserData("after", concepts.getSearchAfter());
 		
 		for (Concept concept : concepts) {
+			var contains = new ValueSet.ValueSetExpansionContainsComponent()
+			.setCode(concept.getId())
+			.setSystem(baseUrl)
+			.setDisplay(concept.getTerm());
+			
 			expansion.addContains(
-				new ValueSet.ValueSetExpansionContainsComponent()
-					.setCode(concept.getId())
-					.setSystem(baseUrl)
-					.setDisplay(concept.getTerm())
+				
 			);
+			
+			if (parameters.getIncludeDesignations().booleanValue()) {
+				contains.setDesignation(fromDescriptions(concept.getDescriptions()));
+			}
+			
+			expansion.addContains(contains);
 		}
 		
 		return valueSet
@@ -241,4 +269,16 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 				.setExpansion(expansion);
 	}
 
+	/**
+	 * Maps the given collection of {@link Description} objects into FHIR {@link Designation} objects by mapping the term and language fields to the matching properties.
+	 * @param descriptions
+	 * @return a {@link List} of {@link Designation} objects, never <code>null</code>.
+	 */
+	public static List<ConceptReferenceDesignationComponent> fromDescriptions(Collection<Description> descriptions) {
+		return descriptions
+				.stream()
+				.map(description -> new ConceptReferenceDesignationComponent().setValue(description.getTerm()).setLanguage(description.getLanguage()))
+				.collect(Collectors.toList());
+	}
+	
 }

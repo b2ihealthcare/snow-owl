@@ -17,6 +17,8 @@ package com.b2international.snowowl.core.locks.request;
 
 import java.util.List;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 
 import com.b2international.commons.StringUtils;
@@ -38,8 +40,6 @@ final class LockChangeRequest implements Request<ServiceProvider, Boolean> {
 
 	private static final long serialVersionUID = 414737555546463276L;
 
-	private static final long LOCK_TIMEOUT_MILLIS = 3000L;
-
 	private final boolean lock;
 
 	@NotEmpty
@@ -50,6 +50,10 @@ final class LockChangeRequest implements Request<ServiceProvider, Boolean> {
 
 	@NotEmpty
 	private final List<Lockable> targets;
+	
+	@Min(0)
+	@Max(60_000) // maximum of 1 minute wait time is allowed, retry if timeout happens
+	private final Long timeout;
 
 	// Nullable
 	private String userId;
@@ -59,12 +63,14 @@ final class LockChangeRequest implements Request<ServiceProvider, Boolean> {
 		final String description, 
 		final String parentDescription, 
 		final String userId, 
+		final Long timeout,
 		final List<Lockable> targets) {
 		
 		this.lock = lock;
 		this.description = description;
 		this.parentDescription = parentDescription;
 		this.userId = userId;
+		this.timeout = timeout;
 		this.targets = targets;
 	}
 
@@ -78,7 +84,7 @@ final class LockChangeRequest implements Request<ServiceProvider, Boolean> {
 		final DatastoreLockContext lockContext = new DatastoreLockContext(userId, description, parentDescription);
 
 		if (lock) {
-			lockManager.lock(lockContext, LOCK_TIMEOUT_MILLIS, targets);
+			lockManager.lock(lockContext, timeout, targets);
 		} else {
 			lockManager.unlock(lockContext, targets);
 		}

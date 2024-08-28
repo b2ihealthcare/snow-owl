@@ -1,6 +1,74 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 9.2.3
+
+### Bugs/Improvements
+- [api] Java API improvements to allow updating concept members selectively only for certain refset types (#1311)
+- [logging] remove log4j jars and use proper SLF4J bridge (#1315)
+- [security] mitigate vulnerabilities CVE-2024-23444, CVE-2024-23450, CVE-2024-37890, CVE-2024-4068, CVE-2024-29415, CVE-2024-33883, CVE-2024-29041, CVE-2024-29180, CVE-2024-28849, CVE-2024-39338, CVE-2024-22257, CVE-2024-22259, CVE-2024-22262
+
+### Dependencies
+- Bumped Elasticsearch to 7.17.23 
+- Bumped Elasticsearch Java Client to 8.15.0
+- Removed Apache Log4j 1.2.25
+
+## 9.2.2
+
+### Bugs/Improvements
+- [core] add method to detect Win 11 OS (#1300)
+- [core] consider transaction changeset when checking referential integrity checks, like ensure presence of a certain component before commit (#1303)
+- [api] support `timeout` parameter configuration in Lock Java API with a default value of `3s` (#1298)
+- [api] support expansion of type and destination fields for expanded owlRelationships on axiom members (#1301)
+- [api] support disabling duplicate preferred term check on a per request basis (#1308)
+- [fhir] fixed an issue that caused internal server error logs not being reported to the log stream when using the FHIR API (5701a72)
+- [classification] restore old concrete domain member inference logic when old concrete domain support is enabled in the system (#1302)
+- [releng] change `b2i.sg` URLs to `b2ihealthcare.com` (e.g. https://artifacts.b2ihealthcare.com) (#1304)
+
+## 9.2.1
+
+### Bugs/Improvements
+- [core] improve error reporting in transport layer (#1297)
+- [classification] add back equivalent concept merging capabilities from 6.x (#1277)
+- [build] migrate to Node.js 20 in GitHub Actions (e128578)
+- [docs] remove obsolete documentation files (4965bf3)
+
+## 9.2.0
+
+### API
+- New `ETag`, `If-None-Match` and `Cache-Control` HTTP header support (#1270)
+  * Content HTTP responses now have an `ETag` header value generated based the queried branch reference
+  * Cache-Control header value is also being returned using the `api.cache_control` configuration setting 
+    * Default value is `s-maxage=0,max-age=0,must-revalidate` which ensures that caching can happen but the cached response has to be revalidated before using
+  * `If-None-Match` header is now also supported to allow clients to send the `ETag` value and receive a `HTTP 304 Not Modified` when revalidating an earlier response. This allows the cached response to be used until it is not overridden by the server with a new response.
+
+### Bugs/Improvements
+- [index] support wildcard index queries (b904b47)
+- [index] allow ObjectNode type in index documentation mapping classes (#1274)
+- [index] ensure that fast-forward merges do no produce unnecessary zero change revisions (#1281)
+- [core] `api.rate_limit.capacity` replaces the now deprecated `api.rate_limit.overdraft` configuration setting (#1270)
+- [core] fixed some serialization issues affecting certain collection types in 3rd party plugins (#)
+- [core] add `-Dso.component.scan` JVM argument to allow 3rd party plugins to use their own namespaces for their classpaths (#1294)
+- [snomed] RF2 import release archive validation improvements (70b6a06, 6c615e8, b297247)
+- [snomed] fix incorrect temporary directory name when building internal representation of an RF2 release during an RF2 import (a0831c7)
+- [snomed] ensure that SubAnnotationPropertyOf axioms are properly handled in the SNOMED CT tooling (#1288, #1290, #1292)
+- [snomed] fixed an issue where an incorrect identifier was returned in the RF2 import resource than the one used to request it (#1296)
+- [ecl] ensure that any term matches do not produce unnecessary low-level wildcard/regex query clauses (8391852)
+- [ecl] wild lexical searches now use the wildcard index query for better user experience (030304a)
+- [api] properly response with an HTTP 400 Bad Request response when a required query parameter is missing (#1273)
+- [api] fixed an issue where `moduleId` was not propagated to nested member create requests causing an HTTP 400 Bad Request response (#1276)
+- [api] fixed an issue where `namespaceConceptId` was not propagated to nested description and relationship create requests causing incorrect namespace value to be used for the components (#1295)
+- [fhir] fixed an issue where `includeDesignations=true` did not append the member designations in certain FHIR ValueSet$expand requests (#1275, dfba2b2)
+- [fhir] fixed an issue where the `POST /ValueSet/$expand operation` fails with an internal server error when displayLanguage is not present (e9d1866)
+- [fhir] report ECL syntax details in FHIR OperationOutcome responses (3b62aaf)
+- [fhir] make sure the ECL part in an implicit SNOMED CT Value Set url is always get decoded before evaluation (1667d1e)
+
+### Dependencies
+- Upgrade bucket4j to 8.10.1
+- Replace embedded jsr305 v3.0.2 with dedicated dependency (#1279)
+
+Huge thanks to @abelardy for testing and providing feedback to improve ECL evaluation and FHIR ValueSet$expand operation implementations!
+
 ## 9.1.2
 
 ### Bugs/Improvements
@@ -133,6 +201,12 @@ All notable changes to this project will be documented in this file.
 
 ### Dependencies
 - Bump supported Elasticsearch libraries to (7.17.16 #1252, 8.10.3 #1230)
+
+## 8.13.1
+
+### Bugs/Improvements
+- [fhir] fixed an issue that caused internal server error logs not being reported to the log stream when using the FHIR API
+- [releng] change `b2i.sg` URLs to `b2ihealthcare.com` (e.g. https://artifacts.b2ihealthcare.com) (#1307)
 
 ## 8.13.0
 

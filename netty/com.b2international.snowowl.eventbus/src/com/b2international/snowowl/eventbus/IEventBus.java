@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,11 @@ public interface IEventBus {
 	 * Feature flag for send-time stack tracing
 	 */
 	boolean RECORD_SEND_STACK = Boolean.getBoolean("eventbus.record.stack");
+	
+	/**
+	 * The message header used for send-time call stack tracing
+	 */
+	String SEND_STACK_HEADER = "sendStack";
 
 	/**
 	 * The address where handler registration and un-registration messages are sent.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,9 +42,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedReferenceSetMemberConverter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 
 /**
  * @since 4.5
@@ -53,6 +51,16 @@ public final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<S
 
 	private static final long serialVersionUID = 1L;
 
+	// Requesting the "value" field should load "booleanValue", "decimalValue", "integerValue", "stringValue" and "dataType" instead
+	private static final Multimap<String, String> REPLACE_VALUE_FIELD = ImmutableMultimap.<String, String>builder()
+		.putAll(SnomedRf2Headers.FIELD_VALUE, 
+			SnomedRefSetMemberIndexEntry.Fields.BOOLEAN_VALUE, 
+			SnomedRefSetMemberIndexEntry.Fields.DECIMAL_VALUE, 
+			SnomedRefSetMemberIndexEntry.Fields.INTEGER_VALUE, 
+			SnomedRefSetMemberIndexEntry.Fields.STRING_VALUE, 
+			SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE)
+		.build();
+	
 	private static final SortedMap<String, SnomedRefsetMemberFieldQueryHandler<?>> SUPPORTED_MEMBER_FIELDS = ImmutableSortedMap.<String, SnomedRefsetMemberFieldQueryHandler<?>>naturalOrder()
 			// String types, ECL support
 			.put(SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, new SnomedRefsetMemberFieldQueryHandler<>(String.class, SnomedRefSetMemberIndexEntry.Expressions::referencedComponentIds, true))
@@ -145,6 +153,11 @@ public final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<S
 	@Override
 	protected Class<SnomedRefSetMemberIndexEntry> getDocumentType() {
 		return SnomedRefSetMemberIndexEntry.class;
+	}
+	
+	@Override
+	protected Multimap<String, String> collectFieldsToLoadReplacements() {
+		return REPLACE_VALUE_FIELD;
 	}
 	
 	@Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2019-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,15 @@
 package com.b2international.snowowl.snomed.reasoner.equivalence;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
+import com.b2international.snowowl.core.plugin.ClassPathScanner;
+import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Ordering;
 
 /**
  * Implementations of this interface can define a customized way for
@@ -44,6 +49,16 @@ public interface IEquivalentConceptMerger {
 	 * original component SCTID.
 	 */
 	String PREFIX_UPDATED = "U_";
+	
+	/**
+	 * @return the name of this equivalent concept merging strategy (must be unique for each implementation)
+	 */
+	String getName();
+	
+	/**
+	 * @return the priority of the implementation, highest priority wins
+	 */
+	int getPriority();
 	
 	/**
 	 * Adds changes to the specified bulk request builder that effectively merges
@@ -84,11 +99,36 @@ public interface IEquivalentConceptMerger {
 	 * 
 	 * @since 6.14
 	 */
+	@Component
 	class Default implements IEquivalentConceptMerger {
 
 		@Override
+		public String getName() {
+			return "default";
+		}
+		
+		@Override
+		public int getPriority() {
+			return 0;
+		}
+		
+		@Override
 		public Set<String> merge(final Multimap<SnomedConcept, SnomedConcept> equivalentConcepts) {
 			return Collections.emptySet();
+		}
+	}
+	
+	final class Registry {
+		private final List<IEquivalentConceptMerger> implsByPriority;
+
+		public Registry(ClassPathScanner scanner) {
+			this.implsByPriority = Ordering.natural()
+				.onResultOf(IEquivalentConceptMerger::getPriority)
+				.immutableSortedCopy(scanner.getComponentsByInterface(IEquivalentConceptMerger.class));
+		}
+		
+		public IEquivalentConceptMerger getHighestPriority() {
+			return Iterables.getLast(implsByPriority);
 		}
 	}
 }

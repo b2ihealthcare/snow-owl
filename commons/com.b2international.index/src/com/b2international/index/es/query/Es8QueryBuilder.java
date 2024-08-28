@@ -113,6 +113,8 @@ public class Es8QueryBuilder {
 			visit((PrefixPredicate) expression);
 		} else if (expression instanceof RegexpPredicate) {
 			visit((RegexpPredicate) expression);
+		} else if (expression instanceof WildcardPredicate) {
+			visit((WildcardPredicate) expression);
 		} else if (expression instanceof StringSetPredicate) {
 			visit((StringSetPredicate) expression);
 		} else if (expression instanceof LongSetPredicate) {
@@ -154,12 +156,12 @@ public class Es8QueryBuilder {
 
 	private void visit(ScriptQueryExpression expression) {
 		Script esScript = expression.toEsScript(mapping);
-		deque.push(QueryBuilders.script(script -> script.boost(this.boost).script(s -> s.inline(in -> in
+		deque.push(QueryBuilders.script(script -> script.boost(this.boost).script(s -> s
 			.lang(esScript.getLang())
 			.source(esScript.getIdOrCode())
 			.options(esScript.getOptions())
 			.params(Maps.transformValues(esScript.getParams(), JsonData::of))
-		))));
+		)));
 	}
 	
 	private void visit(ScriptScoreExpression expression) {
@@ -178,11 +180,11 @@ public class Es8QueryBuilder {
 				.functions(
 					FunctionScoreBuilders.scriptScore(
 						scriptScore -> scriptScore.script(
-							s -> s.inline(in -> in
+							s -> s
 								.lang(esScript.getLang())
 								.source(esScript.getIdOrCode())
 								.options(esScript.getOptions())
-								.params(Maps.transformValues(esScript.getParams(), JsonData::of))
+								.params(Maps.transformValues(esScript.getParams(), JsonData::of)
 							)
 						)
 					)
@@ -471,8 +473,13 @@ public class Es8QueryBuilder {
 		deque.push(QueryBuilders.regexp(r -> r.boost(this.boost).field(toFieldPath(regexp)).value(regexp.getArgument()).caseInsensitive(regexp.isCaseInsensitive()).flags(RegexpFlag.NONE.name())));
 	}
 	
+	private void visit(WildcardPredicate wildcard) {
+		deque.push(QueryBuilders.wildcard(r -> r.boost(this.boost).field(toFieldPath(wildcard)).value(wildcard.getArgument()).caseInsensitive(wildcard.isCaseInsensitive())));
+	}
+	
 	private void visit(RangePredicate<?> range) {
-		deque.push(QueryBuilders.range(r -> {
+		// TODO consider typed range query, is there a benefit?
+		deque.push(QueryBuilders.range(q -> q.untyped(r -> {
 			r.boost(this.boost);
 			if (range.lower() != null) {
 				final Object lower = range.lower() instanceof BigDecimal ? DecimalUtils.encode((BigDecimal) range.lower()) : range.lower();
@@ -491,7 +498,7 @@ public class Es8QueryBuilder {
 				}
 			}
 			return r.field(toFieldPath(range));
-		}));
+		})));
 	}
 	
 	private void visit(DisMaxPredicate dismax) {

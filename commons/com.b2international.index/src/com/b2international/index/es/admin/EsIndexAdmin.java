@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2017-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -674,7 +674,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			final String property = field.getName();
 			final Class<?> fieldType = NumericClassUtils.unwrapCollectionType(field);
 			
-			if (Map.class.isAssignableFrom(fieldType)) {
+			if (Map.class.isAssignableFrom(fieldType) || ObjectNode.class.isAssignableFrom(fieldType)) {
 				// allow dynamic mappings for dynamic objects like field using Map
 				final Map<String, Object> prop = newHashMap();
 				prop.put("type", "object");

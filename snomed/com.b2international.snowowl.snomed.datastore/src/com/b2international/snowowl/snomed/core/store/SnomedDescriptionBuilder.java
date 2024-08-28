@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,12 +89,18 @@ public final class SnomedDescriptionBuilder extends SnomedComponentBuilder<Snome
 	@Override
 	public void init(SnomedDescriptionIndexEntry.Builder component, TransactionContext context) {
 		super.init(component, context);
-		component.caseSignificanceId(context.lookup(caseSignificanceId, SnomedConceptDocument.class).getId());
-		component.typeId(context.lookup(type, SnomedConceptDocument.class).getId());
+		context.ensurePresent(SnomedConceptDocument.class, caseSignificanceId);
+		component.caseSignificanceId(caseSignificanceId);
+		
+		context.ensurePresent(SnomedConceptDocument.class, type);
+		component.typeId(type);
+		
 		component.term(term);
 		component.languageCode(languageCode);
+		
 		if (concept != null) {
-			component.conceptId(context.lookup(concept, SnomedConceptDocument.class).getId());
+			context.ensurePresent(SnomedConceptDocument.class, concept);
+			component.conceptId(concept);
 		}
 	}
 

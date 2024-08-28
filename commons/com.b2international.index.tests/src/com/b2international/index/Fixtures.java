@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import com.b2international.index.mapping.FieldAlias;
 import com.b2international.index.mapping.FieldAlias.FieldAliasType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.MoreObjects;
 
 /**
@@ -469,6 +470,90 @@ public class Fixtures {
 			return Objects.hash(id, properties);
 		}
 		
+	}
+	
+	@Doc
+	public static class DataWithJson {
+		
+		@ID
+		private final String id;
+		
+		@Field(index = false)
+		private final ObjectNode model;
+		
+		@JsonCreator
+		public DataWithJson(
+			@JsonProperty("id") String id, 
+			@JsonProperty("model") ObjectNode model
+		) {
+			this.id = id;
+			this.model = model;
+		}
+		
+		public String getId() {
+			return id;
+		}
+		
+		public ObjectNode getModel() {
+			return model;
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			
+			DataWithJson other = (DataWithJson) obj;
+			return Objects.equals(id, other.id) && Objects.equals(model, other.model);
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(id, model);
+		}
+	}
+	
+	@Doc
+	public static class DataWithDynamicJson {
+		
+		@ID
+		private final String id;
+
+		// Dynamic mapping is created for this field
+		private final ObjectNode model;
+		
+		@JsonCreator
+		public DataWithDynamicJson(
+			@JsonProperty("id") String id, 
+			@JsonProperty("model") ObjectNode model
+		) {
+			this.id = id;
+			this.model = model;
+		}
+		
+		public String getId() {
+			return id;
+		}
+		
+		public ObjectNode getModel() {
+			return model;
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			
+			DataWithDynamicJson other = (DataWithDynamicJson) obj;
+			return Objects.equals(id, other.id) && Objects.equals(model, other.model);
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(id, model);
+		}
 	}
 	
 	@Doc

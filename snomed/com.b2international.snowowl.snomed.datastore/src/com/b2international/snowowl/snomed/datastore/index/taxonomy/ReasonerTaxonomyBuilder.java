@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -725,13 +725,14 @@ public final class ReasonerTaxonomyBuilder {
 					final StringTokenizer tok = new StringTokenizer(expression.toLowerCase(Locale.ENGLISH), "(): ");
 					boolean isSubPropertyOf = false;
 					
-					// OWL axiom types that we are expecting here, four of which requires special handling:
+					// OWL axiom types that we are expecting here, five of which requires special handling:
 					// 
 					// [ ] SubClassOf(...)
 					// [ ] EquivalentClasses(...)
 					// [+] SubObjectPropertyOf(ObjectPropertyChain(:246093002 :738774007) :246093002)
 					// [+] SubObjectPropertyOf(:x :y)
 					// [+] SubDataPropertyOf(:x :y)
+					// [+] SubAnnotationPropertyOf(:x :y)
 					// [+] TransitiveObjectProperty(:774081006)
 					// [ ] ReflexiveObjectProperty(...)
 					try {
@@ -752,9 +753,11 @@ public final class ReasonerTaxonomyBuilder {
 							}
 						} else if ("subdatapropertyof".equals(firstToken)) {
 							isSubPropertyOf = true;
+						} else if ("subannotationpropertyof".equals(firstToken)) {
+							isSubPropertyOf = true;
 						}
 						
-						// Collect the OWL axiom only if it is not of type "Sub<Object|Data>PropertyOf"
+						// Collect the OWL axiom only if it is not of type "Sub<Object|Data|Annotation>PropertyOf"
 						if (!isSubPropertyOf) {
 							axioms.add(expression);
 						}
@@ -791,7 +794,7 @@ public final class ReasonerTaxonomyBuilder {
 							
 							if (isSubPropertyOf) {
 								/*
-								 * XXX: Register "Sub<Object|Data>PropertyOf" axioms as "stated parents", so that we
+								 * XXX: Register "Sub<Object|Data|Annotation>PropertyOf" axioms as "stated parents", so that we
 								 * can create both the original axiom _and_ a SubClassOf axiom for a (punted)
 								 * OWL class representing the property concept.
 								 */

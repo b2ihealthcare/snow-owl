@@ -23,8 +23,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import jakarta.validation.constraints.NotNull;
-
 import org.eclipse.emf.ecore.EObject;
 
 import com.b2international.commons.collections.Collections3;
@@ -62,6 +60,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
+
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Evaluates the given ECL expression {@link String} or parsed {@link ExpressionConstraint} to an executable {@link Expression query expression}.
@@ -174,8 +174,7 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 			.build()
 			.search(searcher);
 		
-		final Set<String> conceptIds = Set.copyOf(descriptionHits.getHits());
-		return SnomedDocument.Expressions.ids(conceptIds);
+		return SnomedDocument.Expressions.ids(descriptionHits.getHits());
 	}
 	
 	private static Expression executeMemberSearch(BranchContext context, Expression memberExpression) {
@@ -194,8 +193,7 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 			.build()
 			.search(searcher);
 		
-		final Set<String> conceptIds = Set.copyOf(memberHits.getHits());
-		return SnomedDocument.Expressions.ids(conceptIds);
+		return SnomedDocument.Expressions.ids(memberHits.getHits());
 	}
 
 	protected Promise<Expression> eval(BranchContext context, final ActiveFilter activeFilter) {
@@ -630,6 +628,11 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 	@Override
 	protected Expression termRegexExpression(String regex, boolean caseInsensitive) {
 		return Expressions.regexp(SnomedDescriptionIndexEntry.Fields.TERM, regex, caseInsensitive);
+	}
+	
+	@Override
+	protected Expression termWildExpression(String wild, boolean caseInsensitive) {
+		return Expressions.wildcard(SnomedDescriptionIndexEntry.Fields.TERM, wild, caseInsensitive);
 	}
 	
 	@Override

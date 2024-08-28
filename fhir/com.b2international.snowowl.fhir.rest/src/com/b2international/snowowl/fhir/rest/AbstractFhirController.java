@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,12 @@ import java.util.Map;
 import org.linuxforhealth.fhir.model.format.Format;
 import org.linuxforhealth.fhir.model.generator.exception.FHIRGeneratorException;
 import org.linuxforhealth.fhir.model.parser.exception.FHIRParserException;
+import org.linuxforhealth.fhir.model.r5.generator.FHIRGenerator;
+import org.linuxforhealth.fhir.model.r5.parser.FHIRParser;
 import org.linuxforhealth.fhir.model.r5.resource.Bundle;
 import org.linuxforhealth.fhir.model.r5.resource.Parameters;
 import org.linuxforhealth.fhir.model.r5.resource.Resource;
 import org.linuxforhealth.fhir.model.r5.type.Uri;
-import org.linuxforhealth.fhir.model.r5.generator.FHIRGenerator;
-import org.linuxforhealth.fhir.model.r5.parser.FHIRParser;
 import org.linuxforhealth.fhir.model.r5.visitor.Visitable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +56,7 @@ import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.converter.BundleConverter_50;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
@@ -237,8 +238,7 @@ public abstract class AbstractFhirController extends AbstractRestService {
 			return fhirResource.as(resourceClass);
 		
 		} catch (FHIRParserException e) {
-			throw new BadRequestException(String.format("Failed to parse request body as a complete %s resource.", 
-				resourceClass.getSimpleName()));
+			throw new BadRequestException(String.format("Failed to parse request body as a complete %s resource: %s", resourceClass.getSimpleName(), e.getMessage()));
 		}
 	}
 	
@@ -314,13 +314,21 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public @ResponseBody OperationOutcome handle(final Exception ex) {
-		if (Throwables.getRootCause(ex).getMessage().toLowerCase().contains("broken pipe")) {
+		if ("broken pipe".equals(Strings.nullToEmpty(Throwables.getRootCause(ex).getMessage()).toLowerCase())) {
 	        return null; // socket is closed, cannot return any response    
 	    } else {
 	    	LOG.error("Exception during processing of a request", ex);
 	    	FhirException fhirException = FhirException.createFhirError(GENERIC_USER_MESSAGE + " Exception: " + ex.getMessage(), OperationOutcomeCode.MSG_BAD_SYNTAX);
 	    	return fhirException.toOperationOutcome();
 	    }
+	}
+	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public @ResponseBody OperationOutcome handle(final SyntaxException ex) {
+    	FhirException fhirException = FhirException.createFhirError(ex.getMessage(), OperationOutcomeCode.MSG_BAD_SYNTAX);
+    	fhirException.withAdditionalInfo(ex.getAdditionalInfo());
+    	return fhirException.toOperationOutcome();
 	}
 	
 	@ExceptionHandler

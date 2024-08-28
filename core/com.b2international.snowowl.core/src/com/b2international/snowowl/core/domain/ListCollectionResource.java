@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 package com.b2international.snowowl.core.domain;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
+import com.b2international.commons.collections.Collections3;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -33,12 +33,12 @@ import com.google.common.base.MoreObjects;
 @JsonInclude(Include.NON_NULL)
 public class ListCollectionResource<T> implements CollectionResource<T> {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 	
 	private final List<T> items;
 
-	protected ListCollectionResource(List<T> items) {
-		this.items = items == null ? Collections.<T> emptyList() : items;
+	protected ListCollectionResource(Collection<T> items) {
+		this.items = Collections3.toImmutableList(items);
 	}
 
 	@Override
@@ -52,22 +52,9 @@ public class ListCollectionResource<T> implements CollectionResource<T> {
 	 * @param items
 	 * @return
 	 */
-	public static <T> CollectionResource<T> of(List<T> items) {
-		return new ListCollectionResource<T>(items);
-	}
-	
-	/**
-	 * Creates a new {@link CollectionResource} for the given items.
-	 * 
-	 * @param items
-	 * @return
-	 */
 	@JsonCreator
 	public static <T> CollectionResource<T> of(@JsonProperty("items") Collection<T> items) {
-		if (items instanceof List) {
-			return of((List<T>)items);
-		}
-		return of(List.copyOf(items));
+		return new ListCollectionResource<T>(items);
 	}
 	
 	@Override

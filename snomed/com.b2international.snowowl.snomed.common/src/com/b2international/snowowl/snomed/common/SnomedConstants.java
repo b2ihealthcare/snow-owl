@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -277,6 +277,9 @@ public abstract class SnomedConstants {
 		
 		//Unapproved attribute hierarchy root
 		public static final String UNAPPROVED_ATTRIBUTE = "408739003";		
+
+		// Concept model attribute hierarchy roots, starting with INT 20240301
+		public static final String ANNOTATION_ATTRIBUTE = "1295447006";
 		
 		// Concepts that require special care when classifying
 		public static final String ROLE_GROUP = "609096000";

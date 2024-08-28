@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -141,28 +141,31 @@ public final class SnomedRelationshipBuilder
 		return SnomedRelationshipIndexEntry.builder();
 	}
 	
-	private String ensureConceptExists(final String conceptId, final TransactionContext context) {
-		return context.lookup(conceptId, SnomedConceptDocument.class).getId();
-	}
-
 	@Override
 	public void init(final SnomedRelationshipIndexEntry.Builder component, final TransactionContext context) {
 		super.init(component, context);
 		
-		if (sourceId != null) { 
-			component.sourceId(ensureConceptExists(sourceId, context)); 
+		if (sourceId != null) {
+			context.ensurePresent(SnomedConceptDocument.class, sourceId);
+			component.sourceId(sourceId); 
 		}
 		
 		if (destinationId != null) { 
-			component.destinationId(ensureConceptExists(destinationId, context)); 
+			context.ensurePresent(SnomedConceptDocument.class, destinationId);
+			component.destinationId(destinationId); 
 		}
 		
-		component.typeId(ensureConceptExists(typeId, context));
+		context.ensurePresent(SnomedConceptDocument.class, typeId);
+		component.typeId(typeId);
 		component.destinationNegated(destinationNegated);
 		component.value(value);
 		component.relationshipGroup(relationshipGroup);
 		component.unionGroup(unionGroup);
-		component.characteristicTypeId(ensureConceptExists(characteristicTypeId, context));
-		component.modifierId(ensureConceptExists(modifierId, context));
+		
+		context.ensurePresent(SnomedConceptDocument.class, characteristicTypeId);
+		component.characteristicTypeId(characteristicTypeId);
+		
+		context.ensurePresent(SnomedConceptDocument.class, modifierId);
+		component.modifierId(modifierId);
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public final class SnomedConceptBuilder extends SnomedComponentBuilder<SnomedCon
 	public void init(SnomedConceptDocument.Builder component, TransactionContext context) {
 		super.init(component, context);
 		// check that the definitionStatus concept does exist before using it in this concept
-		context.lookup(definitionStatusId, SnomedConceptDocument.class);
+		context.ensurePresent(SnomedConceptDocument.class, definitionStatusId);
 		component.definitionStatusId(definitionStatusId);
 		component.exhaustive(exhaustive);
 	}

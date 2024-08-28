@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ import com.b2international.snowowl.snomed.datastore.index.entry.*;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierTest;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.ReservationImplTest;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImplTest;
+import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverterTest;
+import com.b2international.snowowl.snomed.datastore.request.SnomedOWLRelationshipConverterTest;
 import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEvaluatorTest;
 
 /**
@@ -67,6 +69,9 @@ import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEv
 	SnomedQueryValidationRuleEvaluatorTest.class,
 	// Query optimization
 	SnomedQueryOptimizerTest.class,
+	// OWL expression conversion tests
+	SnomedOWLExpressionConverterTest.class,	
+	SnomedOWLRelationshipConverterTest.class,
 })
 public class AllSnomedDatastoreTests {
 

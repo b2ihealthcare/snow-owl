@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,8 +44,12 @@ import com.google.common.collect.Multimap;
  */
 final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest<SnomedRelationships, SnomedRelationshipIndexEntry> {
 
+	// Requesting the "value" field should load "numericValue", "stringValue" and "valueType" instead
 	private static final Multimap<String, String> REPLACE_VALUE_FIELD = ImmutableMultimap.<String, String>builder()
-		.putAll(SnomedRelationship.Fields.VALUE, SnomedRelationshipIndexEntry.Fields.NUMERIC_VALUE, SnomedRelationshipIndexEntry.Fields.STRING_VALUE, SnomedRelationshipIndexEntry.Fields.VALUE_TYPE)
+		.putAll(SnomedRelationship.Fields.VALUE, 
+			SnomedRelationshipIndexEntry.Fields.NUMERIC_VALUE, 
+			SnomedRelationshipIndexEntry.Fields.STRING_VALUE, 
+			SnomedRelationshipIndexEntry.Fields.VALUE_TYPE)
 		.build();
 
 	enum OptionKey {

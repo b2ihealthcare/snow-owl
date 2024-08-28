@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2023-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ final class TerminologyResourceCollectionSearchRequest extends BaseTerminologyRe
 	@Override
 	protected void prepareAdditionalFilters(RepositoryContext context, ExpressionBuilder queryBuilder) {
 		super.prepareAdditionalFilters(context, queryBuilder);
+		queryBuilder.filter(ResourceDocument.Expressions.resourceType(TerminologyResourceCollection.RESOURCE_TYPE));
 		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,8 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedConceptUpdateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -499,31 +501,39 @@ public final class SnomedConcept extends SnomedCoreComponent {
 	
 	@Override
 	public Request<TransactionContext, String> toCreateRequest(String containerId) {
+		// XXX: "containerId" parameter is ignored in case of new concepts
+		return toCreateRequestBuilder().build();
+	}
+
+	public SnomedConceptCreateRequestBuilder toCreateRequestBuilder() {
 		return SnomedRequests.prepareNewConcept()
-				.setActive(isActive())
-				.addMembers(getMembers())
-				.addRelationships(getRelationships())
-				.addDescriptions(getDescriptions())
-				.setDefinitionStatusId(getDefinitionStatusId())
-				.setId(getId())
-				.setModuleId(getModuleId())
-				.setSubclassDefinitionStatus(getSubclassDefinitionStatus())
-				.build();
+			.setActive(isActive())
+			.addMembers(getMembers())
+			.addRelationships(getRelationships())
+			.addDescriptions(getDescriptions())
+			.setDefinitionStatusId(getDefinitionStatusId())
+			.setId(getId())
+			.setModuleId(getModuleId())
+			.setSubclassDefinitionStatus(getSubclassDefinitionStatus());
 	}
 	
 	@Override
 	public Request<TransactionContext, Boolean> toUpdateRequest() {
-		return SnomedRequests.prepareUpdateConcept(getId())
-				.setActive(isActive())
-				.setInactivationProperties(getInactivationProperties())
-				.setDefinitionStatusId(getDefinitionStatusId())
-				.setModuleId(getModuleId())
-				.setSubclassDefinitionStatus(getSubclassDefinitionStatus())
-				.setDescriptions(getDescriptions())
-				.setRelationships(getRelationships())
-				.setMembers(getMembers())
-				.build();
+		return toUpdateRequestBuilder().build();
 	}
+
+	public SnomedConceptUpdateRequestBuilder toUpdateRequestBuilder() {
+		return SnomedRequests.prepareUpdateConcept(getId())
+			.setActive(isActive())
+			.setInactivationProperties(getInactivationProperties())
+			.setDefinitionStatusId(getDefinitionStatusId())
+			.setModuleId(getModuleId())
+			.setSubclassDefinitionStatus(getSubclassDefinitionStatus())
+			.setDescriptions(getDescriptions())
+			.setRelationships(getRelationships())
+			.setMembers(getMembers());
+	}
+
 	
 	@Override
 	public String toString() {

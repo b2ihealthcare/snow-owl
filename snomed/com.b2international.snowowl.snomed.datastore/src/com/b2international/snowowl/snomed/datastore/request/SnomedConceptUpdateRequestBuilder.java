@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,16 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.List;
+import java.util.Set;
 
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.5
@@ -35,6 +38,7 @@ public final class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponent
 	private List<SnomedRelationship> relationships;
 	private List<SnomedReferenceSetMember> members;
 	private SnomedReferenceSet refSet;
+	private Set<SnomedRefSetType> memberTypesToUpdate;
 
 	SnomedConceptUpdateRequestBuilder(String componentId) {
 		super(componentId);
@@ -75,6 +79,34 @@ public final class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponent
 		return getSelf();
 	}
 	
+	/**
+	 * Supported input values are:
+	 * 
+	 * <ul>
+	 * <li><code>null</code> &rarr; <b>all</b> existing members of a concept are
+	 * compared against the list provided in <code>members</code>
+	 * </li>
+	 * 
+	 * <li>empty set &rarr; <b>none</b> of the existing members of a concept are
+	 * compared against the list provided in <code>members</code><br>
+	 * (all elements in <code>members</code> will be added as a result)
+	 * </li>
+	 * 
+	 * <li>non-empty set &rarr; only those existing members of a concept will be
+	 * compared against the list provided in <code>members</code> that have a
+	 * type contained in this set<br>
+	 * (existing members of any other type will be ignored)
+	 * </li>
+	 * </ul>
+	 * 
+	 * @param memberTypesToUpdate - the reference set types to consider when 
+	 * updating existing members of a concept
+	 */
+	public SnomedConceptUpdateRequestBuilder setMemberTypesToUpdate(Set<SnomedRefSetType> memberTypesToUpdate) {
+		this.memberTypesToUpdate = memberTypesToUpdate != null ? ImmutableSet.copyOf(memberTypesToUpdate) : null;
+		return getSelf();
+	}
+	
 	@Override
 	protected void init(SnomedConceptUpdateRequest req) {
 		super.init(req);
@@ -84,6 +116,6 @@ public final class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponent
 		req.setRelationships(relationships);
 		req.setMembers(members);
 		req.setRefSet(refSet);
+		req.setMemberTypesToUpdate(memberTypesToUpdate);
 	}
-	
 }

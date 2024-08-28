@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -164,7 +164,7 @@ public class EventBus implements IEventBus {
 				
 				final String sendStack = sw.toString();
 				Map<String, String> headersWithStack = newHashMap(message.headers());
-				headersWithStack.put("sendStack", sendStack);
+				headersWithStack.put(SEND_STACK_HEADER, sendStack);
 				message.headers = Map.copyOf(headersWithStack);
 				
 			} catch (IOException unexpected) {

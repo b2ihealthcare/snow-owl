@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.core.ecl;
 
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.*;
 
@@ -268,6 +268,76 @@ public class SnomedEclEvaluationRequestPropertyFilterTest extends BaseSnomedEclE
 		// previously this thrown a low level search error, now it returns as intended
 		final Expression actual = eval("* {{ term = wild:\"*random term with optional < ES regexp character\" }}");
 		Expression expected = SnomedDocument.Expressions.ids(Set.of());
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void termWildAnyCharacterShouldNotCreateQueryClause() throws Exception {
+		final Expression actualTwo = eval("* {{ term = wild:\"**\" }}");
+		final Expression actualThree = eval("* {{ term = wild:\"***\" }}");
+		Expression expected = Expressions.matchAll();
+		assertEquals(expected, actualTwo);
+		assertEquals(expected, actualThree);
+	}
+	
+	@Test
+	public void termRegexAnyCharacterShouldNotCreateQueryClause() throws Exception {
+		final Expression actualOne = eval("* {{ term = regex:\".*\" }}");
+		final Expression actualTwo = eval("* {{ term = regex:\".*.*\" }}");
+		final Expression actualThree = eval("* {{ term = regex:\".*.*.*\" }}");
+		Expression expected = Expressions.matchAll();
+		assertEquals(expected, actualOne);
+		assertEquals(expected, actualTwo);
+		assertEquals(expected, actualThree);
+	}
+	
+	@Test
+	public void termWildEscapedAnyCharacter() throws Exception {
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding with * character")
+				.conceptId(Concepts.ALL_SNOMEDCT_CONTENT)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.build());
+		
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding without the any character")
+				.conceptId(Concepts.ALL_PRECOORDINATED_CONTENT)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.build());
+		
+		final Expression actual = eval("* {{ term = wild:\"*\\\\**\" }}");
+		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ALL_SNOMEDCT_CONTENT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void termRegexEscapedAnyCharacter() throws Exception {
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding with * character")
+				.conceptId(Concepts.ALL_SNOMEDCT_CONTENT)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.build());
+		
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding without the any character")
+				.conceptId(Concepts.ALL_PRECOORDINATED_CONTENT)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.build());
+		
+		final Expression actual = eval("* {{ term = regex:'.*[\\*].*\' }}");
+		Expression expected = SnomedDocument.Expressions.ids(Set.of(Concepts.ALL_SNOMEDCT_CONTENT));
 		assertEquals(expected, actual);
 	}
 	

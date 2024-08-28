@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,14 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
+import com.b2international.commons.exceptions.UnauthorizedException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.jobs.ScheduleJobRequestBuilder;
+import com.b2international.snowowl.core.util.PlatformUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
@@ -86,6 +88,7 @@ public final class AsyncRequest<R> {
 	public Promise<R> execute(IEventBus bus) {
 		final Promise<R> promise = new Promise<>();
 		final Class<R> responseType = request.getReturnType();
+		final Exception callerStacktrace = PlatformUtil.isDevVersion() ? new Exception() : null; 
 		bus.send(Request.ADDRESS, request, Request.TAG, requestHeaders, new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {
@@ -93,9 +96,16 @@ public final class AsyncRequest<R> {
 					if (message.isSucceeded()) {
 						promise.resolve(message.body(responseType), message.headers());
 					} else {
-						promise.reject(message.body(Throwable.class));
+						Throwable t = message.body(Throwable.class);
+						if (t instanceof UnauthorizedException && callerStacktrace != null) {
+							t.addSuppressed(callerStacktrace);
+						}
+						promise.reject(t);
 					}
 				} catch (Throwable e) {
+					if (e instanceof UnauthorizedException && callerStacktrace != null) {
+						e.addSuppressed(callerStacktrace);
+					}
 					promise.reject(e);
 				}
 			}
