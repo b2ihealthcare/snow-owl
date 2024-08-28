@@ -1,0 +1,11 @@
+[
+  {
+    "id": "38a",
+    "toolingId": "snomed",
+    "messageTemplate": "Active concepts should have at least one active inferred parent.",
+    "severity": "ERROR",
+    "checkType": "FAST",
+    "type": "snomed-query",
+    "implementation": "{\"componentType\": \"concept\",\"active\": \"true\",\"parent\": \"-1\"}"
+  }
+]

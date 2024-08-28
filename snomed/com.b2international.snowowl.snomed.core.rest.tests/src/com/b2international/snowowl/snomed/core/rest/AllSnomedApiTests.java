@@ -45,6 +45,7 @@ import com.b2international.snowowl.snomed.core.rest.io.SnomedImportRowValidatorT
 import com.b2international.snowowl.snomed.core.rest.perf.SnomedConceptCreatePerformanceTest;
 import com.b2international.snowowl.snomed.core.rest.perf.SnomedMergePerformanceTest;
 import com.b2international.snowowl.snomed.core.rest.suggest.SnomedSuggestApiTest;
+import com.b2international.snowowl.snomed.core.rest.validation.ValidationApiTest;
 import com.b2international.snowowl.snomed.core.rest.versioning.SnomedVersioningApiTest;
 import com.b2international.snowowl.test.commons.Resources;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
@@ -73,6 +74,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	BranchCompareRequestTest.class,
 	SnomedCompareRestRequestTest.class,
 	SnomedBranchingApiTest.class,
+	// Validation API
+	ValidationApiTest.class,
 	// Core Component API
 	SnomedConceptCreateApiTest.class,
 	SnomedConceptApiTest.class,
