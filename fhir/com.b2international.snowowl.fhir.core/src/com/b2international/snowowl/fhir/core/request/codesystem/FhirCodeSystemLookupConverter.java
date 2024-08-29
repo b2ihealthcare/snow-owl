@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.hl7.fhir.r5.model.CodeSystem;
 
@@ -57,7 +58,10 @@ public interface FhirCodeSystemLookupConverter {
 	 */
 	default List<CodeSystem.ConceptDefinitionDesignationComponent> expandDesignations(ServiceProvider context, CodeSystem codeSystem, Concept concept, CodeSystemLookupParameters parameters, String acceptLanguage) {
 		if (parameters.isPropertyRequested(SupportedCodeSystemRequestProperties.DESIGNATION)) {
-			return Designation.fromDescriptions(concept.getDescriptions());
+			return concept.getDescriptions()
+				.stream()
+				.map(description -> new CodeSystem.ConceptDefinitionDesignationComponent().setValue(description.getTerm()).setLanguage(description.getLanguage()))
+				.collect(Collectors.toList());
 		} else {
 			return null;
 		}
