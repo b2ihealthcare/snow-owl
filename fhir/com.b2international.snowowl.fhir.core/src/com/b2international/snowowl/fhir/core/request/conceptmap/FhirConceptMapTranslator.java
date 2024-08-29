@@ -18,8 +18,8 @@ package com.b2international.snowowl.fhir.core.request.conceptmap;
 import org.hl7.fhir.r5.model.ConceptMap;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateRequest;
-import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateResult;
+import com.b2international.snowowl.fhir.core.operations.ConceptMapTranslateParameters;
+import com.b2international.snowowl.fhir.core.operations.ConceptMapTranslateResultParameters;
 
 /**
  * @since 8.0
@@ -27,14 +27,14 @@ import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateResult;
 @FunctionalInterface
 public interface FhirConceptMapTranslator {
 
-	FhirConceptMapTranslator NOOP = (context, conceptMap, request) -> TranslateResult.builder().message("N/A").build(); 
+	FhirConceptMapTranslator NOOP = (context, conceptMap, request) -> new ConceptMapTranslateResultParameters().setResult(false).setMessage("N/A"); 
 	
 	/**
 	 * @param context
 	 * @param conceptMap
-	 * @param request
+	 * @param parameters
 	 * @return
 	 */
-	TranslateResult translate(ServiceProvider context, ConceptMap conceptMap, TranslateRequest request);
+	ConceptMapTranslateResultParameters translate(ServiceProvider context, ConceptMap conceptMap, ConceptMapTranslateParameters parameters);
 	
 }
