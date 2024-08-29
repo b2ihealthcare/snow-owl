@@ -42,7 +42,7 @@ public final class ValueSetExpandParameters extends BaseParameters {
 	}
 	
 	public StringType getValueSetVersion() {
-		return getParameterValue("url", Parameters.ParametersParameterComponent::getValueStringType);
+		throw new FHIRException("Inline input parameter 'valueSetVersion' is not supported.");
 	}
 	
 	public UriType getContext() {
