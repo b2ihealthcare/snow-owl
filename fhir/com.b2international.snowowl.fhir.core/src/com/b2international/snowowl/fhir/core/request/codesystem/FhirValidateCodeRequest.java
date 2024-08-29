@@ -20,26 +20,27 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
+import org.hl7.fhir.r5.model.CodeSystem;
+import org.hl7.fhir.r5.model.CodeableConcept;
+import org.hl7.fhir.r5.model.Coding;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Concept;
-import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.b2international.snowowl.fhir.core.model.codesystem.ValidateCodeRequest;
-import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.operations.CodeSystemValidateCodeParameters;
+import com.b2international.snowowl.fhir.core.operations.CodeSystemValidateCodeResultParameters;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+
 /**
  * @since 8.0
  */
-final class FhirValidateCodeRequest extends FhirRequest<ValidateCodeResult> {
+final class FhirValidateCodeRequest extends FhirRequest<CodeSystemValidateCodeResultParameters> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -47,24 +48,24 @@ final class FhirValidateCodeRequest extends FhirRequest<ValidateCodeResult> {
 	@Valid
 	@JsonProperty
 	@JsonUnwrapped
-	private final ValidateCodeRequest request;
+	private final CodeSystemValidateCodeParameters parameters;
 	
-	FhirValidateCodeRequest(ValidateCodeRequest request) {
-		super(request.getUrl() != null ? request.getUrl().getUriValue() : request.getCoding().getSystemValue(), request.getVersion());
-		this.request = request;
+	FhirValidateCodeRequest(CodeSystemValidateCodeParameters parameters) {
+		super(parameters.getUrl() != null ? parameters.getUrl().getValue() : parameters.getCoding().getSystem(), parameters.getVersion().getValue());
+		this.parameters = parameters;
 	}
 
 	@Override
-	public ValidateCodeResult doExecute(ServiceProvider context, CodeSystem codeSystem) {
-		Set<Coding> codings = collectCodingsToValidate(request);
-		Map<String, Coding> codingsById = codings.stream().collect(Collectors.toMap(Coding::getCodeValue, c -> c));
+	public CodeSystemValidateCodeResultParameters doExecute(ServiceProvider context, CodeSystem codeSystem) {
+		Set<Coding> codings = collectCodingsToValidate(parameters);
+		Map<String, Coding> codingsById = codings.stream().collect(Collectors.toMap(Coding::getCode, c -> c));
 		
 		// extract locales from the request
 		Map<String, Concept> conceptsById = CodeSystemRequests.prepareSearchConcepts()
 				.setLimit(codingsById.keySet().size())
 				.filterByCodeSystemUri(codeSystem.getResourceURI())
 				.filterByIds(codingsById.keySet())
-				.setLocales(extractLocales(request.getDisplayLanguage()))
+				.setLocales(extractLocales(parameters.getDisplayLanguage()))
 				.buildAsync()
 				.execute(context)
 				.stream()
@@ -75,10 +76,9 @@ final class FhirValidateCodeRequest extends FhirRequest<ValidateCodeResult> {
 		Set<String> missingConceptIds = Sets.difference(codingsById.keySet(), conceptsById.keySet());
 		
 		if (!missingConceptIds.isEmpty()) {
-			return ValidateCodeResult.builder()
-					.result(false)
-					.message(String.format("Could not find code%s '%s'.", missingConceptIds.size() == 1 ? "" : "s", ImmutableSortedSet.copyOf(missingConceptIds)))
-					.build();
+			return new CodeSystemValidateCodeResultParameters()
+					.setResult(false)
+					.setMessage(String.format("Could not find code%s '%s'.", missingConceptIds.size() == 1 ? "" : "s", ImmutableSortedSet.copyOf(missingConceptIds)));
 		}
 		
 		// iterate over requested IDs to detect if one does not have any concept returned
@@ -93,39 +93,35 @@ final class FhirValidateCodeRequest extends FhirRequest<ValidateCodeResult> {
 				// TODO what about alternative terms?
 				
 				if (!providedCoding.getDisplay().equals(concept.getTerm())) {
-					return ValidateCodeResult.builder()
-							.result(false)
-							.display(concept.getTerm())
-							.message(String.format("Incorrect display '%s' for code '%s'.", providedCoding.getDisplay(), providedCoding.getCodeValue()))
-							.build(); 
+					return new CodeSystemValidateCodeResultParameters()
+							.setResult(false)
+							.setDisplay(concept.getTerm())
+							.setMessage(String.format("Incorrect display '%s' for code '%s'.", providedCoding.getDisplay(), providedCoding.getCode())); 
 				}
 			}
 		}
 		
-		return ValidateCodeResult.builder().result(true).build();
+		return new CodeSystemValidateCodeResultParameters().setResult(true);
 	}
 	
-	private Set<Coding> collectCodingsToValidate(ValidateCodeRequest request) {
+	private Set<Coding> collectCodingsToValidate(CodeSystemValidateCodeParameters parameters) {
 		Set<Coding> codings = new HashSet<>(3);
 				
-		if (request.getCode() != null) {
-			Coding coding = Coding.builder()
-					.code(request.getCode())
-					.display(request.getDisplay())
-					.build();
+		if (parameters.getCode() != null) {
+			Coding coding = new Coding()
+					.setCode(parameters.getCode().getValue())
+					.setDisplay(parameters.getDisplay().getValue());
 			
 			codings.add(coding);
 		}
 				
-		if (request.getCoding() != null) {
-			codings.add(request.getCoding());
+		if (parameters.getCoding() != null) {
+			codings.add(parameters.getCoding());
 		}
 			
-		CodeableConcept codeableConcept = request.getCodeableConcept();
-		if (codeableConcept != null) {
-			if (codeableConcept.getCodings() != null) { 
-				codeableConcept.getCodings().forEach(c -> codings.add(c));
-			}
+		CodeableConcept codeableConcept = parameters.getCodeableConcept();
+		if (codeableConcept != null && codeableConcept.getCoding() != null) {
+			codeableConcept.getCoding().forEach(codings::add);
 		}
 		return codings;
 	}

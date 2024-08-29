@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,30 +15,32 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
+import org.hl7.fhir.r5.model.Parameters;
+
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
-import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
-import com.b2international.snowowl.fhir.core.model.codesystem.ValidateCodeRequest;
+import com.b2international.snowowl.fhir.core.operations.CodeSystemValidateCodeParameters;
+import com.b2international.snowowl.fhir.core.operations.CodeSystemValidateCodeResultParameters;
 
 /**
  * @since 8.0
  */
 public final class FhirValidateCodeRequestBuilder 
-		extends BaseRequestBuilder<FhirValidateCodeRequestBuilder, ServiceProvider, com.b2international.snowowl.fhir.core.model.ValidateCodeResult>
-		implements SystemRequestBuilder<ValidateCodeResult> {
+		extends BaseRequestBuilder<FhirValidateCodeRequestBuilder, ServiceProvider, CodeSystemValidateCodeResultParameters>
+		implements SystemRequestBuilder<CodeSystemValidateCodeResultParameters> {
 
-	private ValidateCodeRequest request;
+	private CodeSystemValidateCodeParameters parameters;
 	
-	public FhirValidateCodeRequestBuilder setRequest(ValidateCodeRequest request) {
-		this.request = request;
+	public FhirValidateCodeRequestBuilder setParameters(Parameters parameters) {
+		this.parameters = new CodeSystemValidateCodeParameters(parameters);
 		return getSelf();
 	}
 	
 	@Override
-	protected Request<ServiceProvider, ValidateCodeResult> doBuild() {
-		return new FhirValidateCodeRequest(request);
+	protected Request<ServiceProvider, CodeSystemValidateCodeResultParameters> doBuild() {
+		return new FhirValidateCodeRequest(parameters);
 	}
 
 }
