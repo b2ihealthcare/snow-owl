@@ -178,9 +178,21 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 			springDocCustomizers);
 	}
 	
+	// This is necessary at Spring startup for the mappingJackson2HttpMessageConverter bean
 	@Bean
 	@Scope(scopeName = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
 	public ObjectMapper objectMapper(@Autowired HttpServletRequest request) {
+		return objectMapperFromRequest(request);
+	}
+	
+	// Use this method in RepositoryValidationRestService to get the actual instance of ObjectMapper instead of a proxy
+	@Bean
+	@Scope(scopeName = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.INTERFACES)
+	public Provider<ObjectMapper> objectMapperProvider(@Autowired HttpServletRequest request) {
+		return () -> objectMapperFromRequest(request);
+	}
+
+	private ObjectMapper objectMapperFromRequest(HttpServletRequest request) {
 		return objectMappers.getUnchecked(toConfig(
 			extractBooleanQueryParameterValue(request, INCLUDE_NULL),
 			extractBooleanQueryParameterValue(request, PRETTY)
