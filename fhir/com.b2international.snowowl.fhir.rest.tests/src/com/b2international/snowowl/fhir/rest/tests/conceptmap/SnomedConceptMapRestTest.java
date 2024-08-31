@@ -28,7 +28,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.fhir.tests.FhirRestTest;
+import com.b2international.snowowl.fhir.rest.tests.FhirRestTest;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**

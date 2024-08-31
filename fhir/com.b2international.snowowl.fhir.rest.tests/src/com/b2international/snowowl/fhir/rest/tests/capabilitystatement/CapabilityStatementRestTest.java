@@ -24,7 +24,7 @@ import org.junit.Test;
 import com.b2international.snowowl.fhir.core.codesystems.CapabilityStatementKind;
 import com.b2international.snowowl.fhir.core.model.capabilitystatement.CapabilityStatement;
 import com.b2international.snowowl.fhir.core.model.operationdefinition.OperationDefinition;
-import com.b2international.snowowl.fhir.tests.FhirRestTest;
+import com.b2international.snowowl.fhir.rest.tests.FhirRestTest;
 
 /**
  * REST test cases for {@link CapabilityStatement} and the referenced {@link OperationDefinition}s.

@@ -45,22 +45,6 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 	SnomedUriParsingTest.class,
 	ExceptionTest.class,
 
-	//Data type tests
-	PrimitiveDataTypeTest.class,
-	CodingTest.class,
-	CodeableConcepTest.class,
-	IdentiferTest.class,
-	PeriodTest.class,
-	ReferenceTest.class,
-	ContactPointTest.class,
-	ContactDetailTest.class,
-	MetaTest.class,
-	NarrativeTest.class,
-	QuantityTest.class,
-	SimpleQuantityTest.class,
-	RangeTest.class,
-	SignatureTest.class,
-	
 	//parameterized
 	ParameterDeserializationTest.class,
 	ParameterSerializationTest.class,
@@ -75,77 +59,6 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 	SubsumptionRequestDeserializationTest.class,
 	ExpandValueSetRequestDeserializationTest.class,
 
-	//Domain models
-	TypedPropertySerializationTest.class,
-	
-	//Common
-	IssueTest.class,
-	OperationOutcomeTest.class,
-	BundleEntryTest.class,
-	BundleTest.class,
-	
-	//CodeSystem
-	CodeSystemTest.class,
-	ConceptPropertyTest.class,
-	FilterTest.class,
-	ConceptTest.class,
-	
-	//ValueSet
-	ValueSetConceptTest.class,
-	ValueSetFilterTest.class,
-	IncludeTest.class,
-	ComposeTest.class,
-	ExpansionParameterTest.class,
-	ContainsTest.class,
-	ExpansionTest.class,
-	QuantityUsageContextTest.class,
-	RangeUsageContextTest.class,
-	CodeableConceptUsageContextTest.class,
-	ValueSetTest.class,
-
-	//ConceptMap
-	UnMappedTest.class,
-	DependsOnTest.class,
-	TargetTest.class,
-	ConceptMapElementTest.class,
-	GroupTest.class,
-	ConceptMapTest.class,
-	
-	//StructureDefinition
-	DiscriminatorTest.class,
-	SlicingTest.class,
-	BaseTest.class,
-	BindingTest.class,
-	ExampleTest.class,
-	TypeTest.class,
-	ConstraintTest.class,
-	MappingElementTest.class,
-	ElementDefinitionTest.class,
-	StructureViewTest.class,
-	MappingTest.class,
-	StructureDefinitionTest.class,
-	
-	//CapabilityStatement
-	SupportedMessageTest.class,
-	EndpointTest.class,
-	MessagingTest.class,
-	DocumentTest.class,
-	ImplementationTest.class,
-	SoftwareTest.class,
-	SecurityTest.class,
-	InteractionTest.class,
-	ResourceTest.class,
-	SearchParamTest.class,
-	OperationTest.class,
-	RestTest.class,
-	CapabilityStatementTest.class,
-	
-	//OperationDefinition
-	com.b2international.snowowl.fhir.tests.domain.operationdefinition.BindingTest.class,
-	OverloadTest.class,
-	ParameterTest.class,
-	OperationDefinitionTest.class
-	
 })
 public class AllFhirTests {
 }

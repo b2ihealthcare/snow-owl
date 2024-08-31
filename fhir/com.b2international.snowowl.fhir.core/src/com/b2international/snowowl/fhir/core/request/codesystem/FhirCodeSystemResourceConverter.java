@@ -25,8 +25,6 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.fhir.core.model.codesystem.IConceptProperty;
-import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
 
 /**
  * @since 8.0

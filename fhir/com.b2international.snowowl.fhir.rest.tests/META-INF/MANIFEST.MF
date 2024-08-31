@@ -15,5 +15,6 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  jcl.over.slf4j;bundle-version="1.7.36"
 Import-Package: org.assertj.core.api;version="3.16.1",
  org.assertj.core.api.iterable;version="3.16.1",
+ org.hl7.fhir.r5.model;version="0.1.0",
  org.slf4j;version="2.0.0"
 Export-Package: com.b2international.snowowl.fhir.tests

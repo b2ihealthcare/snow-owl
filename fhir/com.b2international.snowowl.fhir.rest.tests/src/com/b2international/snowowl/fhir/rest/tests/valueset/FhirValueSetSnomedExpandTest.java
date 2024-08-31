@@ -25,7 +25,7 @@ import static org.hamcrest.Matchers.hasSize;
 import org.junit.Test;
 
 import com.b2international.commons.json.Json;
-import com.b2international.snowowl.fhir.tests.FhirRestTest;
+import com.b2international.snowowl.fhir.rest.tests.FhirRestTest;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 

@@ -30,7 +30,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
-import com.b2international.snowowl.fhir.tests.FhirRestTest;
+import com.b2international.snowowl.fhir.rest.tests.FhirRestTest;
 
 /**
  * CodeSystem $validate-code operation for FHIR code systems REST end-point test cases

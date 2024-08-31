@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.rest.tests.codesystem;
 
-import static com.b2international.snowowl.fhir.tests.FhirRestTest.Endpoints.CODESYSTEM_LOOKUP;
+import static com.b2international.snowowl.fhir.rest.tests.FhirRestTest.Endpoints.CODESYSTEM_LOOKUP;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -25,7 +25,7 @@ import org.junit.Test;
 
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.tests.FhirRestTest;
+import com.b2international.snowowl.fhir.rest.tests.FhirRestTest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;

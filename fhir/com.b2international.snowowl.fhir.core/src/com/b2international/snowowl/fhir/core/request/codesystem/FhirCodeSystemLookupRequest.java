@@ -34,7 +34,6 @@ import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.model.codesystem.*;
 import com.b2international.snowowl.fhir.core.operations.CodeSystemLookupParameters;
 import com.b2international.snowowl.fhir.core.operations.CodeSystemLookupResultParameters;
 import com.fasterxml.jackson.annotation.JsonProperty;

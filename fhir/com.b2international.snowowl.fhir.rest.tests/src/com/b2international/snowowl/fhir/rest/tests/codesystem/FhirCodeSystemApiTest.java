@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.fhir.rest.tests.codesystem;
 
-import static com.b2international.snowowl.fhir.tests.FhirRestTest.Endpoints.CODESYSTEM;
-import static com.b2international.snowowl.fhir.tests.FhirRestTest.Endpoints.CODESYSTEM_ID;
+import static com.b2international.snowowl.fhir.rest.tests.FhirRestTest.Endpoints.CODESYSTEM;
+import static com.b2international.snowowl.fhir.rest.tests.FhirRestTest.Endpoints.CODESYSTEM_ID;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.*;
 
@@ -28,7 +28,7 @@ import org.junit.Test;
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.tests.FhirRestTest;
+import com.b2international.snowowl.fhir.rest.tests.FhirRestTest;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 

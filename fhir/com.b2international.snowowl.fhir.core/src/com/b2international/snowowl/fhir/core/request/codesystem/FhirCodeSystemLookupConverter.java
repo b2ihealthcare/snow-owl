@@ -22,7 +22,6 @@ import org.hl7.fhir.r5.model.CodeSystem;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.Concept;
-import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
 import com.b2international.snowowl.fhir.core.operations.CodeSystemLookupParameters;
 
 /**

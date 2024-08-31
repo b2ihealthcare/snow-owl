@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.rest.tests.codesystem;
 
-import static com.b2international.snowowl.fhir.tests.FhirRestTest.Endpoints.CODESYSTEM_SUBSUMES;
+import static com.b2international.snowowl.fhir.rest.tests.FhirRestTest.Endpoints.CODESYSTEM_SUBSUMES;
 import static com.b2international.snowowl.fhir.tests.FhirTestConcepts.BACTERIA;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -23,7 +23,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult.SubsumptionType;
-import com.b2international.snowowl.fhir.tests.FhirRestTest;
+import com.b2international.snowowl.fhir.rest.tests.FhirRestTest;
 
 /**
  * CodeSystem $subsumes operation REST end-point test cases

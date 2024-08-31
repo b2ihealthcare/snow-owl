@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.tests;
+package com.b2international.snowowl.fhir.rest.tests;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -21,6 +21,7 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 
+import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 
@@ -31,7 +32,7 @@ import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequest
  * 
  * @since 6.9
  */
-public class FhirRestTest extends FhirTest {
+public abstract class FhirRestTest extends FhirTest {
 	
 	protected static final String APPLICATION_FHIR_JSON = "application/fhir+json;charset=utf-8";
 	
