@@ -20,6 +20,7 @@ import java.util.List;
 import org.hl7.fhir.r5.model.CodeSystem.ConceptDefinitionDesignationComponent;
 import org.hl7.fhir.r5.model.CodeSystem.ConceptPropertyComponent;
 import org.hl7.fhir.r5.model.Parameters;
+import org.hl7.fhir.r5.model.StringType;
 
 /**
  * @since 9.2
@@ -33,21 +34,50 @@ public final class CodeSystemLookupResultParameters extends BaseParameters {
 	public CodeSystemLookupResultParameters(Parameters parameters) {
 		super(parameters);
 	}
+	
+	public StringType getName() {
+		return getParameterValue("name", Parameters.ParametersParameterComponent::getValueStringType);
+	}
 
-	public void setName(String name) {
+	public CodeSystemLookupResultParameters setName(String name) {
+		return setName(new StringType(name));
+	}
+	
+	public CodeSystemLookupResultParameters setName(StringType name) {
 		getParameters().addParameter("name", name);
+		return this;
+	}
+	
+	public StringType getDisplay() {
+		return getParameterValue("display", Parameters.ParametersParameterComponent::getValueStringType);
 	}
 
-	public void setDisplay(String display) {
+	public CodeSystemLookupResultParameters setDisplay(String display) {
+		return setDisplay(new StringType(display));
+	}
+	
+	public CodeSystemLookupResultParameters setDisplay(StringType display) {
 		getParameters().addParameter("display", display);
+		return this;
 	}
 
-	public void setVersion(String version) {
+	public StringType getVersionDisplay() {
+		return getParameterValue("version", Parameters.ParametersParameterComponent::getValueStringType);
+	}
+	
+	public CodeSystemLookupResultParameters setVersion(String version) {
+		return setVersion(new StringType(version));
+	}
+	
+	public CodeSystemLookupResultParameters setVersion(StringType version) {
 		getParameters().addParameter("version", version);
+		return this;
 	}
 
-	public void setDesignation(List<ConceptDefinitionDesignationComponent> designations) {
-		if (designations == null) return;
+	public CodeSystemLookupResultParameters setDesignation(List<ConceptDefinitionDesignationComponent> designations) {
+		if (designations == null) {
+			return this;
+		}
 		
 		designations.stream()
 			.map(designation -> {
@@ -84,10 +114,14 @@ public final class CodeSystemLookupResultParameters extends BaseParameters {
 				return designationParameter; 
 			})
 			.forEach(getParameters()::addParameter);
+		
+		return this;
 	}
 
-	public void setProperty(List<ConceptPropertyComponent> properties) {
-		if (properties == null) return;
+	public CodeSystemLookupResultParameters setProperty(List<ConceptPropertyComponent> properties) {
+		if (properties == null) {
+			return this;
+		}
 		
 		properties.stream()
 			.map(property -> {
@@ -110,6 +144,8 @@ public final class CodeSystemLookupResultParameters extends BaseParameters {
 				return propertyParameter; 
 			})
 			.forEach(getParameters()::addParameter);
-	}
 	
+		return this;
+	}
+
 }

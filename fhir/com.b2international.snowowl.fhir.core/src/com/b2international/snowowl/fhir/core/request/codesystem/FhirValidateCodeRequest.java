@@ -24,6 +24,7 @@ import org.hl7.fhir.r5.model.CodeSystem;
 import org.hl7.fhir.r5.model.CodeableConcept;
 import org.hl7.fhir.r5.model.Coding;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Concept;
@@ -63,7 +64,7 @@ final class FhirValidateCodeRequest extends FhirRequest<CodeSystemValidateCodeRe
 		// extract locales from the request
 		Map<String, Concept> conceptsById = CodeSystemRequests.prepareSearchConcepts()
 				.setLimit(codingsById.keySet().size())
-				.filterByCodeSystemUri(codeSystem.getResourceURI())
+				.filterByCodeSystemUri(new ResourceURI(codeSystem.getId()))
 				.filterByIds(codingsById.keySet())
 				.setLocales(extractLocales(parameters.getDisplayLanguage()))
 				.buildAsync()

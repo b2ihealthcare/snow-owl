@@ -38,6 +38,11 @@ public final class FhirCodeSystemLookupRequestBuilder
 		return getSelf();
 	}
 	
+	public FhirCodeSystemLookupRequestBuilder setParameters(CodeSystemLookupParameters parameters) {
+		this.parameters = parameters;
+		return getSelf();
+	}
+	
 	@Override
 	protected Request<ServiceProvider, CodeSystemLookupResultParameters> doBuild() {
 		return new FhirCodeSystemLookupRequest(parameters);

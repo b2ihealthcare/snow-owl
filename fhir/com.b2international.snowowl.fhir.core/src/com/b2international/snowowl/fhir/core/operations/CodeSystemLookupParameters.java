@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.operations;
 
-import java.util.List;
+import java.util.Date;
 
 import org.hl7.fhir.r5.model.*;
 
@@ -24,6 +24,10 @@ import org.hl7.fhir.r5.model.*;
  */
 public final class CodeSystemLookupParameters extends BaseParameters {
 
+	public CodeSystemLookupParameters() {
+		this(new Parameters());
+	}
+	
 	public CodeSystemLookupParameters(Parameters parameters) {
 		super(parameters);
 	}
@@ -36,7 +40,7 @@ public final class CodeSystemLookupParameters extends BaseParameters {
 //		}
 		return getParameterValue("code", Parameters.ParametersParameterComponent::getValueCodeType);
 	}
-
+	
 	public UriType getSystem() {
 //		if (system != null) {
 //			return system.getUriValue();
@@ -61,9 +65,57 @@ public final class CodeSystemLookupParameters extends BaseParameters {
 	public CodeType getDisplayLanguage() {
 		return getParameterValue("displayLanguage", Parameters.ParametersParameterComponent::getValueCodeType);
 	}
-
-	public List<CodeType> getProperty() {
-		return getParameters("property").stream().map(Parameters.ParametersParameterComponent::getValueCodeType).toList();
+	
+	public CodeSystemLookupParameters setCode(String code) {
+		return setCode(new CodeType(code));
 	}
+	
+	public CodeSystemLookupParameters setCode(CodeType code) {
+		getParameters().addParameter("code", code);
+		return this;
+	}
+	
+	public CodeSystemLookupParameters setSystem(String system) {
+		return setSystem(new UriType(system));
+	}
+	
+	public CodeSystemLookupParameters setSystem(UriType system) {
+		getParameters().addParameter("system", system);
+		return this;
+	}
+	
+	public CodeSystemLookupParameters setVersion(String version) {
+		return setVersion(new StringType(version));
+	}
+	
+	public CodeSystemLookupParameters setVersion(StringType version) {
+		getParameters().addParameter("version", version);
+		return this;
+	}
+	
+	public CodeSystemLookupParameters setCoding(Coding coding) {
+		getParameters().addParameter("coding", coding);
+		return this;
+	}
+	
+	public CodeSystemLookupParameters setDate(Date date) {
+		return setDate(new DateType(date));
+	}
+	
+	public CodeSystemLookupParameters setDate(DateType date) {
+		getParameters().addParameter("date", date);
+		return this;
+	}
+	
+	public CodeSystemLookupParameters setDisplayLanguage(String displayLanguage) {
+		return setDisplayLanguage(new CodeType(displayLanguage));
+	}
+	
+	public CodeSystemLookupParameters setDisplayLanguage(CodeType displayLanguage) {
+		getParameters().addParameter("displayLanguage", displayLanguage);
+		return this;
+	}
+
+	// TODO add properties
 
 }

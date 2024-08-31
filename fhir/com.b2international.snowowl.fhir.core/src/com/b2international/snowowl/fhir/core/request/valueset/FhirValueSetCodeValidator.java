@@ -18,8 +18,8 @@ package com.b2international.snowowl.fhir.core.request.valueset;
 import org.hl7.fhir.r5.model.ValueSet;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.operations.ValueSetValidateCodeParameters;
+import com.b2international.snowowl.fhir.core.operations.ValueSetValidateCodeResultParameters;
 
 /**
  * @since 8.0
@@ -27,7 +27,7 @@ import com.b2international.snowowl.fhir.core.operations.ValueSetValidateCodePara
 @FunctionalInterface
 public interface FhirValueSetCodeValidator {
 
-	FhirValueSetCodeValidator NOOP = (context, valueSet, request) -> ValidateCodeResult.builder().message("N/A").build();
+	FhirValueSetCodeValidator NOOP = (context, valueSet, request) -> new ValueSetValidateCodeResultParameters().setMessage("N/A");
 	
 	/**
 	 * Validates whether the code described in the given {@link ValueSetValidateCodeParameters} conforms to the {@link ValueSet} or not.
@@ -37,6 +37,6 @@ public interface FhirValueSetCodeValidator {
 	 * @param parameters
 	 * @return the code validation result, never <code>null</code>.
 	 */
-	ValidateCodeResult validateCode(ServiceProvider context, ValueSet valueSet, ValueSetValidateCodeParameters request);
+	ValueSetValidateCodeResultParameters validateCode(ServiceProvider context, ValueSet valueSet, ValueSetValidateCodeParameters request);
 	
 }

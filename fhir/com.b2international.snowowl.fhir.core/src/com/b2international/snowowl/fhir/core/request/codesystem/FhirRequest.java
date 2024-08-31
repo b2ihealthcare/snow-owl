@@ -61,7 +61,7 @@ public abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 					} else {
 						return fetchCodeSystemByUrl(context, system)
 								// if there is a codesystem with the specified URL then construct a versioned form using its official URL schema from its tooling
-								.flatMap((cs) -> fetchCodeSystemByUrl(context, context.service(RepositoryManager.class).get(cs.getUserData("toolingId")).service(ResourceURLSchemaSupport.class).withVersion(system, version, null)));
+								.flatMap((cs) -> fetchCodeSystemByUrl(context, context.service(RepositoryManager.class).get((String) cs.getUserData("toolingId")).service(ResourceURLSchemaSupport.class).withVersion(system, version, null)));
 					}
 				})
 				.orElseThrow(() -> new NotFoundException("CodeSystem", system));
