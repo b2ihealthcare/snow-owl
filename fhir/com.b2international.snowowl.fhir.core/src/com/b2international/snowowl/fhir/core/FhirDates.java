@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2018-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import java.text.ParseException;
 import java.util.Date;
 
 import org.apache.commons.lang3.time.DateUtils;
+import org.hl7.fhir.r4.model.codesystems.OperationOutcomeCode;
 
-import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 
@@ -65,7 +65,7 @@ public class FhirDates {
 		try {
 			return DateUtils.parseDate(dateString, DATETIME_PATTERNS);
 		} catch (NullPointerException | ParseException e) {
-			throw FhirException.createFhirError(String.format("Invalid date string '%s'. Reason: %s", dateString, e.getMessage()), OperationOutcomeCode.MSG_PARAM_INVALID);
+			throw new FhirException(String.format("Invalid date string '%s'. Reason: %s", dateString, e.getMessage()), OperationOutcomeCode.MSGPARAMINVALID);
 		}
 	}
 

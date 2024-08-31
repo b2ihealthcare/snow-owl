@@ -16,18 +16,15 @@
 package com.b2international.snowowl.fhir.core.exceptions;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
-import jakarta.validation.ConstraintViolation;
+import org.hl7.fhir.r4.model.codesystems.OperationOutcomeCode;
+import org.hl7.fhir.r5.model.OperationOutcome.IssueSeverity;
+import org.hl7.fhir.r5.model.OperationOutcome.IssueType;
+import org.hl7.fhir.r5.model.OperationOutcome.OperationOutcomeIssueComponent;
 
-import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
-import com.b2international.snowowl.fhir.core.codesystems.IssueType;
-import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
-import com.b2international.snowowl.fhir.core.model.Issue;
-import com.b2international.snowowl.fhir.core.model.OperationOutcome;
-import com.b2international.snowowl.fhir.core.model.OperationOutcome.Builder;
-import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import jakarta.validation.ConstraintViolation;
 
 /**
  * @since 6.3
@@ -41,72 +38,31 @@ public final class ValidationException extends BadRequestException {
 	public ValidationException(Collection<? extends ConstraintViolation<?>> violations) {
 		
 		super(String.format("%s validation error%s", violations.size(), violations.size() == 1 ? "" : "s"),
-				OperationOutcomeCode.MSG_PARAM_INVALID, null);
+				OperationOutcomeCode.MSGPARAMINVALID, null);
 		
-		this.violations = violations;
-	}
-
-	/**
-	 * Creates an OperationOutcome representation from this exception. Useful when
-	 * the exception must be propagated through protocols where Java serialization
-	 * cannot be used (eg. HTTP), or the possible receiver cannot understand
-	 * serialized Java class and object byte sequences.
-	 * 
-	 * @return {@link OperationOutcome} representation of this
-	 *         {@link FhirException}, never <code>null</code>.
-	 */
-	@Override
-	public OperationOutcome toOperationOutcome() {
-
 		if (violations.isEmpty()) {
 			throw new IllegalArgumentException("There are no violations to report.");
 		}
-		
-		Builder outcomeBuilder = OperationOutcome.builder();
-		
-		for (ConstraintViolation<?> violation : violations) {
-				
-			String issueDetails = String.format(getOperationOutcomeCode().getDisplayName(), violation.getPropertyPath());
-			StringBuilder builder = new StringBuilder(issueDetails);
-			builder.append(" [");
-			builder.append(violation.getInvalidValue());
-			builder.append("]. Violation: ");
-			builder.append(violation.getMessage());
-			builder.append(".");
-			
-			Coding coding = Coding.builder().
-				code(getOperationOutcomeCode().getCodeValue())
-				.system(OperationOutcomeCode.CODE_SYSTEM_URI)
-				.display(builder.toString())
-				.build();
-	
-			CodeableConcept codeableConcept = CodeableConcept.builder()
-					.addCoding(coding)
-					.text(builder.toString())
-					.build();
-	
-			String location = violation.getRootBean().getClass().getSimpleName() 
-					+ "." + violation.getPropertyPath().toString();
-			
-			Issue issue = Issue.builder()
-					.severity(IssueSeverity.ERROR)
-					.code(IssueType.INVALID)
-					.details(codeableConcept)
-					.diagnostics(getMessage())
-					.addLocation(location)
-					.build();
-	
-				outcomeBuilder.addIssue(issue);
-			}
-		
-		return outcomeBuilder.build();
-	}
-	
-	@Override
-	public OperationOutcomeCode getOperationOutcomeCode() {
-		return OperationOutcomeCode.MSG_PARAM_INVALID;
+		this.violations = violations;
 	}
 
+	@Override
+	protected List<OperationOutcomeIssueComponent> getAdditionalIssues() {
+		return violations.stream().map(violation -> {
+			String issueDetails = String.format(getOperationOutcomeCode().getDisplay(), violation.getPropertyPath());
+			StringBuilder message = new StringBuilder(issueDetails);
+			message.append(" [");
+			message.append(violation.getInvalidValue());
+			message.append("]. Violation: ");
+			message.append(violation.getMessage());
+			message.append(".");
+			
+			String location = String.join(".", violation.getRootBean().getClass().getSimpleName(), violation.getPropertyPath().toString()); 
+			
+			return buildIssue(IssueSeverity.ERROR, IssueType.INVALID, message.toString(), getOperationOutcomeCode(), location);
+		}).toList();
+	}
+	
 	/**
 	 * @return the violations
 	 */

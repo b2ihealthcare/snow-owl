@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,10 @@
  */
 package com.b2international.snowowl.fhir.core.exceptions;
 
-import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
-import com.b2international.snowowl.fhir.core.codesystems.IssueType;
-import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
+import org.hl7.fhir.r4.model.codesystems.OperationOutcomeCode;
+import org.hl7.fhir.r5.model.OperationOutcome;
+import org.hl7.fhir.r5.model.OperationOutcome.IssueSeverity;
+import org.hl7.fhir.r5.model.OperationOutcome.IssueType;
 
 /**
  * Thrown when a request contains incorrect parameters or is otherwise malformed.
@@ -29,7 +30,7 @@ public class BadRequestException extends FhirException {
 	private static final long serialVersionUID = 1L;
 	
 	public BadRequestException(final String message, final OperationOutcomeCode operationOutcomeCode, String location) {
-		super(IssueSeverity.ERROR, IssueType.INVALID, message, operationOutcomeCode, location);
+		super(OperationOutcome.IssueSeverity.ERROR, OperationOutcome.IssueType.INVALID, message, operationOutcomeCode, location);
 	}
 	
 	/**
@@ -38,7 +39,7 @@ public class BadRequestException extends FhirException {
 	 * @param location
 	 */
 	public BadRequestException(final String message, String location) {
-		super(IssueSeverity.ERROR, IssueType.INVALID, message, OperationOutcomeCode.MSG_PARAM_INVALID, location);
+		super(IssueSeverity.ERROR, IssueType.INVALID, message, OperationOutcomeCode.MSGPARAMINVALID, location);
 	}
 	
 	/**
@@ -46,7 +47,7 @@ public class BadRequestException extends FhirException {
 	 * @param message
 	 */
 	public BadRequestException(final String message) {
-		super(IssueSeverity.ERROR, IssueType.INVALID, message, OperationOutcomeCode.MSG_PARAM_INVALID);
+		super(IssueSeverity.ERROR, IssueType.INVALID, message, OperationOutcomeCode.MSGPARAMINVALID);
 	}
 	
 	
