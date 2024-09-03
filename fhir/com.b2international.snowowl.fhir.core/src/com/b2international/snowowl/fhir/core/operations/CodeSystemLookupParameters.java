@@ -16,13 +16,33 @@
 package com.b2international.snowowl.fhir.core.operations;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 import org.hl7.fhir.r5.model.*;
+import org.hl7.fhir.r5.model.Parameters.ParametersParameterComponent;
+
+import com.b2international.commons.collections.Collections3;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 9.2
  */
 public final class CodeSystemLookupParameters extends BaseParameters {
+
+	
+	public static final String PROPERTY_SYSTEM = "system";
+	public static final String PROPERTY_NAME = "name";
+	public static final String PROPERTY_VERSION = "version";
+	public static final String PROPERTY_DISPLAY = "display";
+	public static final String PROPERTY_DESIGNATION = "designation";
+	public static final String PROPERTY_PARENT = "parent";
+	public static final String PROPERTY_CHILD = "child";
+	
+	//how to represent LANG.X here, just lang or lang.*?
+	public static final Set<String> OFFICIAL_R5_PROPERTY_VALUES = ImmutableSet.of(PROPERTY_SYSTEM, PROPERTY_NAME, PROPERTY_VERSION, PROPERTY_DISPLAY, PROPERTY_DESIGNATION, PROPERTY_PARENT, PROPERTY_CHILD);
 
 	public CodeSystemLookupParameters() {
 		this(new Parameters());
@@ -47,7 +67,7 @@ public final class CodeSystemLookupParameters extends BaseParameters {
 //		} else if (coding != null && coding.getSystem() != null) {
 //			return coding.getSystem().getUriValue();
 //		}
-		return getParameterValue("system", Parameters.ParametersParameterComponent::getValueUriType);
+		return getParameterValue(PROPERTY_SYSTEM, Parameters.ParametersParameterComponent::getValueUriType);
 	}
 
 	public StringType getVersion() {
@@ -80,7 +100,7 @@ public final class CodeSystemLookupParameters extends BaseParameters {
 	}
 	
 	public CodeSystemLookupParameters setSystem(UriType system) {
-		getParameters().addParameter("system", system);
+		getParameters().addParameter(PROPERTY_SYSTEM, system);
 		return this;
 	}
 	
@@ -117,5 +137,37 @@ public final class CodeSystemLookupParameters extends BaseParameters {
 	}
 
 	// TODO add properties
+	
+	public List<StringType> getProperty() {
+		return getParameters("property").stream().map(ParametersParameterComponent::getValueStringType).toList();
+	}
+	
+	/**
+	 * Helper to get access to the raw property values.
+	 * @return the list of actual values instead of a list with wrapped {@link StringType} instances.
+	 */
+	@JsonIgnore
+	public List<String> getPropertyValues() {
+		return getParameters("property").stream().map(ParametersParameterComponent::getValueStringType).map(StringType::getValue).toList();
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public CodeSystemLookupParameters setProperty(List propertyValues) {
+		Collections3.toImmutableList(propertyValues).forEach(propertyValue -> {
+			if (propertyValue instanceof StringType) {
+				getParameters().addParameter("property", (StringType) propertyValue);
+			} else if (propertyValue instanceof String) {
+				getParameters().addParameter("property", new StringType((String) propertyValue));
+			} else {
+				throw new BadRequestException(String.format("Value type '%s' is not supported in property values. Need to be String or StringType.", propertyValue));
+			}
+		});
+		return this;
+	}
+	
+	public boolean isPropertyRequested(String propertyValue) {
+		return hasParameterWithValue("property", Parameters.ParametersParameterComponent::getValueStringType, propertyValue);
+	}
+
 
 }

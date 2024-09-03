@@ -15,16 +15,11 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.hl7.fhir.r5.model.CodeSystem;
-import org.hl7.fhir.r5.model.Parameters;
-
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.RepositoryManager;
@@ -36,8 +31,6 @@ import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.operations.CodeSystemLookupParameters;
 import com.b2international.snowowl.fhir.core.operations.CodeSystemLookupResultParameters;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.common.collect.Sets;
 
 /**
@@ -56,8 +49,6 @@ import com.google.common.collect.Sets;
 final class FhirCodeSystemLookupRequest extends FhirRequest<CodeSystemLookupResultParameters> {
 
 	private static final long serialVersionUID = 1L;
-	
-	private static final Set<String> LOOKUP_REQUEST_PROPS = Arrays.stream(SupportedCodeSystemRequestProperties.values()).map(SupportedCodeSystemRequestProperties::getCodeValue).collect(Collectors.toSet());
 	
 	private final CodeSystemLookupParameters parameters;
 
@@ -101,20 +92,20 @@ final class FhirCodeSystemLookupRequest extends FhirRequest<CodeSystemLookupResu
 	}
 	
 	private void validateRequestedProperties(CodeSystem codeSystem) {
-		final Set<String> requestedProperties = parameters.getPropertyCodes();
+		final Set<String> requestedProperties = Set.copyOf(parameters.getPropertyValues());
 		// first check if any of the properties are lookup request properties
-		final Set<String> nonLookupProperties = Sets.difference(requestedProperties, LOOKUP_REQUEST_PROPS);
+		final Set<String> nonLookupProperties = Sets.difference(requestedProperties, CodeSystemLookupParameters.OFFICIAL_R5_PROPERTY_VALUES);
 		
 		// second check if the remaining unsupported properties supported by the CodeSystem either via full URL
 		final Set<String> supportedProperties = codeSystem.getProperty() == null 
 				? Collections.emptySet() 
-				: codeSystem.getProperty().stream().map(SupportedConceptProperty::getUri).map(Uri::getUriValue).collect(Collectors.toSet());
+				: codeSystem.getProperty().stream().map(CodeSystem.PropertyComponent::getUri).collect(Collectors.toSet());
 		final Set<String> unsupportedProperties = Sets.difference(nonLookupProperties, supportedProperties);
 		
 		// or via their code only
 		final Set<String> supportedCodes = codeSystem.getProperty() == null 
 				? Collections.emptySet() 
-				: codeSystem.getProperty().stream().map(SupportedConceptProperty::getCodeValue).collect(Collectors.toSet());
+				: codeSystem.getProperty().stream().map(CodeSystem.PropertyComponent::getCode).collect(Collectors.toSet());
 		final Set<String> unsupportedCodes = Sets.difference(unsupportedProperties, supportedCodes);
 		
 		if (!unsupportedCodes.isEmpty()) {

@@ -48,4 +48,9 @@ public abstract class BaseParameters {
 		return getParameter(name).map(parameterValueExtractor).orElse(null);
 	}
 	
+	
+	public <T> boolean hasParameterWithValue(String name, Function<Parameters.ParametersParameterComponent, T> parameterValueExtractor, T expectedValue) {
+		return getParameters(name).stream().map(parameterValueExtractor).filter(expectedValue::equals).findFirst().isPresent();
+	}
+	
 }

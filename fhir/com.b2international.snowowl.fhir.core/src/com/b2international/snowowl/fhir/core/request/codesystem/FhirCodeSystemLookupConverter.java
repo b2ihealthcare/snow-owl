@@ -56,7 +56,7 @@ public interface FhirCodeSystemLookupConverter {
 	 * @return
 	 */
 	default List<CodeSystem.ConceptDefinitionDesignationComponent> expandDesignations(ServiceProvider context, CodeSystem codeSystem, Concept concept, CodeSystemLookupParameters parameters, String acceptLanguage) {
-		if (parameters.isPropertyRequested(SupportedCodeSystemRequestProperties.DESIGNATION)) {
+		if (parameters.isPropertyRequested("designation")) {
 			return concept.getDescriptions()
 				.stream()
 				.map(description -> new CodeSystem.ConceptDefinitionDesignationComponent().setValue(description.getTerm()).setLanguage(description.getLanguage()))

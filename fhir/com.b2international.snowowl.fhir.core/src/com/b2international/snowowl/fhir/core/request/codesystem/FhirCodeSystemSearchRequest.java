@@ -109,10 +109,7 @@ final class FhirCodeSystemSearchRequest extends FhirResourceSearchRequest<CodeSy
 		
 		includeIfFieldSelected(R5ObjectFields.CodeSystem.FILTER, () -> converter.expandFilters(context, resourceURI, locales()), entry::setFilter);
 		includeIfFieldSelected(R5ObjectFields.CodeSystem.PROPERTY, () -> converter.expandProperties(context, resourceURI, locales()), properties -> {
-			properties.stream()
-				.filter(p -> !(SupportedCodeSystemRequestProperties.class.isInstance(p)))
-				.map(prop -> SupportedConceptProperty.builder(prop).build())
-				.forEach(entry::addProperty);
+			properties.forEach(entry::addProperty);
 		});
 	}
 }

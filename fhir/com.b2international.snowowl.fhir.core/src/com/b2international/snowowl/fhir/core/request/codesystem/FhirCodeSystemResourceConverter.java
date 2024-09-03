@@ -20,11 +20,13 @@ import java.util.List;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.hl7.fhir.r5.model.CodeSystem;
+import org.hl7.fhir.r5.model.CodeSystem.PropertyType;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.fhir.core.operations.CodeSystemLookupParameters;
 
 /**
  * @since 8.0
@@ -82,7 +84,10 @@ public interface FhirCodeSystemResourceConverter {
 	 */
 	@OverridingMethodsMustInvokeSuper
 	default List<CodeSystem.PropertyComponent> expandProperties(ServiceProvider context, ResourceURI resourceURI, List<ExtendedLocale> locales) {
-		return List.of(SupportedCodeSystemRequestProperties.values());
+		return CodeSystemLookupParameters.OFFICIAL_R5_PROPERTY_VALUES.stream().map(propertyValue -> {
+			// TODO fix typing of properties?
+			return new CodeSystem.PropertyComponent(propertyValue, PropertyType.STRING);
+		}).toList();
 	}
 	
 }
