@@ -28,8 +28,8 @@ import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.uri.ResourceURLSchemaSupport;
+import com.b2international.snowowl.fhir.core.Summary;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
-import com.b2international.snowowl.fhir.core.search.Summary;
 import com.google.common.base.Strings;
 
 /**

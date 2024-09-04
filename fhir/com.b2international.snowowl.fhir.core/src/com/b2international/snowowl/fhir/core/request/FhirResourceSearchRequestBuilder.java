@@ -26,9 +26,9 @@ import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
+import com.b2international.snowowl.fhir.core.Summary;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.request.FhirResourceSearchRequest.OptionKey;
-import com.b2international.snowowl.fhir.core.search.Summary;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 

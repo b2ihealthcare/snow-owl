@@ -12,8 +12,7 @@ Export-Package: com.b2international.snowowl.fhir.core,
  com.b2international.snowowl.fhir.core.request.bundle,
  com.b2international.snowowl.fhir.core.request.codesystem,
  com.b2international.snowowl.fhir.core.request.conceptmap,
- com.b2international.snowowl.fhir.core.request.valueset,
- com.b2international.snowowl.fhir.core.search
+ com.b2international.snowowl.fhir.core.request.valueset
 Import-Package: jakarta.validation;version="3.0.2",
  jakarta.validation.constraints;version="3.0.2",
  org.hl7.fhir.exceptions;version="0.1.0",

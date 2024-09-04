@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.time.LocalDate;
 
+import org.hl7.fhir.r5.model.CodeSystem;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -37,8 +38,6 @@ import com.b2international.commons.http.AcceptLanguageHeader;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.b2international.snowowl.fhir.core.model.converter.CodeSystemConverter_50;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
 
@@ -146,7 +145,7 @@ public class FhirCodeSystemController extends AbstractFhirController {
 		
 	) {
 		
-		final var fhirCodeSystem = toFhirResource(requestBody, contentType, org.linuxforhealth.fhir.model.r5.resource.CodeSystem.class);
+		final var fhirCodeSystem = toFhirResource(requestBody, contentType, CodeSystem.class);
 		final CodeSystem soCodeSystem = CodeSystemConverter_50.INSTANCE.toInternal(fhirCodeSystem);
 
 		// Ignore the input identifier on purpose and assign one locally

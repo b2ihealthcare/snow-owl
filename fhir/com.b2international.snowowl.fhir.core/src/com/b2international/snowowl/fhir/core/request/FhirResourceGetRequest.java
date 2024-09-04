@@ -22,8 +22,8 @@ import org.hl7.fhir.r5.model.Bundle;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequest;
+import com.b2international.snowowl.fhir.core.Summary;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.search.Summary;
 
 /**
  * @since 8.0 
