@@ -28,8 +28,6 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Description;
-import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
-import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
 import com.b2international.snowowl.fhir.core.operations.CodeSystemLookupParameters;
 import com.b2international.snowowl.fhir.core.request.codesystem.FhirCodeSystemLookupConverter;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
@@ -49,8 +47,8 @@ public final class SnomedFhirCodeSystemLookupConverter implements FhirCodeSystem
 
 	@Override
 	public String configureConceptExpand(CodeSystemLookupParameters request) {
-		boolean requestedChild = request.containsProperty(CommonConceptProperties.CHILD.getCode());
-		boolean requestedParent = request.containsProperty(CommonConceptProperties.PARENT.getCode());
+		boolean requestedChild = request.isPropertyRequested(CodeSystemLookupParameters.PROPERTY_CHILD);
+		boolean requestedParent = request.isPropertyRequested(CodeSystemLookupParameters.PROPERTY_PARENT);
 		String expandDescendants = requestedChild ? ",descendants(direct:true,expand(pt()))" : "";
 		String expandAncestors = requestedParent ? ",ancestors(direct:true,expand(pt()))" : "";
 		return String.format("descriptions(expand(type(expand(pt()))),sort:\"typeId,term\"),pt()%s%s", expandDescendants, expandAncestors);
@@ -59,7 +57,7 @@ public final class SnomedFhirCodeSystemLookupConverter implements FhirCodeSystem
 	@Override
 	public List<CodeSystem.ConceptDefinitionDesignationComponent> expandDesignations(ServiceProvider context, CodeSystem codeSystem, Concept concept, CodeSystemLookupParameters parameters, String acceptLanguage) {
 		SnomedConcept snomedConcept = concept.getInternalConceptAs();
-		if (request.isPropertyRequested(SupportedCodeSystemRequestProperties.DESIGNATION)) {
+		if (parameters.isPropertyRequested(CodeSystemLookupParameters.PROPERTY_DESIGNATION)) {
 			final SortedSet<Description> alternativeTerms = SnomedConceptSearchRequestEvaluator.generateGenericDescriptions(snomedConcept.getDescriptions());
 			// convert to Designation model
 			final List<CodeSystem.ConceptDefinitionDesignationComponent> designations = new ArrayList<>(alternativeTerms.size());
@@ -109,24 +107,32 @@ public final class SnomedFhirCodeSystemLookupConverter implements FhirCodeSystem
 		}
 		
 		// Optionally requested properties
-		boolean requestedChild = parameters.containsProperty(CommonConceptProperties.CHILD.getCode());
-		boolean requestedParent = parameters.containsProperty(CommonConceptProperties.PARENT.getCode());
+		boolean requestedChild = parameters.isPropertyRequested(CodeSystemLookupParameters.PROPERTY_CHILD);
+		boolean requestedParent = parameters.isPropertyRequested(CodeSystemLookupParameters.PROPERTY_PARENT);
 		
 			
 		if (requestedChild && snomedConcept.getDescendants() != null) {
 			for (SnomedConcept child : snomedConcept.getDescendants()) {
-				properties.add(CommonConceptProperties.CHILD.propertyOf(child.getId(), SnomedDisplayTermType.PT.getLabel(child)));
+				properties.add(new CodeSystem.ConceptPropertyComponent()
+						.setCode(CodeSystemLookupParameters.PROPERTY_CHILD)
+						.setValue(new CodeType(child.getId()))
+						// TODO set description to child PT SnomedDisplayTermType.PT.getLabel(child)
+				);
 			}
 		}
 		
 		if (requestedParent && snomedConcept.getAncestors() != null) {
 			for (SnomedConcept parent : snomedConcept.getAncestors()) {
-				properties.add(CommonConceptProperties.PARENT.propertyOf(parent.getId(), SnomedDisplayTermType.PT.getLabel(parent)));
+				properties.add(new CodeSystem.ConceptPropertyComponent()
+						.setCode(CodeSystemLookupParameters.PROPERTY_PARENT)
+						.setValue(new CodeType(parent.getId()))
+						// TODO set description to parent PT SnomedDisplayTermType.PT.getLabel(parent)
+				);
 			}
 		}
 		
 		// Relationship Properties
-		Set<String> relationshipTypeIds = parameters.getPropertyCodes().stream()
+		Set<String> relationshipTypeIds = parameters.getPropertyValues().stream()
 			.map(p -> {
 				if (p.startsWith(SnomedTerminologyComponentConstants.SNOMED_URI_BASE)) {
 					return p.substring(p.lastIndexOf('/') + 1, p.length()); // URI prefixed properties
@@ -159,7 +165,9 @@ public final class SnomedFhirCodeSystemLookupConverter implements FhirCodeSystem
 							s -> propertyBuilder.setValue(new StringType(s)));
 					} else {
 						propertyBuilder.setValue(new CodeType(r.getDestinationId()));
+						// TODO set description to destination concept PT?
 					}
+					
 					
 					properties.add(propertyBuilder);
 				});
