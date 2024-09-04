@@ -17,6 +17,7 @@ Export-Package: com.b2international.snowowl.fhir.core,
 Import-Package: jakarta.validation;version="3.0.2",
  jakarta.validation.constraints;version="3.0.2",
  org.hl7.fhir.exceptions;version="0.1.0",
+ org.hl7.fhir.r4.model.codesystems;version="0.1.0",
  org.hl7.fhir.r5.model;version="0.1.0",
  org.hl7.fhir.utilities.xhtml;version="0.1.0",
  org.slf4j;version="2.0.0"
