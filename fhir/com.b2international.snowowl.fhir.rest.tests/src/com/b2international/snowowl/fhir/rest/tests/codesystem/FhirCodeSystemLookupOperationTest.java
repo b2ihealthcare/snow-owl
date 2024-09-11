@@ -20,15 +20,26 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.junit.Assert.assertEquals;
 
+import java.io.File;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
+import com.b2international.commons.io.PathUtils;
+import com.b2international.snowowl.core.util.PlatformUtil;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.rest.tests.FhirRestTest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
 
 /**
  * CodeSystem $lookup operation for FHIR code systems REST end-point test cases
@@ -38,7 +49,17 @@ import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequest
 public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 
 	private static final String CLINICAL_FINDING = "404684003";
-
+	
+	private static final String US_ENGLISH =  "900000000000509007";
+	private static final String GB_ENGLISH =  "900000000000508004";
+	
+	private static final String PREFERRED =  "900000000000548007";
+	
+	private static final String FULLY_SPECIFIED_NAME =  "900000000000003001";
+	
+	private static final String SNOMED_URL = "http://snomed.info/sct";	
+	private static final String EXTENSION_URL = "http://snomed.info/fhir/StructureDefinition/designation-use-context";
+	
 	@Test
 	public void GET_CodeSystem_$lookup_NonExistentSystem() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -162,7 +183,10 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 	
 	@Test
 	public void GET_CodeSystem_$lookup_Designations() throws Exception {
-		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+		
+		ObjectMapper mapper = new ObjectMapper();
+		
+		String jsonResponseBody = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.queryParam("system", SNOMEDCT_URL)
 			.queryParam("code", CLINICAL_FINDING)
 			.queryParam("property", "designation")
@@ -170,35 +194,12 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 			.when().get(CODESYSTEM_LOOKUP)
 			.then().assertThat()
 			.statusCode(200)
-			.body("resourceType", equalTo("Parameters"))
-			.body("parameter[0].name", equalTo("name"))
-			.body("parameter[0].valueString", equalTo("SNOMEDCT"))
-			.body("parameter[1].name", equalTo("display"))
-			.body("parameter[1].valueString", equalTo("Clinical finding"))
-			.body("parameter[2].name", equalTo("designation"))
-			.body("parameter[2].part[0].valueCode", equalTo("en"))
-			.body("parameter[2].part[1].valueCoding.code", equalTo("900000000000013009"))
-			.body("parameter[2].part[2].valueString", equalTo("Clinical finding"))
-			.body("parameter[3].name", equalTo("designation"))
-			.body("parameter[3].part[0].valueCode", equalTo("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_UK))
-			.body("parameter[3].part[1].valueCoding.code", equalTo("900000000000013009"))
-			.body("parameter[3].part[2].valueString", equalTo("Clinical finding"))
-			.body("parameter[4].name", equalTo("designation"))
-			.body("parameter[4].part[0].valueCode", equalTo("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US))
-			.body("parameter[4].part[1].valueCoding.code", equalTo("900000000000013009"))
-			.body("parameter[4].part[2].valueString", equalTo("Clinical finding"))
-			.body("parameter[5].name", equalTo("designation"))
-			.body("parameter[5].part[0].valueCode", equalTo("en"))
-			.body("parameter[5].part[1].valueCoding.code", equalTo("900000000000003001"))
-			.body("parameter[5].part[2].valueString", equalTo("Clinical finding (finding)"))
-			.body("parameter[6].name", equalTo("designation"))
-			.body("parameter[6].part[0].valueCode", equalTo("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_UK))
-			.body("parameter[6].part[1].valueCoding.code", equalTo("900000000000003001"))
-			.body("parameter[6].part[2].valueString", equalTo("Clinical finding (finding)"))
-			.body("parameter[7].name", equalTo("designation"))
-			.body("parameter[7].part[0].valueCode", equalTo("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US))
-			.body("parameter[7].part[1].valueCoding.code", equalTo("900000000000003001"))
-			.body("parameter[7].part[2].valueString", equalTo("Clinical finding (finding)"));
+			.extract()
+			.asString();
+		
+		String expectedJson = Files.readString(PlatformUtil.toAbsolutePath(getClass(), "expectedCodeSystemLookupResult.json"), Charsets.UTF_8);
+		
+		assertEquals(mapper.readTree(expectedJson), mapper.readTree(jsonResponseBody));
 	}
 	
 	@Test
@@ -243,6 +244,7 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 			.body("parameter[2].part[0].valueCode", equalTo("parent"))
 			.body("parameter[2].part[1].valueCode", equalTo(Concepts.ROOT_CONCEPT))
 			.body("parameter[2].part[2].valueString", equalTo("SNOMED CT Concept"));
+		
 	}
 	
 	@Test
@@ -263,5 +265,4 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 			.body("issue.code", hasItem("invalid"))
 			.body("issue.diagnostics[0]", containsString("Unrecognized property [http://snomed.info/id/12345]."));
 	}
-	
 }

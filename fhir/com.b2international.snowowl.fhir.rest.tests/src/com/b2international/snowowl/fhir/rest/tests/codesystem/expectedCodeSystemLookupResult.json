@@ -1,0 +1,145 @@
+{
+    "resourceType": "Parameters",
+    "parameter": [{
+            "name": "name",
+            "valueString": "SNOMEDCT"
+        }, {
+            "name": "name",
+            "valueString": "Clinical finding"
+        }, {
+            "extension": [{
+                    "url": "http://snomed.info/fhir/StructureDefinition/designation-use-context",
+                    "extension": [{
+                            "url": "context",
+                            "valueCoding": {
+                                "system": "http://snomed.info/sct",
+                                "code": "900000000000509007"
+                            }
+                        }, {
+                            "url": "role",
+                            "valueCoding": {
+                                "system": "http://snomed.info/sct",
+                                "code": "900000000000548007",
+                                "display": "PREFERRED"
+                            }
+                        }, {
+                            "url": "type",
+                            "valueCoding": {
+                                "system": "http://snomed.info/sct",
+                                "code": "900000000000003001",
+                                "display": "Fully specified name"
+                            }
+                        }
+                    ]
+                }, {
+                    "url": "http://snomed.info/fhir/StructureDefinition/designation-use-context",
+                    "extension": [{
+                            "url": "context",
+                            "valueCoding": {
+                                "system": "http://snomed.info/sct",
+                                "code": "900000000000508004"
+                            }
+                        }, {
+                            "url": "role",
+                            "valueCoding": {
+                                "system": "http://snomed.info/sct",
+                                "code": "900000000000548007",
+                                "display": "PREFERRED"
+                            }
+                        }, {
+                            "url": "type",
+                            "valueCoding": {
+                                "system": "http://snomed.info/sct",
+                                "code": "900000000000003001",
+                                "display": "Fully specified name"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "name": "designation",
+            "part": [{
+                    "name": "language",
+                    "valueCode": "en"
+                }, {
+                    "name": "use",
+                    "valueCoding": {
+                        "system": "http://snomed.info/sct",
+                        "code": "900000000000003001",
+                        "display": "Fully specified name"
+                    }
+                }, {
+                    "name": "value",
+                    "valueString": "Clinical finding (finding)"
+                }
+            ]
+        }, {
+            "extension": [{
+                    "url": "http://snomed.info/fhir/StructureDefinition/designation-use-context",
+                    "extension": [{
+                            "url": "context",
+                            "valueCoding": {
+                                "system": "http://snomed.info/sct",
+                                "code": "900000000000509007"
+                            }
+                        }, {
+                            "url": "role",
+                            "valueCoding": {
+                                "system": "http://snomed.info/sct",
+                                "code": "900000000000548007",
+                                "display": "PREFERRED"
+                            }
+                        }, {
+                            "url": "type",
+                            "valueCoding": {
+                                "system": "http://snomed.info/sct",
+                                "code": "900000000000013009",
+                                "display": "Synonym"
+                            }
+                        }
+                    ]
+                }, {
+                    "url": "http://snomed.info/fhir/StructureDefinition/designation-use-context",
+                    "extension": [{
+                            "url": "context",
+                            "valueCoding": {
+                                "system": "http://snomed.info/sct",
+                                "code": "900000000000508004"
+                            }
+                        }, {
+                            "url": "role",
+                            "valueCoding": {
+                                "system": "http://snomed.info/sct",
+                                "code": "900000000000548007",
+                                "display": "PREFERRED"
+                            }
+                        }, {
+                            "url": "type",
+                            "valueCoding": {
+                                "system": "http://snomed.info/sct",
+                                "code": "900000000000013009",
+                                "display": "Synonym"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "name": "designation",
+            "part": [{
+                    "name": "language",
+                    "valueCode": "en"
+                }, {
+                    "name": "use",
+                    "valueCoding": {
+                        "system": "http://snomed.info/sct",
+                        "code": "900000000000013009",
+                        "display": "Synonym"
+                    }
+                }, {
+                    "name": "value",
+                    "valueString": "Clinical finding"
+                }
+            ]
+        }
+    ]
+}
