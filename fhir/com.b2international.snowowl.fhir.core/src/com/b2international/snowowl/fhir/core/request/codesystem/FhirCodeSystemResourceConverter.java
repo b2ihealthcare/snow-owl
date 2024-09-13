@@ -23,10 +23,10 @@ import org.hl7.fhir.r5.model.CodeSystem;
 import org.hl7.fhir.r5.model.CodeSystem.PropertyType;
 
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.fhir.r5.operations.CodeSystemLookupParameters;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.fhir.core.operations.CodeSystemLookupParameters;
 
 /**
  * @since 8.0
