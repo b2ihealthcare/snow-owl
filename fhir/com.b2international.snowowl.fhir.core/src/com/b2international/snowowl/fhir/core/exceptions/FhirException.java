@@ -61,25 +61,10 @@ public class FhirException extends ApiException {
 	}
 
 	protected final OperationOutcomeIssueComponent buildIssue(IssueSeverity issueSeverity, IssueType issueType, String message, org.hl7.fhir.r4.model.codesystems.OperationOutcome operationOutcomeCode, String location) {
-		String operationOutcomeCodeDisplay = operationOutcomeCode.getDisplay();
-		// TODO should we raise IAE when location is empty but the display is a template?
-		if (operationOutcomeCodeDisplay.contains("%s") && !Strings.isNullOrEmpty(location)) {
-			operationOutcomeCodeDisplay = String.format(operationOutcomeCodeDisplay, location);
-		}
-		
 		return new OperationOutcome.OperationOutcomeIssueComponent()
 			.setSeverity(issueSeverity)
 			.setCode(issueType)
-			.setDetails(
-				new CodeableConcept()
-					.addCoding(
-						new Coding()
-							.setCode(operationOutcomeCode.toCode())
-							.setSystem(operationOutcomeCode.getSystem())
-							.setDisplay(operationOutcomeCodeDisplay)
-					)
-					.setText(operationOutcomeCodeDisplay)
-			)
+			.setDetails(toDetails(operationOutcomeCode, location))
 			.setDiagnostics(message)
 			.addLocation(location);
 	}
@@ -138,5 +123,22 @@ public class FhirException extends ApiException {
 	protected List<OperationOutcomeIssueComponent> getAdditionalIssues() {
 		return List.of();
 	}
+	
+	public static CodeableConcept toDetails(org.hl7.fhir.r4.model.codesystems.OperationOutcome operationOutcomeCode, String location) {
+		String operationOutcomeCodeDisplay = operationOutcomeCode.getDisplay();
+		// TODO should we raise IAE when location is empty but the display is a template?
+		if (operationOutcomeCodeDisplay.contains("%s") && !Strings.isNullOrEmpty(location)) {
+			operationOutcomeCodeDisplay = String.format(operationOutcomeCodeDisplay, location);
+		}
+		return new CodeableConcept()
+					.addCoding(
+						new Coding()
+							.setCode(operationOutcomeCode.toCode())
+							.setSystem(operationOutcomeCode.getSystem())
+							.setDisplay(operationOutcomeCodeDisplay)
+					)
+					.setText(operationOutcomeCodeDisplay);
+	}
+
 	
 }

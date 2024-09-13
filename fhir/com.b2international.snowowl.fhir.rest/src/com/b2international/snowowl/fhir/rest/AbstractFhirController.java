@@ -21,6 +21,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.hl7.fhir.r5.elementmodel.Manager;
+import org.hl7.fhir.r5.model.OperationOutcome;
+import org.hl7.fhir.r5.model.OperationOutcome.IssueSeverity;
+import org.hl7.fhir.r5.model.OperationOutcome.IssueType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -303,7 +306,7 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	        return null; // socket is closed, cannot return any response    
 	    } else {
 	    	LOG.error("Exception during processing of a request", ex);
-	    	FhirException fhirException = FhirException.createFhirError(GENERIC_USER_MESSAGE + " Exception: " + ex.getMessage(), OperationOutcomeCode.MSG_BAD_SYNTAX);
+	    	FhirException fhirException = new FhirException(GENERIC_USER_MESSAGE + " Exception: " + ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGBADSYNTAX);
 	    	return fhirException.toOperationOutcome();
 	    }
 	}
@@ -311,7 +314,7 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public @ResponseBody OperationOutcome handle(final SyntaxException ex) {
-    	FhirException fhirException = FhirException.createFhirError(ex.getMessage(), OperationOutcomeCode.MSG_BAD_SYNTAX);
+    	FhirException fhirException = new FhirException(ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGBADSYNTAX);
     	fhirException.withAdditionalInfo(ex.getAdditionalInfo());
     	return fhirException.toOperationOutcome();
 	}
@@ -319,7 +322,7 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public @ResponseBody OperationOutcome handle(final ValidationException ex) {
-		FhirException error = FhirException.createFhirError("Validation error", OperationOutcomeCode.MSG_BAD_SYNTAX);
+		FhirException error = new FhirException("Validation error", org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGBADSYNTAX);
 		error.withAdditionalInfo(ex.getAdditionalInfo());
     	return error.toOperationOutcome();
 	}
@@ -327,7 +330,7 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.UNAUTHORIZED)
 	public @ResponseBody ResponseEntity<OperationOutcome> handle(final UnauthorizedException ex) {
-		FhirException fhirException = FhirException.createFhirError(ex.getMessage(), OperationOutcomeCode.MSG_AUTH_REQUIRED);
+		FhirException fhirException = new FhirException(ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGAUTHREQUIRED);
 		OperationOutcome body = fhirException.toOperationOutcome();
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("WWW-Authenticate", "Basic");
@@ -344,13 +347,11 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.FORBIDDEN)
 	public @ResponseBody OperationOutcome handle(final ForbiddenException ex) {
-		return OperationOutcome.builder()
-			.addIssue(Issue.builder()
-				.severity(IssueSeverity.ERROR)
-				.code(IssueType.FORBIDDEN)
-				.diagnostics(ex.getMessage())
-				.build())
-			.build();
+		return new OperationOutcome()
+			.addIssue(new OperationOutcome.OperationOutcomeIssueComponent()
+				.setSeverity(IssueSeverity.ERROR)
+				.setCode(IssueType.FORBIDDEN)
+				.setDiagnostics(ex.getMessage()));
 	}
 	
 	/**
@@ -363,7 +364,7 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public @ResponseBody OperationOutcome handle(HttpMessageNotReadableException ex) {
 		LOG.trace("Exception during processing of a JSON document", ex);
-		FhirException fhirException = FhirException.createFhirError(GENERIC_USER_MESSAGE + " Exception: " + ex.getMessage(), OperationOutcomeCode.MSG_CANT_PARSE_CONTENT);
+		FhirException fhirException = new FhirException(GENERIC_USER_MESSAGE + " Exception: " + ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGCANTPARSECONTENT);
 		return fhirException.toOperationOutcome();
 	}
 
@@ -377,17 +378,15 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	public @ResponseBody OperationOutcome handle(final NotFoundException ex) {
-		return OperationOutcome.builder()
+		return new OperationOutcome()
 				.addIssue(
-					Issue.builder()
-						.severity(IssueSeverity.ERROR)
-						.code(IssueType.NOT_FOUND)
-						.detailsWithDisplayArgs(OperationOutcomeCode.MSG_NO_EXIST, ex.getKey())
-						.diagnostics(ex.getMessage())
+					new OperationOutcome.OperationOutcomeIssueComponent()
+						.setSeverity(IssueSeverity.ERROR)
+						.setCode(IssueType.NOTFOUND)
+						.setDiagnostics(ex.getMessage())
 						.addLocation(ex.getKey())
-					.build()
-				)
-				.build();
+						.setDetails(FhirException.toDetails(org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGNOEXIST, ex.getKey()))
+				);
 	}
 
 	/**
@@ -399,7 +398,7 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
 	public @ResponseBody OperationOutcome handle(NotImplementedException ex) {
-		FhirException fhirException = FhirException.createFhirError(ex.getMessage(), OperationOutcomeCode.MSG_UNKNOWN_OPERATION);
+		FhirException fhirException = new FhirException(ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGUNKNOWNOPERATION);
 		return fhirException.toOperationOutcome();
 	}
 
@@ -412,7 +411,7 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.CONFLICT)
 	public @ResponseBody OperationOutcome handle(final ConflictException ex) {
-		FhirException fhirException = FhirException.createFhirError(ex.getMessage(), OperationOutcomeCode.MSG_LOCAL_FAIL);
+		FhirException fhirException = new FhirException(ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGLOCALFAIL);
 		return fhirException.toOperationOutcome();
 	}
 	
