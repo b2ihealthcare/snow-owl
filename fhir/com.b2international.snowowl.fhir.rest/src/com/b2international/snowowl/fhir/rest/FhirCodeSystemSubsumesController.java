@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.rest;
 
 import java.io.InputStream;
 
+import org.hl7.fhir.r5.model.Coding;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,9 +26,7 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
-import com.b2international.snowowl.fhir.core.model.converter.CodeSystemConverter_50;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.operations.CodeSystemSubsumptionParameters;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -114,14 +113,13 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 		
 		validateSubsumptionRequest(codeA, codeB, system, version);
 		
-		SubsumptionRequest subsumptionRequest = SubsumptionRequest.builder()
-			.codeA(codeA)
-			.codeB(codeB)
-			.system(system)
-			.version(version)
-			.build();
+		var parameters = new CodeSystemSubsumptionParameters()
+			.setCodeA(codeA)
+			.setCodeB(codeB)
+			.setSystem(system)
+			.setVersion(version);
 
-		return subsumes(subsumptionRequest, accept, _format, _pretty);
+		return subsumes(parameters, accept, _format, _pretty);
 	}
 
 	/**
@@ -187,14 +185,13 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 		
 		validateSubsumptionRequest(codeSystemId, codeA, codeB, null, null);
 		
-		SubsumptionRequest subsumptionRequest = SubsumptionRequest.builder()
-			.codeA(codeA)
-			.codeB(codeB)
+		var parameters = new CodeSystemSubsumptionParameters()
+			.setCodeA(codeA)
+			.setCodeB(codeB)
 			// XXX: We populate a resource ID in an URI here that is also potentially versioned
-			.system(codeSystemId) 
-			.build();
+			.setSystem(codeSystemId);
 		
-		return subsumes(subsumptionRequest, accept, _format, _pretty);		
+		return subsumes(parameters, accept, _format, _pretty);		
 	}
 	
 	/**
@@ -267,7 +264,7 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 	) {
 		
 		final var fhirParameters = toFhirParameters(requestBody, contentType);
-		final SubsumptionRequest request = CodeSystemConverter_50.INSTANCE.toSubsumptionRequest(fhirParameters);
+		final var request = new CodeSystemSubsumptionParameters(fhirParameters);
 		
 		validateSubsumptionRequest(request);
 		
@@ -349,7 +346,7 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 	) {
 		
 		final var fhirParameters = toFhirParameters(requestBody, contentType);
-		final SubsumptionRequest request = CodeSystemConverter_50.INSTANCE.toSubsumptionRequest(fhirParameters);
+		final var request = new CodeSystemSubsumptionParameters(fhirParameters);
 		
 		validateSubsumptionRequest(codeSystemId, request);
 		
@@ -364,18 +361,17 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 	}
 	
 	private Promise<ResponseEntity<byte[]>> subsumes(
-		SubsumptionRequest req, 
+		CodeSystemSubsumptionParameters req, 
 		String accept, 
 		String _format, 
 		Boolean _pretty
 	) {
 		return FhirRequests.codeSystems().prepareSubsumes()
-			.setRequest(req)
+			.setParameters(req)
 			.buildAsync()
 			.execute(getBus())
-			.then(soSubsumptionResult -> {
-				var fhirSubsumptionResult = CodeSystemConverter_50.INSTANCE.fromSubsumptionResult(soSubsumptionResult);
-				return toResponseEntity(fhirSubsumptionResult, accept, _format, _pretty);
+			.then(result -> {
+				return toResponseEntity(result.getParameters(), accept, _format, _pretty);
 			});
 	}
 
@@ -383,12 +379,12 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 		validateSubsumptionRequest(null, codeA,  codeB, system, version);
 	}
 	
-	private void validateSubsumptionRequest(SubsumptionRequest request) {
+	private void validateSubsumptionRequest(CodeSystemSubsumptionParameters request) {
 		validateSubsumptionRequest(null, request);
 	}
 	
-	private void validateSubsumptionRequest(String codeSystemId, SubsumptionRequest request) {
-		validateSubsumptionRequest(codeSystemId, request.getCodeA(), request.getCodeB(), request.getSystem(), request.getVersion(), request.getCodingA(), request.getCodingB());
+	private void validateSubsumptionRequest(String codeSystemId, CodeSystemSubsumptionParameters request) {
+		validateSubsumptionRequest(codeSystemId, request.getCodeA().getValue(), request.getCodeB().getValue(), request.getSystem().getValue(), request.getVersion().getValue(), request.getCodingA(), request.getCodingB());
 	}
 
 	private void validateSubsumptionRequest(String codeSystemId, String codeA, String codeB, String system, String version) {

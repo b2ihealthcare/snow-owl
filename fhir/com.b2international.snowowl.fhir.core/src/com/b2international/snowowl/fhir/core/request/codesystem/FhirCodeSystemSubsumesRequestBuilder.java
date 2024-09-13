@@ -34,7 +34,11 @@ public final class FhirCodeSystemSubsumesRequestBuilder
 	private CodeSystemSubsumptionParameters parameters;
 	
 	public FhirCodeSystemSubsumesRequestBuilder setParameters(Parameters parameters) {
-		this.parameters = new CodeSystemSubsumptionParameters(parameters);
+		return setParameters(new CodeSystemSubsumptionParameters(parameters));
+	}
+	
+	public FhirCodeSystemSubsumesRequestBuilder setParameters(CodeSystemSubsumptionParameters parameters) {
+		this.parameters = parameters;
 		return getSelf();
 	}
 	

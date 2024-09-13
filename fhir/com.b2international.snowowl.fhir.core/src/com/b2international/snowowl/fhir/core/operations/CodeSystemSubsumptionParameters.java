@@ -24,6 +24,10 @@ import org.hl7.fhir.r5.model.StringType;
  */
 public class CodeSystemSubsumptionParameters extends BaseParameters {
 
+	public CodeSystemSubsumptionParameters() {
+		super(new Parameters());
+	}
+	
 	public CodeSystemSubsumptionParameters(Parameters parameters) {
 		super(parameters);
 	}
@@ -52,4 +56,50 @@ public class CodeSystemSubsumptionParameters extends BaseParameters {
 		return getParameterValue("codingB", Parameters.ParametersParameterComponent::getValueCoding);
 	}
 
+	public CodeSystemSubsumptionParameters setSystem(String system) {
+		return setSystem(new StringType(system));
+	}
+	
+	public CodeSystemSubsumptionParameters setSystem(StringType system) {
+		getParameters().addParameter("system", system);
+		return this;
+	}
+	
+	public CodeSystemSubsumptionParameters setVersion(String version) {
+		return setVersion(new StringType(version));
+	}
+	
+	public CodeSystemSubsumptionParameters setVersion(StringType version) {
+		getParameters().addParameter("version", version);
+		return this;
+	}
+	
+	public CodeSystemSubsumptionParameters setCodeA(String codeA) {
+		return setCodeA(new StringType(codeA));
+	}
+	
+	public CodeSystemSubsumptionParameters setCodeA(StringType codeA) {
+		getParameters().addParameter("codeA", codeA);
+		return this;
+	}
+	
+	public CodeSystemSubsumptionParameters setCodeB(String codeB) {
+		return setCodeB(new StringType(codeB));
+	}
+	
+	public CodeSystemSubsumptionParameters setCodeB(StringType codeB) {
+		getParameters().addParameter("codeB", codeB);
+		return this;
+	}
+	
+	public CodeSystemSubsumptionParameters setCodingA(Coding codingA) {
+		getParameters().addParameter("codingA", codingA);
+		return this;
+	}
+	
+	public CodeSystemSubsumptionParameters setCodingB(Coding codingB) {
+		getParameters().addParameter("codingB", codingB);
+		return this;
+	}
+	
 }
