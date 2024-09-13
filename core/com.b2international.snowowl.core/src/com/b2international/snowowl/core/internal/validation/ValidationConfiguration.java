@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.core.internal.validation;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 6.6
@@ -31,14 +31,12 @@ public class ValidationConfiguration {
 	public static final String LOCALES = "extendedLocales";
 	public static final String MODULES = "modules";
 	
-	// default values for thread management
-	private static final int DEFAULT_NUMBER_OF_VALIDATION_THREADS = Math.max(4, Runtime.getRuntime().availableProcessors() / 2); 
 	private static final int DEFAULT_MAX_CONCURRENT_EXPENSIVE_JOBS = 1;
 	private static final int DEFAULT_MAX_CONCURRENT_NORMAL_JOBS = 4;
 	
 	@Min(1)
-	@Max(8)
-	private  int numberOfValidationThreads = DEFAULT_NUMBER_OF_VALIDATION_THREADS;
+	@Max(99)
+	private Integer workerPoolSize;
 	
 	@Min(1)
 	@Max(5)
@@ -48,8 +46,15 @@ public class ValidationConfiguration {
 	@Max(5)
 	private int maxConcurrentNormalJobs = DEFAULT_MAX_CONCURRENT_NORMAL_JOBS;
 	
+	// Accept previous configuration key for backwards compatibility
+	@Deprecated
+	@JsonProperty(value = "numberOfValidationThreads", access = JsonProperty.Access.WRITE_ONLY)
 	public void setNumberOfValidationThreads(int numberOfValidationThreads) {
-		this.numberOfValidationThreads = numberOfValidationThreads;
+		this.workerPoolSize = numberOfValidationThreads;
+	}
+	
+	public void setWorkerPoolSize(int workerPoolSize) {
+		this.workerPoolSize = workerPoolSize;
 	}
 	
 	public void setMaxConcurrentExpensiveJobs(int maxConcurrentExpensiveJobs) {
@@ -63,11 +68,11 @@ public class ValidationConfiguration {
 	/**
 	 * The number of validations jobs that can be run asynchronously.
 	 * 
-	 * @return numberOfValidationThreads
+	 * @return workerPoolSize
 	 */
-	@JsonProperty("numberOfValidationThreads")
-	public int getNumberOfValidationThreads() {
-		return numberOfValidationThreads;
+	@JsonProperty("workerPoolSize")
+	public Integer getWorkerPoolSize() {
+		return workerPoolSize;
 	}
 	
 	/**
@@ -89,5 +94,4 @@ public class ValidationConfiguration {
 	public int getMaxConcurrentNormalJobs() {
 		return maxConcurrentNormalJobs;
 	}
-	
 }
