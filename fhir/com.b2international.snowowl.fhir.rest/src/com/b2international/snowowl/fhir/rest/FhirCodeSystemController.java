@@ -145,49 +145,13 @@ public class FhirCodeSystemController extends AbstractFhirController {
 		
 	) {
 		
-		final var fhirCodeSystem = toFhirResource(requestBody, contentType, CodeSystem.class);
-		final CodeSystem soCodeSystem = CodeSystemConverter_50.INSTANCE.toInternal(fhirCodeSystem);
+		final var codeSystem = toFhirResource(requestBody, contentType, CodeSystem.class);
 
 		// Ignore the input identifier on purpose and assign one locally
 		final String generatedId = IDs.base62UUID();
-		final CodeSystem soCodeSystemWithId = CodeSystem.builder(generatedId)
-			.caseSensitive(soCodeSystem.getCaseSensitive())
-			.compositional(soCodeSystem.getCompositional())
-			.concepts(soCodeSystem.getConcepts())
-			.contacts(soCodeSystem.getContacts())
-			.content(soCodeSystem.getContent())
-			.copyright(soCodeSystem.getCopyright())
-			.count(soCodeSystem.getCount())
-			.date(soCodeSystem.getDate())
-			.description(soCodeSystem.getDescription())
-			.experimental(soCodeSystem.getExperimental())
-			.extensions(soCodeSystem.getExtensions())
-			.filters(soCodeSystem.getFilters())
-			.hierarchyMeaning(soCodeSystem.getHierarchyMeaning())
-			.identifiers(soCodeSystem.getIdentifiers())
-			.implicitRules(soCodeSystem.getImplicitRules())
-			.jurisdictions(soCodeSystem.getJurisdictions())
-			.language(soCodeSystem.getLanguage())
-			.meta(soCodeSystem.getMeta())
-			.name(soCodeSystem.getName())
-			// .narrative(...) is a special version of .text(...)
-			.properties(soCodeSystem.getProperties())
-			.publisher(soCodeSystem.getPublisher())
-			.purpose(soCodeSystem.getPurpose())
-			.resourceType(soCodeSystem.getResourceType())
-			.status(soCodeSystem.getStatus())
-			.supplements(soCodeSystem.getSupplements())
-			.text(soCodeSystem.getText())
-			.title(soCodeSystem.getTitle())
-			// .toolingId(...) is ignored, we will not see it on the input side
-			.url(soCodeSystem.getUrl())
-			.usageContexts(soCodeSystem.getUsageContexts())
-			.valueSet(soCodeSystem.getValueSet())
-			.version(soCodeSystem.getVersion())
-			.versionNeeded(soCodeSystem.getVersionNeeded())
-			.build();
+		codeSystem.setId(generatedId);
 		
-		return createOrUpdate(generatedId, soCodeSystemWithId, defaultEffectiveDate, author, owner, ownerProfileName, bundleId);
+		return createOrUpdate(generatedId, codeSystem, defaultEffectiveDate, author, owner, ownerProfileName, bundleId);
 	}
 
 	/**
@@ -273,15 +237,14 @@ public class FhirCodeSystemController extends AbstractFhirController {
 		
 	) {
 		
-		final var fhirCodeSystem = toFhirResource(requestBody, contentType, org.linuxforhealth.fhir.model.r5.resource.CodeSystem.class);
-		final CodeSystem soCodeSystem = CodeSystemConverter_50.INSTANCE.toInternal(fhirCodeSystem);
+		final var fhirCodeSystem = toFhirResource(requestBody, contentType, CodeSystem.class);
 		
-		return createOrUpdate(id, soCodeSystem, defaultEffectiveDate, author, owner, ownerProfileName, bundleId);
+		return createOrUpdate(id, fhirCodeSystem, defaultEffectiveDate, author, owner, ownerProfileName, bundleId);
 	}
 	
 	private ResponseEntity<Void> createOrUpdate(
 		String id, 
-		CodeSystem soCodeSystem, 
+		CodeSystem codeSystem, 
 		LocalDate defaultEffectiveDate, 
 		String author, 
 		String owner, 
@@ -289,18 +252,18 @@ public class FhirCodeSystemController extends AbstractFhirController {
 		String bundleId
 	) {
 		
-		if (soCodeSystem.getId() == null) {
+		if (codeSystem.getId() == null) {
 			throw new BadRequestException("Code system resource did not contain an id element.");
 		}
 		
-		final String idInResource = soCodeSystem.getId().getIdValue();
+		final String idInResource = codeSystem.getId();
 		if (!id.equals(idInResource)) {
 			throw new BadRequestException("Code system resource ID '" + idInResource + "' disagrees with '" + id + "' provided in the request URL.");
 		}
 		
 		final FhirResourceUpdateResult updateResult = FhirRequests.codeSystems()
 			.prepareUpdate()
-			.setFhirCodeSystem(soCodeSystem)
+			.setFhirCodeSystem(codeSystem)
 			.setAuthor(author)
 			.setOwner(owner)
 			.setOwnerProfileName(ownerProfileName)
@@ -490,9 +453,8 @@ public class FhirCodeSystemController extends AbstractFhirController {
 			.setLocales(acceptLanguage)
 			.buildAsync()
 			.execute(getBus())
-			.then(soCodeSystem -> {
-				var fhirCodeSystem = CodeSystemConverter_50.INSTANCE.fromInternal(soCodeSystem);
-				return toResponseEntity(fhirCodeSystem, accept, _format, _pretty);
+			.then(codeSystem -> {
+				return toResponseEntity(codeSystem, accept, _format, _pretty);
 			});
 	}
 	

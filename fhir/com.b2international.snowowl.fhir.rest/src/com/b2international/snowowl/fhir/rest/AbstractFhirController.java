@@ -21,9 +21,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.hl7.fhir.r5.elementmodel.Manager;
+import org.hl7.fhir.r5.model.Bundle;
 import org.hl7.fhir.r5.model.OperationOutcome;
 import org.hl7.fhir.r5.model.OperationOutcome.IssueSeverity;
 import org.hl7.fhir.r5.model.OperationOutcome.IssueType;
+import org.hl7.fhir.r5.model.Parameters;
+import org.hl7.fhir.r5.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -231,11 +234,11 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	}
 	
 	protected static Parameters toFhirParameters(final InputStream requestBody, final String contentType) {
-		return toFhirResource(requestBody, contentType, org.linuxforhealth.fhir.model.r5.resource.Parameters.class);
+		return toFhirResource(requestBody, contentType, Parameters.class);
 	}
 	
 	protected static ResponseEntity<byte[]> toResponseEntity(
-		final Visitable fhirResult, 
+		final Resource resource, 
 		final String accept, 
 		final String _format,
 		final Boolean _pretty
@@ -245,10 +248,10 @@ public abstract class AbstractFhirController extends AbstractRestService {
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		
 		try {
-			fhirGenerator.generate(fhirResult, baos);
+			fhirGenerator.generate(resource, baos);
 		} catch (FHIRGeneratorException e) {
 			throw new BadRequestException(String.format("Failed to serialize FHIR resource to a response body.",
-				fhirResult.getClass().getSimpleName()));
+				resource.getClass().getSimpleName()));
 		}
 
 		return ResponseEntity.ok()
@@ -257,40 +260,27 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	}	
 	
 	protected static ResponseEntity<byte[]> toResponseEntity(
-		final com.b2international.snowowl.fhir.core.model.Bundle soBundle, 
+		final Bundle bundle, 
 		final UriComponentsBuilder fullUrlBuilder, 
 		final String accept,
 		final String _format,
 		final Boolean _pretty
 	) {
-		var fhirBundle = BundleConverter_50.INSTANCE.fromInternal(soBundle);
-		
 		// FIXME: Temporary measure to add "fullUrl" to returned bundle entries
-		final var entries = fhirBundle.getEntry();
+		final var entries = bundle.getEntry();
 		
 		if (!entries.isEmpty()) {
-			// Clear entries in builder
-			final Bundle.Builder builder = fhirBundle.toBuilder();
-			builder.entry(List.of());
-			
 			// Add "fullUrl" to original entries, add to builder
 			for (var entry : entries) {
 				if (entry.getResource() != null) {
 					final String resourceId = entry.getResource().getId();
 					final String fullUrl = fullUrlBuilder.buildAndExpand(Map.of("id", resourceId)).toString();
-					
-					final var entryWithUrl = entry.toBuilder()
-						.fullUrl(Uri.of(fullUrl))
-						.build();
-					
-					builder.entry(entryWithUrl);
+					entry.setFullUrl(fullUrl);
 				}
 			}
-			
-			fhirBundle = builder.build();
 		}
 		
-		return toResponseEntity(fhirBundle, accept, _format, _pretty);
+		return toResponseEntity(bundle, accept, _format, _pretty);
 	}
 
 	/**
