@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
+import org.hl7.fhir.r5.elementmodel.Manager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -113,7 +114,7 @@ public abstract class AbstractFhirController extends AbstractRestService {
 		return mediaTypeCandidates;
 	}
 
-	protected static Format getFormat(final String accept, final String _format) {
+	protected static Manager.FhirFormat getFormat(final String accept, final String _format) {
 		/*
 		 * The _format query parameter allows overriding whatever comes in as the "accept"
 		 * header value (for scenarios where the client has no control over the header).
@@ -129,11 +130,11 @@ public abstract class AbstractFhirController extends AbstractRestService {
 				return getFormat(accept);
 			}
 		} else {
-			return Format.JSON;
+			return Manager.FhirFormat.JSON;
 		}
 	}
 
-	private static Format getFormat(final String mediaType) {
+	private static Manager.FhirFormat getFormat(final String mediaType) {
 		switch (mediaType) {
 		
 			case FORMAT_JSON: //$FALL-THROUGH$
@@ -141,13 +142,13 @@ public abstract class AbstractFhirController extends AbstractRestService {
 			case APPLICATION_JSON_VALUE: //$FALL-THROUGH$
 			case ALL_VALUE: //$FALL-THROUGH$
 			case APPLICATION_FHIR_JSON_VALUE:
-				return Format.JSON;
+				return Manager.FhirFormat.JSON;
 				
 			case FORMAT_XML: //$FALL-THROUGH$
 			case TEXT_XML_VALUE: //$FALL-THROUGH$
 			case APPLICATION_XML_VALUE: //$FALL-THROUGH$
 			case APPLICATION_FHIR_XML_VALUE:
-				return Format.XML;
+				return Manager.FhirFormat.XML;
 				
 			default:
 				throw new NotAcceptableStatusException(SUPPORTED_MEDIA_TYPES);
