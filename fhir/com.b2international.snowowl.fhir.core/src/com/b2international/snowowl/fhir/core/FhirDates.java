@@ -19,7 +19,7 @@ import java.text.ParseException;
 import java.util.Date;
 
 import org.apache.commons.lang3.time.DateUtils;
-import org.hl7.fhir.r4.model.codesystems.OperationOutcomeCode;
+import org.hl7.fhir.r4.model.codesystems.OperationOutcome;
 
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
@@ -65,7 +65,7 @@ public class FhirDates {
 		try {
 			return DateUtils.parseDate(dateString, DATETIME_PATTERNS);
 		} catch (NullPointerException | ParseException e) {
-			throw new FhirException(String.format("Invalid date string '%s'. Reason: %s", dateString, e.getMessage()), OperationOutcomeCode.MSGPARAMINVALID);
+			throw new FhirException(String.format("Invalid date string '%s'. Reason: %s", dateString, e.getMessage()), OperationOutcome.MSGPARAMINVALID);
 		}
 	}
 

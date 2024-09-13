@@ -18,7 +18,6 @@ package com.b2international.snowowl.fhir.core.exceptions;
 import java.util.List;
 
 import org.elasticsearch.common.Strings;
-import org.hl7.fhir.r4.model.codesystems.OperationOutcomeCode;
 import org.hl7.fhir.r5.model.CodeableConcept;
 import org.hl7.fhir.r5.model.Coding;
 import org.hl7.fhir.r5.model.OperationOutcome;
@@ -38,22 +37,22 @@ public class FhirException extends ApiException {
 	
 	private final IssueSeverity issueSeverity;
 	private final IssueType issueType;
-	private final OperationOutcomeCode operationOutcomeCode;
+	private final org.hl7.fhir.r4.model.codesystems.OperationOutcome operationOutcomeCode;
 	private final String location;
 		
-	public FhirException(String message, OperationOutcomeCode operationOutcomeCode) {
+	public FhirException(String message, org.hl7.fhir.r4.model.codesystems.OperationOutcome operationOutcomeCode) {
 		this(message, operationOutcomeCode, null);
 	}
 	
-	public FhirException(String message, OperationOutcomeCode operationOutcomeCode, String location) {
+	public FhirException(String message, org.hl7.fhir.r4.model.codesystems.OperationOutcome operationOutcomeCode, String location) {
 		this(IssueSeverity.ERROR, IssueType.EXCEPTION, message, operationOutcomeCode, location);
 	}
 	
-	public FhirException(IssueSeverity issueSeverity, IssueType issueType, String message, OperationOutcomeCode operationOutcomeCode) {
+	public FhirException(IssueSeverity issueSeverity, IssueType issueType, String message, org.hl7.fhir.r4.model.codesystems.OperationOutcome operationOutcomeCode) {
 		this(issueSeverity, issueType, message, operationOutcomeCode, null);
 	}
 	
-	public FhirException(IssueSeverity issueSeverity, IssueType issueType, String message, OperationOutcomeCode operationOutcomeCode, String location) {
+	public FhirException(IssueSeverity issueSeverity, IssueType issueType, String message, org.hl7.fhir.r4.model.codesystems.OperationOutcome operationOutcomeCode, String location) {
 		super(message);
 		this.issueSeverity = issueSeverity;
 		this.issueType = issueType;
@@ -61,7 +60,7 @@ public class FhirException extends ApiException {
 		this.location = location;
 	}
 
-	protected final OperationOutcomeIssueComponent buildIssue(IssueSeverity issueSeverity, IssueType issueType, String message, OperationOutcomeCode operationOutcomeCode, String location) {
+	protected final OperationOutcomeIssueComponent buildIssue(IssueSeverity issueSeverity, IssueType issueType, String message, org.hl7.fhir.r4.model.codesystems.OperationOutcome operationOutcomeCode, String location) {
 		String operationOutcomeCodeDisplay = operationOutcomeCode.getDisplay();
 		// TODO should we raise IAE when location is empty but the display is a template?
 		if (operationOutcomeCodeDisplay.contains("%s") && !Strings.isNullOrEmpty(location)) {
@@ -98,9 +97,9 @@ public class FhirException extends ApiException {
 	}
 	
 	/**
-	 * @return the {@link OperationOutcomeCode} code associated with this exception.
+	 * @return the {@link org.hl7.fhir.r4.model.codesystems.OperationOutcome} code associated with this exception.
 	 */
-	public final OperationOutcomeCode getOperationOutcomeCode() {
+	public final org.hl7.fhir.r4.model.codesystems.OperationOutcome getOperationOutcomeCode() {
 		return operationOutcomeCode;
 	}
 	

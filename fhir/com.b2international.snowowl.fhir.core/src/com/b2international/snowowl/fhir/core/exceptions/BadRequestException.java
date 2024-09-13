@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.fhir.core.exceptions;
 
-import org.hl7.fhir.r4.model.codesystems.OperationOutcomeCode;
 import org.hl7.fhir.r5.model.OperationOutcome;
 import org.hl7.fhir.r5.model.OperationOutcome.IssueSeverity;
 import org.hl7.fhir.r5.model.OperationOutcome.IssueType;
@@ -29,7 +28,7 @@ public class BadRequestException extends FhirException {
 
 	private static final long serialVersionUID = 1L;
 	
-	public BadRequestException(final String message, final OperationOutcomeCode operationOutcomeCode, String location) {
+	public BadRequestException(final String message, final org.hl7.fhir.r4.model.codesystems.OperationOutcome operationOutcomeCode, String location) {
 		super(OperationOutcome.IssueSeverity.ERROR, OperationOutcome.IssueType.INVALID, message, operationOutcomeCode, location);
 	}
 	
@@ -39,7 +38,7 @@ public class BadRequestException extends FhirException {
 	 * @param location
 	 */
 	public BadRequestException(final String message, String location) {
-		super(IssueSeverity.ERROR, IssueType.INVALID, message, OperationOutcomeCode.MSGPARAMINVALID, location);
+		super(IssueSeverity.ERROR, IssueType.INVALID, message, org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGPARAMINVALID, location);
 	}
 	
 	/**
@@ -47,7 +46,7 @@ public class BadRequestException extends FhirException {
 	 * @param message
 	 */
 	public BadRequestException(final String message) {
-		super(IssueSeverity.ERROR, IssueType.INVALID, message, OperationOutcomeCode.MSGPARAMINVALID);
+		super(IssueSeverity.ERROR, IssueType.INVALID, message, org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGPARAMINVALID);
 	}
 	
 	

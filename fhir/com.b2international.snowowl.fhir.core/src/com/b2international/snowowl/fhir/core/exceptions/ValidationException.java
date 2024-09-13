@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.hl7.fhir.r4.model.codesystems.OperationOutcomeCode;
 import org.hl7.fhir.r5.model.OperationOutcome.IssueSeverity;
 import org.hl7.fhir.r5.model.OperationOutcome.IssueType;
 import org.hl7.fhir.r5.model.OperationOutcome.OperationOutcomeIssueComponent;
@@ -38,7 +37,7 @@ public final class ValidationException extends BadRequestException {
 	public ValidationException(Collection<? extends ConstraintViolation<?>> violations) {
 		
 		super(String.format("%s validation error%s", violations.size(), violations.size() == 1 ? "" : "s"),
-				OperationOutcomeCode.MSGPARAMINVALID, null);
+				org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGPARAMINVALID, null);
 		
 		if (violations.isEmpty()) {
 			throw new IllegalArgumentException("There are no violations to report.");
