@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2023-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package com.b2international.snowowl.fhir.rest;
 
 import java.io.InputStream;
 import java.text.ParseException;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -27,8 +27,8 @@ import org.springframework.web.bind.annotation.*;
 import com.b2international.commons.http.AcceptLanguageHeader;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.converter.CodeSystemConverter_50;
+import com.b2international.snowowl.fhir.core.FhirDates;
+import com.b2international.snowowl.fhir.core.operations.CodeSystemLookupParameters;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -107,7 +107,7 @@ public class FhirCodeSystemLookupController extends AbstractFhirController {
 		
 		@Parameter(description = "Properties to return in the output") 
 		@RequestParam(value = "property", required = false) 
-		final Set<String> properties,
+		final List<String> properties,
 		
 		@Parameter(hidden = true)
 		@RequestHeader(value = HttpHeaders.ACCEPT)
@@ -130,27 +130,27 @@ public class FhirCodeSystemLookupController extends AbstractFhirController {
 
 	) {
 		
-		LookupRequest.Builder builder = LookupRequest.builder()
-			.code(code)
-			.system(system);
+		var request = new CodeSystemLookupParameters()
+			.setCode(code)
+			.setSystem(system);
 		
 		if (version.isPresent()) {
-			builder.version(version.get());
+			request.setVersion(version.get());
 		}
 		
 		if (date.isPresent()) {
-			builder.date(date.get());
+			request.setDate(FhirDates.parse(date.get()));
 		}
 
 		if (displayLanguage.isPresent()) {
-			builder.displayLanguage(displayLanguage.get());
+			request.setDisplayLanguage(displayLanguage.get());
 		}
 
 		if (properties != null && !properties.isEmpty()) {
-			builder.properties(properties);
+			request.setProperty(properties);
 		}
 		
-		return lookup(builder.build(), accept, _format, _pretty);
+		return lookup(request, accept, _format, _pretty);
 	}
 	
 	/**
@@ -228,24 +228,23 @@ public class FhirCodeSystemLookupController extends AbstractFhirController {
 	) {
 		
 		final var fhirParameters = toFhirParameters(requestBody, contentType);
-		final LookupRequest request = CodeSystemConverter_50.INSTANCE.toLookupRequest(fhirParameters);
+		final var request = new CodeSystemLookupParameters(fhirParameters);
 		
 		return lookup(request, accept, _format, _pretty);
 	}
 
 	private Promise<ResponseEntity<byte[]>> lookup(
-		final LookupRequest lookupRequest, 
+		final CodeSystemLookupParameters parameters, 
 		final String accept, 
 		final String _format, 
 		final Boolean _pretty
 	) {
 		return FhirRequests.codeSystems().prepareLookup()
-			.setRequest(lookupRequest)
+			.setParameters(parameters)
 			.buildAsync()
 			.execute(getBus())
-			.then(soLookupResult -> {
-				var fhirLookupResult = CodeSystemConverter_50.INSTANCE.fromLookupResult(soLookupResult);
-				return toResponseEntity(fhirLookupResult, accept, _format, _pretty);
+			.then(result -> {
+				return toResponseEntity(result.getParameters(), accept, _format, _pretty);
 			});
 	}
 }
