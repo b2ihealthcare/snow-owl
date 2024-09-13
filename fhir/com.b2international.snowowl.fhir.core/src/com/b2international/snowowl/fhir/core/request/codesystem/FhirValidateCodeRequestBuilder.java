@@ -34,7 +34,11 @@ public final class FhirValidateCodeRequestBuilder
 	private CodeSystemValidateCodeParameters parameters;
 	
 	public FhirValidateCodeRequestBuilder setParameters(Parameters parameters) {
-		this.parameters = new CodeSystemValidateCodeParameters(parameters);
+		return setParameters(new CodeSystemValidateCodeParameters(parameters));
+	}
+	
+	public FhirValidateCodeRequestBuilder setParameters(CodeSystemValidateCodeParameters parameters) {
+		this.parameters = parameters;
 		return getSelf();
 	}
 	

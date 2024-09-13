@@ -22,6 +22,10 @@ import org.hl7.fhir.r5.model.*;
  */
 public class CodeSystemValidateCodeParameters extends BaseParameters {
 
+	public CodeSystemValidateCodeParameters() {
+		super(new Parameters());
+	}
+	
 	public CodeSystemValidateCodeParameters(Parameters parameters) {
 		super(parameters);
 	}

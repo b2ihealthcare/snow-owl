@@ -24,10 +24,9 @@ import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
+import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.model.codesystem.ValidateCodeRequest;
-import com.b2international.snowowl.fhir.core.model.converter.CodeSystemConverter_50;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.operations.CodeSystemValidateCodeParameters;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -134,18 +133,18 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 		
 	) {
 		
-		ValidateCodeRequest.Builder builder = ValidateCodeRequest.builder()
-			.url(url)
-			.code(code)
-			.version(version.orElse(null))
-			.display(display.orElse(null))
-			.isAbstract(isAbstract.orElse(null));
+		var request = new CodeSystemValidateCodeParameters()
+			.setUrl(url)
+			.setCode(code)
+			.setVersion(version.orElse(null))
+			.setDisplay(display.orElse(null))
+			.setIsAbstract(isAbstract.orElse(null));
 		
 		if (date.isPresent()) {
-			builder.date(date.get());
+			request.setDate(FhirDates.parse(date.get()));
 		}
 				
-		return validateCode(builder.build(), accept, _format, _pretty);
+		return validateCode(request, accept, _format, _pretty);
 	}
 	
 	/**
@@ -217,7 +216,7 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 			
 	) {
 		final var fhirParameters = toFhirParameters(requestBody, contentType);
-		final ValidateCodeRequest request = CodeSystemConverter_50.INSTANCE.toValidateCodeRequest(fhirParameters);
+		final var request = new CodeSystemValidateCodeParameters(fhirParameters);
 		return validateCode(request, accept, _format, _pretty);
 	}
 
@@ -312,19 +311,19 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 	
 	) {
 		
-		ValidateCodeRequest.Builder builder = ValidateCodeRequest.builder()
+		var request = new CodeSystemValidateCodeParameters()
 			// XXX: Inject code system ID as a URI into the request
-			.url(codeSystemId)
-			.code(code)
-			.version(version.orElse(null))
-			.display(display.orElse(null))
-			.isAbstract(isAbstract.orElse(null));
+			.setUrl(codeSystemId)
+			.setCode(code)
+			.setVersion(version.orElse(null))
+			.setDisplay(display.orElse(null))
+			.setIsAbstract(isAbstract.orElse(null));
 		
 		if (date.isPresent()) {
-			builder.date(date.get());
+			request.setDate(FhirDates.parse(date.get()));
 		}
 		
-		return validateCode(builder.build(), accept, _format, _pretty);
+		return validateCode(request, accept, _format, _pretty);
 	}
 	
 	/**
@@ -404,7 +403,7 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 	) {
 		
 		final var fhirParameters = toFhirParameters(requestBody, contentType);
-		final ValidateCodeRequest request = CodeSystemConverter_50.INSTANCE.toValidateCodeRequest(fhirParameters);
+		final CodeSystemValidateCodeParameters request = new CodeSystemValidateCodeParameters(fhirParameters);
 		
 		// Validate parameters that are not allowed on the instance level
 		if (request.getUrl() != null) {
@@ -424,24 +423,23 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 		}
 		
 		// Before execution set the URI to match the path variable
-		request.setUrl(new Uri(codeSystemId));
+		request.setUrl(codeSystemId);
 		
 		return validateCode(request, accept, _format, _pretty);
 	}
 
 	private Promise<ResponseEntity<byte[]>> validateCode(
-		final ValidateCodeRequest validateCodeRequest, 
+		final CodeSystemValidateCodeParameters parameters, 
 		final String accept, 
 		final String _format, 
 		final Boolean _pretty
 	) {
 		return FhirRequests.codeSystems().prepareValidateCode()
-			.setRequest(validateCodeRequest)
+			.setParameters(parameters)
 			.buildAsync()
 			.execute(getBus())
-			.then(soValidateCodeResult -> {
-				var fhirValidateCodeResult = CodeSystemConverter_50.INSTANCE.fromValidateCodeResult(soValidateCodeResult);
-				return toResponseEntity(fhirValidateCodeResult, accept, _format, _pretty);
+			.then(result -> {
+				return toResponseEntity(result.getParameters(), accept, _format, _pretty);
 			});
 	}
 }
