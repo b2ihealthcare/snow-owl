@@ -21,22 +21,17 @@ import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAP
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_X_NAME;
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.lang.Boolean;
-import java.lang.String;
-import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.*;
-import java.util.Date;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.Platform;
-import org.linuxforhealth.fhir.model.r5.resource.CapabilityStatement;
-import org.linuxforhealth.fhir.model.r5.resource.OperationDefinition;
-import org.linuxforhealth.fhir.model.r5.resource.Resource;
-import org.linuxforhealth.fhir.model.r5.resource.TerminologyCapabilities;
-import org.linuxforhealth.fhir.model.r5.type.*;
-import org.linuxforhealth.fhir.model.r5.type.code.*;
+import org.hl7.fhir.r5.model.*;
+import org.hl7.fhir.r5.model.CapabilityStatement.RestfulCapabilityMode;
+import org.hl7.fhir.r5.model.CapabilityStatement.TypeRestfulInteraction;
+import org.hl7.fhir.r5.model.Enumeration;
+import org.hl7.fhir.r5.model.Enumerations.*;
+import org.hl7.fhir.r5.model.OperationDefinition.OperationKind;
 import org.osgi.framework.Version;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -145,23 +140,18 @@ public class FhirMetadataController extends AbstractFhirController {
 		final String baseUrl = MvcUriComponentsBuilder.fromController(FhirMetadataController.class)
 			.toUriString();
 		
-		final Resource resourceToReturn;
-		
 		if ("terminology".equals(mode)) {
-			resourceToReturn = metadataSupplier.get().terminologyCapabilities();
+			var terminologyCapabilities = metadataSupplier.get().terminologyCapabilities();
+			return toResponseEntity(terminologyCapabilities, accept, _format, _pretty); 
 		} else {
 			var capabilityStatement = metadataSupplier.get().capabilityStatement();
-			var implementation = capabilityStatement.getImplementation();
 			
-			resourceToReturn = capabilityStatement.toBuilder()
-				.url(org.linuxforhealth.fhir.model.r5.type.Uri.of(resourceUrl))
-				.implementation(implementation.toBuilder()
-					.url(org.linuxforhealth.fhir.model.r5.type.Url.of(baseUrl))
-					.build())
-				.build();
+			// override/set URL values
+			capabilityStatement.setUrl(resourceUrl);
+			capabilityStatement.getImplementation().setUrl(baseUrl);
+			
+			return toResponseEntity(capabilityStatement, accept, _format, _pretty);
 		}
-		
-		return toResponseEntity(resourceToReturn, accept, _format, _pretty);
 	}
 	
 	/**
@@ -228,11 +218,11 @@ public class FhirMetadataController extends AbstractFhirController {
 		
 		final Collection<OperationDefinition> operationDefinitions = collectOperationDefinitions(openAPI);
 		final Map<String, OperationDefinition> operationMap = indexOperationDefinitions(operationDefinitions);
-		final Collection<CapabilityStatement.Rest.Resource> resources = collectResources(openAPI, operationMap);
+		final List<CapabilityStatement.CapabilityStatementRestResourceComponent> resources = collectResources(openAPI, operationMap);
 		
-		final CapabilityStatement.Rest.Builder restBuilder = CapabilityStatement.Rest.builder()
-			.mode(RestfulCapabilityMode.SERVER)
-			.resource(resources);
+		final CapabilityStatement.CapabilityStatementRestComponent rest = new CapabilityStatement.CapabilityStatementRestComponent()
+			.setMode(RestfulCapabilityMode.SERVER)
+			.setResource(resources);
 
 		final Version bundleVersion = Platform.getBundle(CoreActivator.PLUGIN_ID).getVersion();
 		final String softwareVersion = bundleVersion.toString();
@@ -241,77 +231,79 @@ public class FhirMetadataController extends AbstractFhirController {
 
 		final String description = getServiceForClass(SnowOwlConfiguration.class).getDescription();
 
-		final CapabilityStatement capabilityStatement = createCapabilityStatement(restBuilder, softwareVersion, date, description);
+		final CapabilityStatement capabilityStatement = createCapabilityStatement(rest, softwareVersion, date, description);
 		final TerminologyCapabilities terminologyCapabilities = createTerminologyCapabilities(softwareVersion, date, description);
 		return new Metadata(capabilityStatement, terminologyCapabilities, operationMap);
 	}
 
-	private Collection<CapabilityStatement.Rest.Resource> collectResources(final OpenAPI openAPI, final Map<String, OperationDefinition> operationMap) {
+	private List<CapabilityStatement.CapabilityStatementRestResourceComponent> collectResources(final OpenAPI openAPI, final Map<String, OperationDefinition> operationMap) {
 		final Paths paths = openAPI.getPaths();
 		final List<io.swagger.v3.oas.models.tags.Tag> tags = openAPI.getTags();
 		
 		return tags.stream()
 			// Class-level tags with extensions indicate a resource
 			.filter(t -> t.getExtensions() != null && t.getExtensions().containsKey(B2I_OPENAPI_X_NAME))
-			.map(t -> {
-				final String resourceType = t.getName();
-				final Map<?, ?> nameExtensionMap = (Map<?, ?>) t.getExtensions().get(B2I_OPENAPI_X_NAME);
-				final String profile = (String) nameExtensionMap.get(B2I_OPENAPI_PROFILE);
-				
-				final CapabilityStatement.Rest.Resource.Builder resourceBuilder = CapabilityStatement.Rest.Resource.builder()
-					.type(ResourceTypeCode.of(resourceType))
-					.profile(Canonical.of(profile));
-			
-				// Collect the interactions that belong to the same tagged class resource
-				paths.values().stream()
-					.flatMap(pi -> pi.readOperations().stream())
-					.filter(o -> o.getTags().contains(resourceType)
-						&& o.getExtensions() != null
-						&& o.getExtensions().containsKey(B2I_OPENAPI_X_INTERACTION))
-					.forEachOrdered(op -> {
-						final Map<String, Object> operationExtensionMap = op.getExtensions();
-						final Map<?, ?> interactionMap = (Map<?, ?>) operationExtensionMap.get(B2I_OPENAPI_X_INTERACTION);
-				
-						interactionMap.entrySet().forEach(e -> {
-							final var interactionBuilder = CapabilityStatement.Rest.Resource.Interaction.builder()
-								.code(TypeRestfulInteraction.of((String) e.getKey()));
-							
-							final String value = (String) e.getValue();
-							if (!StringUtils.isEmpty(value)) {
-								interactionBuilder.documentation(Markdown.of(value));
-							}
-							
-							resourceBuilder.interaction(interactionBuilder.build());
-						});
-					});
-				
-				// Collect operations for the resource as well
-				paths.entrySet().stream()
-					.filter(e -> {
-						final String key = e.getKey();
-						final PathItem value = e.getValue();
+			.map(tag -> convertToCapabilityRestResource(tag, paths, operationMap))
+			.sorted(Comparator.comparing(r -> r.getType()))
+			.toList();
+	}
 
-						return key.startsWith(config.getApiBaseUrl())
-							&& key.contains("$")
-							&& (value.getGet() != null);
-					})
-					// "$" is part of the operation name
-					.map(e -> resourceType + getOperationName(e.getKey()))
-					.distinct()
-					.forEachOrdered(definitionKey -> {
-						final OperationDefinition operationDefinition = operationMap.get(definitionKey);
-						if (operationDefinition != null) {
-							resourceBuilder.operation(CapabilityStatement.Rest.Resource.Operation.builder()
-								.name(operationDefinition.getName())
-								.definition(buildOperationUrl(Code.of(resourceType), operationDefinition))
-								.build());
-						}
-					});
+	private CapabilityStatement.CapabilityStatementRestResourceComponent convertToCapabilityRestResource(io.swagger.v3.oas.models.tags.Tag tag, Paths paths, Map<String, OperationDefinition> operationMap) {
+		final String resourceType = tag.getName();
+		final Map<?, ?> nameExtensionMap = (Map<?, ?>) tag.getExtensions().get(B2I_OPENAPI_X_NAME);
+		final String profile = (String) nameExtensionMap.get(B2I_OPENAPI_PROFILE);
+		
+		final CapabilityStatement.CapabilityStatementRestResourceComponent resource = new CapabilityStatement.CapabilityStatementRestResourceComponent()
+			.setType(resourceType)
+			.setProfile(profile);
 	
-				return resourceBuilder.build();
+		// Collect the interactions that belong to the same tagged class resource
+		paths.values().stream()
+			.flatMap(pi -> pi.readOperations().stream())
+			.filter(o -> o.getTags().contains(resourceType)
+				&& o.getExtensions() != null
+				&& o.getExtensions().containsKey(B2I_OPENAPI_X_INTERACTION))
+			.forEachOrdered(op -> {
+				final Map<String, Object> operationExtensionMap = op.getExtensions();
+				final Map<?, ?> interactionMap = (Map<?, ?>) operationExtensionMap.get(B2I_OPENAPI_X_INTERACTION);
+		
+				interactionMap.entrySet().forEach(e -> {
+					final var interaction = new CapabilityStatement.ResourceInteractionComponent()
+						.setCode(TypeRestfulInteraction.fromCode((String) e.getKey()));
+					
+					final String value = (String) e.getValue();
+					if (!StringUtils.isEmpty(value)) {
+						interaction.setDocumentation(value);
+					}
+					
+					resource.addInteraction(interaction);
+				});
+			});
+		
+		// Collect operations for the resource as well
+		paths.entrySet().stream()
+			.filter(e -> {
+				final String key = e.getKey();
+				final PathItem value = e.getValue();
+
+				return key.startsWith(config.getApiBaseUrl())
+					&& key.contains("$")
+					&& (value.getGet() != null);
 			})
-			.sorted(Comparator.comparing(r -> r.getType().getValue()))
-			.collect(Collectors.toList());
+			// "$" is part of the operation name
+			.map(e -> resourceType + getOperationName(e.getKey()))
+			.distinct()
+			.forEachOrdered(definitionKey -> {
+				final OperationDefinition operationDefinition = operationMap.get(definitionKey);
+				if (operationDefinition != null) {
+					resource.addOperation(new CapabilityStatement.CapabilityStatementRestResourceOperationComponent()
+						.setName(operationDefinition.getName())
+						.setDefinition(buildOperationUrl(new CodeType(resourceType), operationDefinition))
+					);
+				}
+			});
+
+		return resource;
 	}
 
 	private Collection<OperationDefinition> collectOperationDefinitions(final OpenAPI openAPI) {
@@ -335,9 +327,9 @@ public class FhirMetadataController extends AbstractFhirController {
 		final Map<String, OperationDefinition> operationMap = newHashMap();
 
 		for (final OperationDefinition operationDefinition : operationDefinitions) {
-			for (final Code code : operationDefinition.getResource()) {
+			for (final Enumeration<VersionIndependentResourceTypesAll> code : operationDefinition.getResource()) {
 				// The "$" separator is already built in
-				final String key = code.getValue() + operationDefinition.getName().getValue();
+				final String key = code.getValue() + operationDefinition.getName();
 				operationMap.put(key, operationDefinition);
 			}
 		}
@@ -345,39 +337,39 @@ public class FhirMetadataController extends AbstractFhirController {
 		return operationMap;
 	}
 
-	private CapabilityStatement createCapabilityStatement(final CapabilityStatement.Rest.Builder restBuilder, String softwareVersion, Date date, String description) {
+	private CapabilityStatement createCapabilityStatement(final CapabilityStatement.CapabilityStatementRestComponent rest, String softwareVersion, Date date, String description) {
 		
-		return CapabilityStatement.builder()
+		return new CapabilityStatement()
 			// .url(...) is added later
-			.version(softwareVersion)
-			.name("snow-owl-capability-statement")
-			.title("FHIR Capability statement for Snow Owl© Terminology Server")
-			.description(Markdown.of("This statement describes FHIR resource types and operations supported by the terminology server."))
-			.status(PublicationStatus.ACTIVE)
-			.date(DateTime.of(Instant.ofEpochMilli(date.getTime()).atZone(ZoneOffset.UTC)))
-			.kind(CapabilityStatementKind.INSTANCE)
-			.fhirVersion(FHIRVersion.VERSION_5_0_0)
-			.experimental(false)
-			.instantiates(Canonical.of("http://hl7.org/fhir/CapabilityStatement/terminology-server"))
-			.software(CapabilityStatement.Software.builder()
-				.name("Snow Owl©")
-				.version(softwareVersion)
-				.build()) 
-			.implementation(CapabilityStatement.Implementation.builder()
-				.url(Url.of("https://b2ihealthcare.com"))
-				.description(Markdown.of(description))
-				.build())
-			.format(
-				Code.of(FORMAT_JSON), 
-				Code.of(TEXT_JSON_VALUE),
-				Code.of(APPLICATION_JSON_VALUE),
-				Code.of(APPLICATION_FHIR_JSON_VALUE),
-				Code.of(FORMAT_XML),
-				Code.of(TEXT_XML_VALUE),
-				Code.of(APPLICATION_XML_VALUE),
-				Code.of(APPLICATION_FHIR_XML_VALUE))
-			.rest(restBuilder.build())
-			.build();
+			.setVersion(softwareVersion)
+			.setName("snow-owl-capability-statement")
+			.setTitle("FHIR Capability statement for Snow Owl© Terminology Server")
+			.setDescription("This statement describes FHIR resource types and operations supported by the terminology server.")
+			.setStatus(PublicationStatus.ACTIVE)
+			.setDate(date)
+			.setKind(CapabilityStatementKind.INSTANCE)
+			.setFhirVersion(FHIRVersion._5_0_0)
+			.setExperimental(false)
+			.setInstantiates(List.of(new CanonicalType("http://hl7.org/fhir/CapabilityStatement/terminology-server")))
+			.setSoftware(new CapabilityStatement.CapabilityStatementSoftwareComponent()
+				.setName("Snow Owl©")
+				.setVersion(softwareVersion)
+			) 
+			.setImplementation(new CapabilityStatement.CapabilityStatementImplementationComponent()
+				.setUrl("https://b2ihealthcare.com")
+				.setDescription(description)
+			)
+			.setFormat(List.of(
+				new CodeType(FORMAT_JSON), 
+				new CodeType(TEXT_JSON_VALUE),
+				new CodeType(APPLICATION_JSON_VALUE),
+				new CodeType(APPLICATION_FHIR_JSON_VALUE),
+				new CodeType(FORMAT_XML),
+				new CodeType(TEXT_XML_VALUE),
+				new CodeType(APPLICATION_XML_VALUE),
+				new CodeType(APPLICATION_FHIR_XML_VALUE)
+			))
+			.setRest(List.of(rest));
 	}
 	
 	private Date getDateFromQualifier(final String qualifier) {
@@ -392,13 +384,10 @@ public class FhirMetadataController extends AbstractFhirController {
 		}
 	}
 
-	private Canonical buildOperationUrl(final Code code, final OperationDefinition operationDefinition) {
-		
-		final String resourceUrl = MvcUriComponentsBuilder.fromMethodName(FhirMetadataController.class, "operationDefinition", "{operation}", null, null, null)
-			.buildAndExpand(Map.of("operation", code.getValue() + operationDefinition.getName().getValue()))
+	private String buildOperationUrl(final CodeType code, final OperationDefinition operationDefinition) {
+		return MvcUriComponentsBuilder.fromMethodName(FhirMetadataController.class, "operationDefinition", "{operation}", null, null, null)
+			.buildAndExpand(Map.of("operation", code.getValue() + operationDefinition.getName()))
 			.toUriString();
-
-		return Canonical.of(resourceUrl);
 	}
 
 	private OperationDefinition buildOperationDefinition(String key, PathItem pathItem) {
@@ -409,17 +398,17 @@ public class FhirMetadataController extends AbstractFhirController {
 			.findFirst()
 			.isPresent();
 
-		final OperationDefinition.Builder operationDefinitionBuilder = OperationDefinition.builder()
-			.name(name)
-			.code(Code.of(name))
-			.kind(OperationKind.OPERATION)
-			.affectsState(false)
-			.status(PublicationStatus.ACTIVE)
-			.system(false)
-			.instance(isInstance)
-			.type(true);
+		final OperationDefinition operationDefinition = new OperationDefinition()
+			.setName(name)
+			.setCode(name)
+			.setKind(OperationKind.OPERATION)
+			.setAffectsState(false)
+			.setStatus(PublicationStatus.ACTIVE)
+			.setSystem(false)
+			.setInstance(isInstance)
+			.setType(true);
 		
-		getOperation.getTags().forEach(t -> operationDefinitionBuilder.resource(FHIRTypes.of(t)));
+		getOperation.getTags().forEach(tag -> operationDefinition.addResource(VersionIndependentResourceTypesAll.fromCode(tag)));
 		
 		// Only interested in 'query' type parameters
 		getOperation.getParameters()
@@ -429,39 +418,39 @@ public class FhirMetadataController extends AbstractFhirController {
 				&& !p.getName().equals("_pretty"))
 			.forEach(p -> {
 				final io.swagger.v3.oas.models.media.Schema<?> schema = p.getSchema();
-				final OperationDefinition.Parameter.Builder parameterBuilder = OperationDefinition.Parameter.builder()
-					.name(Code.of(p.getName()))
-					.use(OperationParameterUse.IN)
-					.documentation(Markdown.of(p.getDescription()));
+				final OperationDefinition.OperationDefinitionParameterComponent parameter = new OperationDefinition.OperationDefinitionParameterComponent()
+					.setName(p.getName())
+					.setUse(OperationParameterUse.IN)
+					.setDocumentation(p.getDescription());
 				
 				if ("array".equals(schema.getType())) {
-					parameterBuilder.type(FHIRAllTypes.of(((io.swagger.v3.oas.models.media.ArraySchema) schema).getItems().getType()));
+					parameter.setType(FHIRTypes.fromCode(((io.swagger.v3.oas.models.media.ArraySchema) schema).getItems().getType()));
 					
 					if (schema.getMinProperties() == null) {
-						parameterBuilder.min(0);
+						parameter.setMin(0);
 					} else {
-						parameterBuilder.min(schema.getMinProperties());
+						parameter.setMin(schema.getMinProperties());
 					}
 					
 					if (schema.getMaxProperties() == null) {
-						parameterBuilder.max("*");
+						parameter.setMax("*");
 					} else {
-						parameterBuilder.max(schema.getMaxProperties().toString());
+						parameter.setMax(schema.getMaxProperties().toString());
 					}
 				} else {
-					parameterBuilder.type(FHIRAllTypes.of(schema.getType()));
+					parameter.setType(FHIRTypes.fromCode(schema.getType()));
 					
 					if (p.getRequired() == true) {
-						parameterBuilder.min(1).max("1");
+						parameter.setMin(1).setMax("1");
 					} else {
-						parameterBuilder.min(0).max("1");
+						parameter.setMin(0).setMax("1");
 					}
 				}
 				
-				operationDefinitionBuilder.parameter(parameterBuilder.build());
+				operationDefinition.addParameter(parameter);
 		});
 		
-		return operationDefinitionBuilder.build();
+		return operationDefinition;
 	}
 
 	private String getOperationName(String key) {
@@ -470,38 +459,38 @@ public class FhirMetadataController extends AbstractFhirController {
 	}
 
 	private TerminologyCapabilities createTerminologyCapabilities(String softwareVersion, Date date, String description) {
-		return TerminologyCapabilities.builder()
+		return new TerminologyCapabilities()
 			// .url(...) is added later
-			.version(softwareVersion)
-			.name("snow-owl-terminology-capabilities")
-			.title("FHIR Terminology Capabilities of Snow Owl© Terminology Server")
-			.description(Markdown.of("This statement describes additional details about supported FHIR terminology resource operations."))
-			.status(PublicationStatus.ACTIVE)
-			.date(DateTime.of(Instant.ofEpochMilli(date.getTime()).atZone(ZoneOffset.UTC)))
-			.kind(CapabilityStatementKind.INSTANCE)
-			.experimental(false)
-			.software(TerminologyCapabilities.Software.builder()
-				.name("Snow Owl©")
-				.version(softwareVersion)
-				.build()) 
-			.implementation(TerminologyCapabilities.Implementation.builder()
-				.description(Markdown.of(description))
-				.url(Url.of("https://b2ihealthcare.com"))
-				.build())
+			.setVersion(softwareVersion)
+			.setName("snow-owl-terminology-capabilities")
+			.setTitle("FHIR Terminology Capabilities of Snow Owl© Terminology Server")
+			.setDescription("This statement describes additional details about supported FHIR terminology resource operations.")
+			.setStatus(PublicationStatus.ACTIVE)
+			.setDate(date)
+			.setKind(CapabilityStatementKind.INSTANCE)
+			.setExperimental(false)
+			.setSoftware(new TerminologyCapabilities.TerminologyCapabilitiesSoftwareComponent()
+				.setName("Snow Owl©")
+				.setVersion(softwareVersion)
+			) 
+			.setImplementation(new TerminologyCapabilities.TerminologyCapabilitiesImplementationComponent()
+				.setDescription(description)
+				.setUrl("https://b2ihealthcare.com")
+			)
 			// XXX: Not adding any information on code system operations here as it is tied to the resource
 			// .codeSystem(...)
-			.expansion(TerminologyCapabilities.Expansion.builder()
-				.hierarchical(false)
-				.paging(true)
-				.build())
-			.validateCode(TerminologyCapabilities.ValidateCode.builder()
-				.translations(false)
-				.build())
-			.translation(TerminologyCapabilities.Translation.builder()
-				.needsMap(true)
-				.build())
+			.setExpansion(new TerminologyCapabilities.TerminologyCapabilitiesExpansionComponent()
+				.setHierarchical(false)
+				.setPaging(true)
+			)
+			.setValidateCode(new TerminologyCapabilities.TerminologyCapabilitiesValidateCodeComponent()
+				.setTranslations(false)
+			)
+			.setTranslation(new TerminologyCapabilities.TerminologyCapabilitiesTranslationComponent()
+				.setNeedsMap(true)
+			)
 			// XXX: Not adding statement related to closure maintenance as it is unsupported entirely
 			// .closure(...)
-			.build();
+			;
 	}
 }
