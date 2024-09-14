@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.time.LocalDate;
 
+import org.hl7.fhir.r5.model.ValueSet;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -37,8 +38,6 @@ import com.b2international.commons.http.AcceptLanguageHeader;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.model.converter.ValueSetConverter_50;
-import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
 
@@ -146,41 +145,13 @@ public class FhirValueSetController extends AbstractFhirController {
 		
 	) {
 		
-		final var fhirValueSet = toFhirResource(requestBody, contentType, org.linuxforhealth.fhir.model.r5.resource.ValueSet.class);
-		final ValueSet soValueSet = ValueSetConverter_50.INSTANCE.toInternal(fhirValueSet);
+		final var valueSet = toFhirResource(requestBody, contentType, ValueSet.class);
 
 		// Ignore the input identifier on purpose and assign one locally
 		final String generatedId = IDs.base62UUID();
-		final ValueSet soValueSetWithId = ValueSet.builder(generatedId)
-			.compose(soValueSet.getCompose())
-			.contacts(soValueSet.getContacts())
-			.copyright(soValueSet.getCopyright())
-			.date(soValueSet.getDate())
-			.description(soValueSet.getDescription())
-			.expansion(soValueSet.getExpansion())
-			.experimental(soValueSet.getExperimental())
-			.extensions(soValueSet.getExtensions())
-			.identifiers(soValueSet.getIdentifiers())
-			.immutable(soValueSet.getImmutable())
-			.implicitRules(soValueSet.getImplicitRules())
-			.jurisdictions(soValueSet.getJurisdictions())
-			.language(soValueSet.getLanguage())
-			.meta(soValueSet.getMeta())
-			.name(soValueSet.getName())
-			// .narrative(...) is a special version of .text(...)
-			.publisher(soValueSet.getPublisher())
-			.purpose(soValueSet.getPurpose())
-			.resourceType(soValueSet.getResourceType())
-			.status(soValueSet.getStatus())
-			.text(soValueSet.getText())
-			.title(soValueSet.getTitle())
-			// .toolingId(...) is ignored, we will not see it on the input side
-			.url(soValueSet.getUrl())
-			.usageContexts(soValueSet.getUsageContexts())
-			.version(soValueSet.getVersion())
-			.build();
+		valueSet.setId(generatedId);
 		
-		return createOrUpdate(generatedId, soValueSetWithId, defaultEffectiveDate, author, owner, ownerProfileName, bundleId);
+		return createOrUpdate(generatedId, valueSet, defaultEffectiveDate, author, owner, ownerProfileName, bundleId);
 	}
 
 	/**
@@ -266,10 +237,9 @@ public class FhirValueSetController extends AbstractFhirController {
 		
 	) {
 		
-		final var fhirValueSet = toFhirResource(requestBody, contentType, org.linuxforhealth.fhir.model.r5.resource.ValueSet.class);
-		final ValueSet soValueSet = ValueSetConverter_50.INSTANCE.toInternal(fhirValueSet);
+		final var valueSet = toFhirResource(requestBody, contentType, ValueSet.class);
 
-		return createOrUpdate(id, soValueSet, defaultEffectiveDate, author, owner, ownerProfileName, bundleId);
+		return createOrUpdate(id, valueSet, defaultEffectiveDate, author, owner, ownerProfileName, bundleId);
 	}
 	
 	private ResponseEntity<Void> createOrUpdate(
@@ -286,7 +256,7 @@ public class FhirValueSetController extends AbstractFhirController {
 			throw new BadRequestException("Value set resource did not contain an id element.");
 		}
 		
-		final String idInResource = soValueSet.getId().getIdValue();
+		final String idInResource = soValueSet.getId();
 		if (!id.equals(idInResource)) {
 			throw new BadRequestException("Value set resource ID '" + idInResource + "' disagrees with '" + id + "' provided in the request URL.");
 		}
@@ -485,9 +455,8 @@ public class FhirValueSetController extends AbstractFhirController {
 			.setLocales(acceptLanguage)
 			.buildAsync()
 			.execute(getBus())
-			.then(soValueSet -> {
-				var fhirValueSet = ValueSetConverter_50.INSTANCE.fromInternal(soValueSet);
-				return toResponseEntity(fhirValueSet, accept, _format, _pretty);
+			.then(valueSet -> {
+				return toResponseEntity(valueSet, accept, _format, _pretty);
 			});
 	}
 	
