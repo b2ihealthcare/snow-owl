@@ -34,7 +34,11 @@ public final class FhirConceptMapTranslateRequestBuilder
 	private ConceptMapTranslateParameters parameters;
 	
 	public FhirConceptMapTranslateRequestBuilder setParameters(Parameters parameters) {
-		this.parameters = new ConceptMapTranslateParameters(parameters);
+		return setParameters(new ConceptMapTranslateParameters(parameters));
+	}
+	
+	public FhirConceptMapTranslateRequestBuilder setParameters(ConceptMapTranslateParameters parameters) {
+		this.parameters = parameters;
 		return getSelf();
 	}
 	

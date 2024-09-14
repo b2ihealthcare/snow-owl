@@ -24,12 +24,10 @@ import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
-import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
-import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateRequest;
-import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateRequest.Builder;
-import com.b2international.snowowl.fhir.core.model.converter.ConceptMapConverter_50;
+import com.b2international.snowowl.fhir.core.operations.ConceptMapTranslateParameters;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
+import co.elastic.clients.elasticsearch.sql.TranslateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -131,29 +129,17 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 		
 	) {
 		
-		Builder builder = TranslateRequest.builder()
-			.code(code)
-			.system(system);
+		var parameters = new ConceptMapTranslateParameters()
+			.setSourceCode(code)
+			.setSystem(system);
 		
-		version.ifPresent(builder::version);
-			
-		if (source.isPresent()) {
-			builder.source(source.get());
-		}
+		version.ifPresent(parameters::setVersion);
+		source.ifPresent(parameters::setSource);
+		target.ifPresent(parameters::setTarget);
+		targetSystem.ifPresent(parameters::setTargetSystem);
+		isReverse.ifPresent(parameters::setIsReverse);
 		
-		if (target.isPresent()) {
-			builder.target(target.get());
-		}
-		
-		if (targetSystem.isPresent()) {
-			builder.targetSystem(targetSystem.get());
-		}
-		
-		if (isReverse.isPresent()) {
-			builder.isReverse(isReverse.get());
-		}
-		
-		return translate(builder.build(), accept, _format, _pretty);
+		return translate(parameters, accept, _format, _pretty);
 	}
 
 	/**
@@ -227,8 +213,8 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 				
 	) {
 		
-		final var fhirParameters = toFhirParameters(requestBody, contentType);
-		final TranslateRequest request = ConceptMapConverter_50.INSTANCE.toTranslateRequest(fhirParameters);
+		final var parameters = toFhirParameters(requestBody, contentType);
+		final var request = new ConceptMapTranslateParameters(parameters);
 		
 		return translate(request, accept, _format, _pretty);
 	}
@@ -319,33 +305,19 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 		
 	) {
 		
-		TranslateRequest.Builder builder = TranslateRequest.builder()
-			.code(code)
-			.system(system)
+		var parameters = new ConceptMapTranslateParameters()
+			.setCode(code)
+			.setSystem(system)
 			// XXX: Using a concept map ID as the URL here
-			.url(conceptMapId);
+			.setUrl(conceptMapId);
 		
-		if (version.isPresent()) {
-			builder.version(version.get());
-		}
+		version.ifPresent(parameters::setVersion);
+		source.ifPresent(parameters::setSource);
+		target.ifPresent(parameters::setTarget);
+		targetSystem.ifPresent(parameters::setTargetSystem);
+		isReverse.ifPresent(parameters::setIsReverse);
 		
-		if(source.isPresent()) {
-			builder.source(source.get());
-		}
-		
-		if(target.isPresent()) {
-			builder.target(target.get());
-		}
-		
-		if(targetSystem.isPresent()) {
-			builder.targetSystem(targetSystem.get());
-		}
-		
-		if(isReverse.isPresent()) {
-			builder.isReverse(isReverse.get());
-		}
-		
-		return translate(builder.build(), accept, _format, _pretty);
+		return translate(parameters, accept, _format, _pretty);
 	}
 	
 	/**
@@ -425,8 +397,8 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 		
 	) {
 
-		final var fhirParameters = toFhirParameters(requestBody, contentType);
-		final TranslateRequest request = ConceptMapConverter_50.INSTANCE.toTranslateRequest(fhirParameters);
+		final var parameters = toFhirParameters(requestBody, contentType);
+		final var request = new ConceptMapTranslateParameters(parameters);
 		
 		// Before execution set the URI to match the path variable
 		request.setUrl(conceptMapId);
@@ -435,18 +407,17 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 	}
 
 	private Promise<ResponseEntity<byte[]>> translate(
-		final TranslateRequest translateRequest, 
+		final ConceptMapTranslateParameters parameters, 
 		final String accept, 
 		final String _format, 
 		final Boolean _pretty
 	) {
 		return FhirRequests.conceptMaps().prepareTranslate()
-			.setRequest(translateRequest)
+			.setParameters(parameters)
 			.buildAsync()
 			.execute(getBus())
-			.then(soTranslateResult -> {
-				var fhirTranslateResult = ConceptMapConverter_50.INSTANCE.fromTranslateResult(soTranslateResult);
-				return toResponseEntity(fhirTranslateResult, accept, _format, _pretty);
+			.then(result -> {
+				return toResponseEntity(result.getParameters(), accept, _format, _pretty);
 			});
 	}
 }
