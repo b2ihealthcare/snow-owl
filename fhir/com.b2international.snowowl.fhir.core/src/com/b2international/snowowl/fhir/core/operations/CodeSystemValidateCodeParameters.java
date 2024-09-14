@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.operations;
 
+import java.util.Date;
+
 import org.hl7.fhir.r5.model.*;
 
 /**
@@ -32,6 +34,10 @@ public class CodeSystemValidateCodeParameters extends BaseParameters {
 	
 	public UriType getUrl() {
 		return getParameterValue("url", Parameters.ParametersParameterComponent::getValueUriType);
+	}
+	
+	public CodeSystem getCodeSystem() {
+		return getParameterValue("codeSystem", parameter -> (CodeSystem) parameter.getResource());
 	}
 	
 	public CodeType getCode() {
@@ -64,6 +70,84 @@ public class CodeSystemValidateCodeParameters extends BaseParameters {
 	
 	public CodeType getDisplayLanguage() {
 		return getParameterValue("displayLanguage", Parameters.ParametersParameterComponent::getValueCodeType);
+	}
+	
+	public CodeSystemValidateCodeParameters setUrl(String url) {
+		return setUrl(new UriType(url));
+	}
+
+	public CodeSystemValidateCodeParameters setUrl(UriType url) {
+		getParameters().addParameter("url", url);
+		return this;
+	}
+	
+	public CodeSystemValidateCodeParameters setCodeSystem(CodeSystem codeSystem) {
+		getParameters().addParameter(new Parameters.ParametersParameterComponent("codeSystem").setResource(codeSystem));
+		return this;
+	}
+	
+	public CodeSystemValidateCodeParameters setCode(String code) {
+		return setCode(new CodeType(code));
+	}
+
+	public CodeSystemValidateCodeParameters setCode(CodeType code) {
+		getParameters().addParameter("code", code);
+		return this;
+	}
+	
+	public CodeSystemValidateCodeParameters setCoding(Coding coding) {
+		getParameters().addParameter("coding", coding);
+		return this;
+	}
+	
+	public CodeSystemValidateCodeParameters setCodeableConcept(CodeableConcept codeableConcept) {
+		getParameters().addParameter("codeableConcept", codeableConcept);
+		return this;
+	}
+	
+	public CodeSystemValidateCodeParameters setVersion(String version) {
+		return setVersion(new StringType(version));
+	}
+
+	public CodeSystemValidateCodeParameters setVersion(StringType version) {
+		getParameters().addParameter("version", version);
+		return this;
+	}
+	
+	public CodeSystemValidateCodeParameters setDisplay(String display) {
+		return setDisplay(new StringType(display));
+	}
+
+	public CodeSystemValidateCodeParameters setDisplay(StringType display) {
+		getParameters().addParameter("display", display);
+		return this;
+	}
+	
+	public CodeSystemValidateCodeParameters setDate(Date date) {
+		return setDate(new DateType(date));
+	}
+	
+	public CodeSystemValidateCodeParameters setDate(DateType date) {
+		getParameters().addParameter("date", date);
+		return this;
+	}
+	
+	public CodeSystemValidateCodeParameters setIsAbstract(Boolean isAbstract) {
+		return isAbstract == null ? this : setIsAbstract(new BooleanType(isAbstract));
+	}
+	
+	public CodeSystemValidateCodeParameters setIsAbstract(BooleanType isAbstract) {
+		getParameters().addParameter("isAbstract", isAbstract);
+		return this;
+	}
+	
+	public CodeSystemValidateCodeParameters setDisplayLanguage(String displayLanguage) {
+		return setDisplayLanguage(new CodeType(displayLanguage));
+	}
+	
+	public CodeSystemValidateCodeParameters setDisplayLanguage(CodeType displayLanguage) {
+		getParameters().addParameter("displayLanguage", displayLanguage);
+		return this;
 	}
 
 }
