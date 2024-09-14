@@ -28,7 +28,6 @@ import org.hl7.fhir.r5.model.Bundle;
 import org.hl7.fhir.r5.model.CodeSystem;
 import org.hl7.fhir.r5.model.Enumerations.FilterOperator;
 import org.hl7.fhir.r5.model.Enumerations.PublicationStatus;
-import org.hl7.fhir.r5.model.Parameters;
 import org.hl7.fhir.r5.model.ValueSet;
 import org.hl7.fhir.r5.model.ValueSet.ConceptReferenceDesignationComponent;
 
@@ -64,8 +63,8 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 	
 	private ValueSetExpandParameters parameters;
 
-	public FhirValueSetExpandRequest(Parameters parameters) {
-		this.parameters = new ValueSetExpandParameters(parameters);
+	public FhirValueSetExpandRequest(ValueSetExpandParameters parameters) {
+		this.parameters = parameters;
 	}
 	
 	@Override

@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.fhir.core.operations;
 
+import java.util.Date;
 import java.util.List;
 
-import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.r5.model.*;
 
 /**
@@ -29,6 +29,10 @@ import org.hl7.fhir.r5.model.*;
  */
 public final class ValueSetExpandParameters extends BaseParameters {
 
+	public ValueSetExpandParameters() {
+		super(new Parameters());
+	}
+	
 	public ValueSetExpandParameters(Parameters parameters) {
 		super(parameters);
 	}
@@ -38,11 +42,11 @@ public final class ValueSetExpandParameters extends BaseParameters {
 	}
 	
 	public ValueSet getValueSet() {
-		throw new FHIRException("Inline input parameter 'valueSet' is not supported.");
+		return getParameterValue("valueSet", value -> (ValueSet) value.getResource());
 	}
 	
 	public StringType getValueSetVersion() {
-		throw new FHIRException("Inline input parameter 'valueSetVersion' is not supported.");
+		return getParameterValue("valueSetVersion", Parameters.ParametersParameterComponent::getValueStringType);
 	}
 	
 	public UriType getContext() {
@@ -125,5 +129,82 @@ public final class ValueSetExpandParameters extends BaseParameters {
 	public BooleanType getWithHistorySupplements() {
 		return getParameterValue("withHistorySupplements", Parameters.ParametersParameterComponent::getValueBooleanType);
 	}
+	
+	public ValueSetExpandParameters setUrl(String url) {
+		return setUrl(new UriType(url));
+	}
+	
+	public ValueSetExpandParameters setUrl(UriType url) {
+		getParameters().addParameter("url", url);
+		return this;
+	}
+	
+	public ValueSetExpandParameters setValueSet(ValueSet valueSet) {
+		getParameters().addParameter(new Parameters.ParametersParameterComponent("valueSet").setResource(valueSet));
+		return this;
+	}
+	
+	public ValueSetExpandParameters setValueSetVersion(String valueSetVersion) {
+		return setValueSetVersion(new StringType(valueSetVersion));
+	}
+	
+	public ValueSetExpandParameters setValueSetVersion(StringType valueSetVersion) {
+		getParameters().addParameter("valueSetVersion", valueSetVersion);
+		return this;
+	}
+	
+	public ValueSetExpandParameters setContext(String context) {
+		return setContext(new UriType(context));
+	}
 
+	public ValueSetExpandParameters setContext(UriType context) {
+		getParameters().addParameter("context", context);
+		return this;
+	}
+	
+	public ValueSetExpandParameters setContextDirection(String contextDirection) {
+		return setContextDirection(new CodeType(contextDirection));
+	}
+	
+	public ValueSetExpandParameters setContextDirection(CodeType contextDirection) {
+		getParameters().addParameter("contextDirection", contextDirection);
+		return this;
+	}
+	
+	public ValueSetExpandParameters setFilter(String filter) {
+		return setFilter(new StringType(filter));
+	}
+	
+	public ValueSetExpandParameters setFilter(StringType filter) {
+		getParameters().addParameter("filter", filter);
+		return this;
+	}
+	
+	public ValueSetExpandParameters setDate(Date date) {
+		return setDate(new DateType(date));
+	}
+	
+	public ValueSetExpandParameters setDate(DateType date) {
+		getParameters().addParameter("date", date);
+		return this;
+	}
+	
+	public ValueSetExpandParameters setOffset(Integer offset) {
+		return setOffset(new IntegerType(offset));
+	}
+	
+	public ValueSetExpandParameters setOffset(IntegerType offset) {
+		getParameters().addParameter("offset", offset);
+		return this;
+	}
+	
+	public ValueSetExpandParameters setCount(Integer count) {
+		return setCount(new IntegerType(count));
+	}
+	
+	public ValueSetExpandParameters setCount(IntegerType count) {
+		getParameters().addParameter("count", count);
+		return this;
+	}
+ 
 }
