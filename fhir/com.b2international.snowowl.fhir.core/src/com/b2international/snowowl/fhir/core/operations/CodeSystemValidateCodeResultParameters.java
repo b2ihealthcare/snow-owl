@@ -15,7 +15,9 @@
  */
 package com.b2international.snowowl.fhir.core.operations;
 
+import org.hl7.fhir.r5.model.BooleanType;
 import org.hl7.fhir.r5.model.Parameters;
+import org.hl7.fhir.r5.model.StringType;
 
 /**
  * @since 9.3 
@@ -28,6 +30,18 @@ public class CodeSystemValidateCodeResultParameters extends BaseParameters {
 	
 	public CodeSystemValidateCodeResultParameters(Parameters parameters) {
 		super(parameters);
+	}
+	
+	public BooleanType getResult() {
+		return getParameterValue("result", Parameters.ParametersParameterComponent::getValueBooleanType);
+	}
+	
+	public StringType getMessage() {
+		return getParameterValue("message", Parameters.ParametersParameterComponent::getValueStringType);
+	}
+	
+	public StringType getDisplay() {
+		return getParameterValue("display", Parameters.ParametersParameterComponent::getValueStringType);
 	}
 	
 	public CodeSystemValidateCodeResultParameters setResult(boolean result) {
