@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import org.hl7.fhir.r5.model.*;
 import org.hl7.fhir.r5.model.Bundle.BundleType;
 import org.hl7.fhir.r5.model.ContactPoint.ContactPointSystem;
+import org.hl7.fhir.r5.model.Enumerations.PublicationStatus;
 import org.hl7.fhir.r5.model.Narrative.NarrativeStatus;
 import org.hl7.fhir.utilities.xhtml.NodeType;
 import org.hl7.fhir.utilities.xhtml.XhtmlNode;
@@ -257,9 +258,8 @@ public abstract class FhirResourceSearchRequest<T extends MetadataResource> exte
 	protected T toFhirResource(RepositoryContext context, ResourceFragment resource) {
 		T entry = (T) createResource()
 				// mandatory fields
+				.setStatus(toPublicationStatus(resource.getStatus()))
 				.setId(resource.getId())
-				// XXX: inclusion of the status field is pushed to each search request subclass as the field is being declared on the concrete object classes rather than on abstract level
-				// setStatus(PublicationStatus.getByCodeValue(resource.getStatus()))
 				.setMeta(toMeta(resource));
 		
 		// optional fields
@@ -291,6 +291,15 @@ public abstract class FhirResourceSearchRequest<T extends MetadataResource> exte
 		expandResourceSpecificFields(context, entry, resource);
 		
 		return entry;
+	}
+
+	private PublicationStatus toPublicationStatus(String status) {
+		try {
+			return PublicationStatus.fromCode(status);
+		} catch (Exception e) {
+			// ignore any errors coming from status detection and treat it as unknown status
+			return PublicationStatus.UNKNOWN;
+		}
 	}
 
 	private Meta toMeta(ResourceFragment resource) {
