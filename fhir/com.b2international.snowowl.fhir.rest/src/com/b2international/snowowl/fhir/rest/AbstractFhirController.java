@@ -16,11 +16,16 @@
 package com.b2international.snowowl.fhir.rest;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
 import org.hl7.fhir.r5.elementmodel.Manager;
+import org.hl7.fhir.r5.elementmodel.Manager.FhirFormat;
+import org.hl7.fhir.r5.formats.IParser.OutputStyle;
+import org.hl7.fhir.r5.formats.JsonParser;
+import org.hl7.fhir.r5.formats.XmlParser;
 import org.hl7.fhir.r5.model.Bundle;
 import org.hl7.fhir.r5.model.OperationOutcome;
 import org.hl7.fhir.r5.model.OperationOutcome.IssueSeverity;
@@ -218,17 +223,29 @@ public abstract class AbstractFhirController extends AbstractRestService {
 			 * XXX: There is no overriding query parameter for "input" content types, but we still
 			 * want to use JSON as the default if no type was specified
 			 */
-			final FHIRParser fhirParser = FHIRParser.parser(getFormat(contentType, null));
-			final var fhirResource = fhirParser.parse(requestBody);
+			final FhirFormat format = getFormat(contentType, null);
+			
+			final Resource fhirResource; 
+			switch (format) {
+			case JSON:
+				fhirResource = new JsonParser().parse(requestBody);
+				break;
+			case XML:
+				fhirResource = new XmlParser().parse(requestBody);
+				break;
+			default:
+				throw new IllegalStateException("Should be already handled in getFormat(contentType, null)");
+			}
+			
 	
-			if (!fhirResource.is(resourceClass)) {
+			if (!resourceClass.isAssignableFrom(fhirResource.getClass())) {
 				throw new BadRequestException(String.format("Expected a complete %s resource as the request body, got %s.",
 					resourceClass.getSimpleName(), fhirResource.getClass().getSimpleName()));
 			}
 			
-			return fhirResource.as(resourceClass);
+			return resourceClass.cast(fhirResource);
 		
-		} catch (FHIRParserException e) {
+		} catch (IOException e) {
 			throw new BadRequestException(String.format("Failed to parse request body as a complete %s resource: %s", resourceClass.getSimpleName(), e.getMessage()));
 		}
 	}
@@ -243,13 +260,24 @@ public abstract class AbstractFhirController extends AbstractRestService {
 		final String _format,
 		final Boolean _pretty
 	) {
-		final boolean prettyPrinting = (_pretty != null) && _pretty; 
-		final FHIRGenerator fhirGenerator = FHIRGenerator.generator(getFormat(accept, _format), prettyPrinting);
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		final boolean prettyPrinting = (_pretty != null) && _pretty;
+		final FhirFormat format = getFormat(accept, _format);
 		
+		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
-			fhirGenerator.generate(resource, baos);
-		} catch (FHIRGeneratorException e) {
+			
+			switch (format) {
+			case JSON:
+				new JsonParser().setOutputStyle(prettyPrinting ? OutputStyle.PRETTY : OutputStyle.NORMAL).compose(baos, resource);
+				break;
+			case XML:
+				new XmlParser().setOutputStyle(prettyPrinting ? OutputStyle.PRETTY : OutputStyle.NORMAL).compose(baos, resource);
+				break;
+			default:
+				throw new IllegalStateException("Should be already handled in getFormat(accept, _format)");
+			}
+		
+		} catch (IOException e) {
 			throw new BadRequestException(String.format("Failed to serialize FHIR resource to a response body.",
 				resource.getClass().getSimpleName()));
 		}

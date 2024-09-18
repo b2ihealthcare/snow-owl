@@ -6,8 +6,11 @@ Bundle-Version: 9.2.4.qualifier
 Bundle-Vendor: B2i Healthcare
 Fragment-Host: com.b2international.snowowl.core.rest
 Import-Package: com.b2international.fhir.r5.operations;version="0.1.0",
+ org.hl7.fhir.r4.formats;version="6.3.25",
  org.hl7.fhir.r4.model.codesystems;version="6.3.25",
+ org.hl7.fhir.r4b.formats;version="6.3.25",
  org.hl7.fhir.r5.elementmodel;version="6.3.25",
+ org.hl7.fhir.r5.formats;version="6.3.25",
  org.hl7.fhir.r5.model;version="6.3.25"
 Automatic-Module-Name: com.b2international.snowowl.fhir.rest
 Bundle-RequiredExecutionEnvironment: JavaSE-17
