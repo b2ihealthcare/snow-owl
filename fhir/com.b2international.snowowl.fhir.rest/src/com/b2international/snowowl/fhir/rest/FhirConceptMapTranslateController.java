@@ -27,7 +27,6 @@ import com.b2international.snowowl.core.rest.FhirApiConfig;
 import com.b2international.snowowl.fhir.core.operations.ConceptMapTranslateParameters;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
-import co.elastic.clients.elasticsearch.sql.TranslateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -129,15 +128,16 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 		
 	) {
 		
+		// TODO fix R4 parameters and replace them with R5 (reintroduce R4, R4B support via dedicated versioned paths)
 		var parameters = new ConceptMapTranslateParameters()
 			.setSourceCode(code)
 			.setSystem(system);
 		
-		version.ifPresent(parameters::setVersion);
-		source.ifPresent(parameters::setSource);
-		target.ifPresent(parameters::setTarget);
-		targetSystem.ifPresent(parameters::setTargetSystem);
-		isReverse.ifPresent(parameters::setIsReverse);
+//		version.ifPresent(parameters::setVersion);
+//		source.ifPresent(parameters::setSource);
+//		target.ifPresent(parameters::setTarget);
+//		targetSystem.ifPresent(parameters::setTargetSystem);
+//		isReverse.ifPresent(parameters::setIsReverse);
 		
 		return translate(parameters, accept, _format, _pretty);
 	}
@@ -306,16 +306,16 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 	) {
 		
 		var parameters = new ConceptMapTranslateParameters()
-			.setCode(code)
+			.setSourceCode(code)
 			.setSystem(system)
 			// XXX: Using a concept map ID as the URL here
 			.setUrl(conceptMapId);
 		
-		version.ifPresent(parameters::setVersion);
-		source.ifPresent(parameters::setSource);
-		target.ifPresent(parameters::setTarget);
-		targetSystem.ifPresent(parameters::setTargetSystem);
-		isReverse.ifPresent(parameters::setIsReverse);
+//		version.ifPresent(parameters::setVersion);
+//		source.ifPresent(parameters::setSource);
+//		target.ifPresent(parameters::setTarget);
+//		targetSystem.ifPresent(parameters::setTargetSystem);
+//		isReverse.ifPresent(parameters::setIsReverse);
 		
 		return translate(parameters, accept, _format, _pretty);
 	}
