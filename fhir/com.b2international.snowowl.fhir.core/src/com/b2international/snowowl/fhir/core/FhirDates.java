@@ -38,7 +38,7 @@ public class FhirDates {
 	/**
 	 * https://www.hl7.org/fhir/datatypes.html#dateTime
 	 */
-	private static String[] DATETIME_PATTERNS = {
+	private static final String[] DATETIME_PATTERNS = {
 		"yyyy", 
 		"yyyy-MM", 
 		"yyyy-MM-dd",

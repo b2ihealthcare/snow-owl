@@ -19,6 +19,8 @@ import java.util.Date;
 
 import org.hl7.fhir.r5.model.*;
 
+import com.b2international.snowowl.fhir.core.FhirDates;
+
 /**
  * @since 9.3 
  */
@@ -64,8 +66,8 @@ public class CodeSystemValidateCodeParameters extends BaseParameters {
 		return getParameterValue("date", Parameters.ParametersParameterComponent::getValueDateType);
 	}
 	
-	public BooleanType getIsAbstract() {
-		return getParameterValue("isAbstract", Parameters.ParametersParameterComponent::getValueBooleanType);
+	public BooleanType getAbstract() {
+		return getParameterValue("abstract", Parameters.ParametersParameterComponent::getValueBooleanType);
 	}
 	
 	public CodeType getDisplayLanguage() {
@@ -123,6 +125,10 @@ public class CodeSystemValidateCodeParameters extends BaseParameters {
 		return this;
 	}
 	
+	public CodeSystemValidateCodeParameters setDate(String date) {
+		return setDate(date == null ? null : FhirDates.parse(date));
+	}
+	
 	public CodeSystemValidateCodeParameters setDate(Date date) {
 		return setDate(new DateType(date));
 	}
@@ -132,12 +138,12 @@ public class CodeSystemValidateCodeParameters extends BaseParameters {
 		return this;
 	}
 	
-	public CodeSystemValidateCodeParameters setIsAbstract(Boolean isAbstract) {
-		return isAbstract == null ? this : setIsAbstract(new BooleanType(isAbstract));
+	public CodeSystemValidateCodeParameters setAbstract(Boolean isAbstract) {
+		return isAbstract == null ? this : setAbstract(new BooleanType(isAbstract));
 	}
 	
-	public CodeSystemValidateCodeParameters setIsAbstract(BooleanType isAbstract) {
-		getParameters().addParameter("isAbstract", isAbstract);
+	public CodeSystemValidateCodeParameters setAbstract(BooleanType isAbstract) {
+		getParameters().addParameter("abstract", isAbstract);
 		return this;
 	}
 	
