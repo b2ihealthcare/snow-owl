@@ -21,10 +21,12 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 
+import java.util.List;
+
+import org.hl7.fhir.r5.model.Coding;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.fhir.r5.operations.CodeSystemLookupParameters;
 import com.b2international.snowowl.fhir.rest.tests.FhirRestTest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -204,13 +206,12 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 	@Test
 	public void POST_CodeSystem_$lookup_Existing() throws Exception {
 		
-		LookupRequest request = LookupRequest.builder()
-				.coding(Coding.of(SNOMEDCT_URL, Concepts.ROOT_CONCEPT))
-				.build();
+		var parameters = new CodeSystemLookupParameters()
+				.setCoding(new Coding().setSystem(SNOMEDCT_URL).setCode(Concepts.ROOT_CONCEPT));
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.contentType(APPLICATION_FHIR_JSON)
-			.body(toFhirParameters(request))
+			.body(toJson(parameters.getParameters()))
 			.when().post(CODESYSTEM_LOOKUP)
 			.then().assertThat()
 			.statusCode(200)
@@ -223,14 +224,13 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 	
 	@Test
 	public void POST_CodeSystem_$lookup_Existing_Property() throws Exception {
-		LookupRequest request = LookupRequest.builder()
-				.coding(Coding.of(SNOMEDCT_URL, CLINICAL_FINDING))
-				.addProperty("parent")
-				.build();
+		var parameters = new CodeSystemLookupParameters()
+				.setCoding(new Coding().setSystem(SNOMEDCT_URL).setCode(CLINICAL_FINDING))
+				.setProperty(List.of("parent"));
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.contentType(APPLICATION_FHIR_JSON)
-			.body(toFhirParameters(request))
+			.body(toJson(parameters.getParameters()))
 			.when().post(CODESYSTEM_LOOKUP)
 			.then().assertThat()
 			.statusCode(200)
@@ -247,14 +247,13 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 	
 	@Test
 	public void POST_CodeSystem_$lookup_Existing_WithInvalidProperty() throws Exception {
-		LookupRequest request = LookupRequest.builder()
-					.coding(Coding.of(SNOMEDCT_URL, Concepts.ROOT_CONCEPT))
-					.addProperty("http://snomed.info/id/12345")
-					.build();
+		var parameters = new CodeSystemLookupParameters()
+				.setCoding(new Coding().setSystem(SNOMEDCT_URL).setCode(Concepts.ROOT_CONCEPT))
+				.setProperty(List.of("http://snomed.info/id/12345"));
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.contentType(APPLICATION_FHIR_JSON)
-			.body(toFhirParameters(request))
+			.body(toJson(parameters.getParameters()))
 			.when().post(CODESYSTEM_LOOKUP)
 			.then().assertThat()
 			.statusCode(400)

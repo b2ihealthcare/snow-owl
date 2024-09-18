@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,15 +21,14 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import org.hl7.fhir.r5.formats.JsonParser;
+import org.hl7.fhir.r5.model.CodeableConcept;
+import org.hl7.fhir.r5.model.Coding;
+import org.hl7.fhir.r5.model.Parameters;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
-import com.b2international.snowowl.fhir.core.model.codesystem.ValidateCodeRequest;
-import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
+import com.b2international.snowowl.fhir.core.operations.CodeSystemValidateCodeParameters;
+import com.b2international.snowowl.fhir.core.operations.CodeSystemValidateCodeResultParameters;
 import com.b2international.snowowl.fhir.rest.tests.FhirRestTest;
 
 /**
@@ -57,11 +56,11 @@ public class ValidateFhirCodeRestTest extends FhirRestTest {
 			.body()
 			.asString();
 			
-			ValidateCodeResult result = convertToValidateCodeResult(responseString);
-			
-			assertEquals(false, result.getResult());
-			assertEquals("Could not find code(s) '[unknownCode]'", result.getMessage());
-			assertNull(result.getDisplay());
+		CodeSystemValidateCodeResultParameters result = convertToValidateCodeResult(responseString);
+		
+		assertEquals(false, result.getResult().getValue());
+		assertEquals("Could not find code(s) '[unknownCode]'", result.getMessage().getValue());
+		assertNull(result.getDisplay().getValue());
 	}
 	
 	@Test
@@ -78,9 +77,9 @@ public class ValidateFhirCodeRestTest extends FhirRestTest {
 			.body()
 			.asString();
 			
-			ValidateCodeResult result = convertToValidateCodeResult(responseString);
-			
-			assertEquals(true, result.getResult());
+		CodeSystemValidateCodeResultParameters result = convertToValidateCodeResult(responseString);
+		
+		assertEquals(true, result.getResult().getValue());
 	}
 	
 	@Test
@@ -98,27 +97,23 @@ public class ValidateFhirCodeRestTest extends FhirRestTest {
 			.body()
 			.asString();
 			
-			ValidateCodeResult result = convertToValidateCodeResult(responseString);
-			
-			assertEquals(false, result.getResult());
-			assertEquals("Incorrect display 'invalid' for code 'login'", result.getMessage());
-			assertEquals("Login Required", result.getDisplay());
+		CodeSystemValidateCodeResultParameters result = convertToValidateCodeResult(responseString);
+		
+		assertEquals(false, result.getResult().getValue());
+		assertEquals("Incorrect display 'invalid' for code 'login'", result.getMessage().getValue());
+		assertEquals("Login Required", result.getDisplay().getValue());
 	}
 	
 	@Test
 	public void validCodePostTest() throws Exception {
 		
-		ValidateCodeRequest request = ValidateCodeRequest.builder()
-			.code("login")
-			.build();
-		
-		Fhir fhirParameters = new Parameters.Fhir(request);
-		String jsonBody = objectMapper.writeValueAsString(fhirParameters);
+		CodeSystemValidateCodeParameters parameters = new CodeSystemValidateCodeParameters()
+			.setCode("login");
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.contentType(APPLICATION_FHIR_JSON)
 			.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID)
-			.body(jsonBody)
+			.body(toJson(parameters.getParameters()))
 			.when().post("/CodeSystem/{id}/$validate-code")
 			.then()
 			.body("resourceType", equalTo("Parameters"))
@@ -131,19 +126,14 @@ public class ValidateFhirCodeRestTest extends FhirRestTest {
 	public void invalidParametersOnInstancePostTest() throws Exception {
 		
 		//URL
-		ValidateCodeRequest request = ValidateCodeRequest.builder()
-			.url("fhir/issue-severity") //should not be specified on the instance level
-			.code("fatal")
-			.build();
-		
-		Fhir fhirParameters = new Parameters.Fhir(request);
-		
-		String jsonBody = objectMapper.writeValueAsString(fhirParameters);
+		CodeSystemValidateCodeParameters parameters = new CodeSystemValidateCodeParameters()
+			.setUrl("fhir/issue-severity") //should not be specified on the instance level
+			.setCode("fatal");
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.contentType(APPLICATION_FHIR_JSON)
 			.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID)
-			.body(jsonBody)
+			.body(toJson(parameters.getParameters()))
 			.when().post("/CodeSystem/{id}/$validate-code")
 			.then()
 			.body("resourceType", equalTo("OperationOutcome"))
@@ -154,21 +144,16 @@ public class ValidateFhirCodeRestTest extends FhirRestTest {
 			.statusCode(400);
 		
 		//Coding
-		request = ValidateCodeRequest.builder()
-				.coding(Coding.builder() //should not be specified on the instance level
-						.system("http://hl7.org/fhir/issue-severity")
-						.code("fatal")
-						.build())
-				.build();
-			
-		fhirParameters = new Parameters.Fhir(request);
-			
-		jsonBody = objectMapper.writeValueAsString(fhirParameters);
+		parameters = new CodeSystemValidateCodeParameters()
+				//should not be specified on the instance level
+				.setCoding(new Coding() 
+						.setSystem("http://hl7.org/fhir/issue-severity")
+						.setCode("fatal"));
 			
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.contentType(APPLICATION_FHIR_JSON)
 			.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID)
-			.body(jsonBody)
+			.body(toJson(parameters.getParameters()))
 			.when().post("/CodeSystem/{id}/$validate-code")
 			.then()
 			.body("resourceType", equalTo("OperationOutcome"))
@@ -179,23 +164,16 @@ public class ValidateFhirCodeRestTest extends FhirRestTest {
 			.statusCode(400);
 		
 		//CodeableConcept
-		request = ValidateCodeRequest.builder()
-				.codeableConcept(CodeableConcept.builder().addCoding(//should not be specified on the instance level
-						Coding.builder() 
-							.system("http://hl7.org/fhir/issue-severity")
-							.code("fatal")
-							.build())
-						.build())
-				.build();
-			
-		fhirParameters = new Parameters.Fhir(request);
-			
-		jsonBody = objectMapper.writeValueAsString(fhirParameters);
+		parameters = new CodeSystemValidateCodeParameters()
+				.setCodeableConcept(new CodeableConcept().addCoding(//should not be specified on the instance level
+						new Coding() 
+							.setSystem("http://hl7.org/fhir/issue-severity")
+							.setCode("fatal")));
 			
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.contentType(APPLICATION_FHIR_JSON)
 			.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID)
-			.body(jsonBody)
+			.body(toJson(parameters.getParameters()))
 			.when().post("/CodeSystem/{id}/$validate-code")
 			.then()
 			.body("resourceType", equalTo("OperationOutcome"))
@@ -224,12 +202,12 @@ public class ValidateFhirCodeRestTest extends FhirRestTest {
 			.extract()
 			.body()
 			.asString();
-			
-			ValidateCodeResult result = convertToValidateCodeResult(responseString);
-			
-			assertEquals(false, result.getResult());
-			assertEquals("Could not find code(s) '[unknownCode]'", result.getMessage());
-			assertNull(result.getDisplay());
+		
+		CodeSystemValidateCodeResultParameters result = convertToValidateCodeResult(responseString);
+		
+		assertEquals(false, result.getResult().getValue());
+		assertEquals("Could not find code(s) '[unknownCode]'", result.getMessage().getValue());
+		assertNull(result.getDisplay().getValue());
 	}
 	
 	@Test
@@ -252,22 +230,17 @@ public class ValidateFhirCodeRestTest extends FhirRestTest {
 	public void validCodingTestWithPostTest() throws Exception {
 		
 		String system = "http://hl7.org/fhir/issue-severity";
-		Coding coding = Coding.builder()
-				.system(system)
-				.code("fatal")
-				.build();
+		Coding coding = new Coding()
+				.setSystem(system)
+				.setCode("fatal");
 
-		ValidateCodeRequest request = ValidateCodeRequest.builder()
-			.url(system)
-			.coding(coding)
-			.build();
-		
-		Fhir fhirParameters = new Parameters.Fhir(request);
-		String jsonBody = objectMapper.writeValueAsString(fhirParameters);
+		var parameters = new CodeSystemValidateCodeParameters()
+				.setUrl(system)
+				.setCoding(coding);
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.contentType(APPLICATION_FHIR_JSON)
-			.body(jsonBody)
+			.body(toJson(parameters.getParameters()))
 			.when().post("/CodeSystem/$validate-code")
 			.then()
 			.body("resourceType", equalTo("Parameters"))
@@ -279,25 +252,19 @@ public class ValidateFhirCodeRestTest extends FhirRestTest {
 	@Test
 	public void validCodeableConceptTestWithPostTest() throws Exception {
 		
-		String system = "http://hl7.org/fhir/issue-severity";
-		Coding coding = Coding.builder()
-				.system(system)
-				.code("fatal")
-				.build();
-		
-		CodeableConcept codeableConcept = CodeableConcept.builder().addCoding(coding).build();
+		final String system = "http://hl7.org/fhir/issue-severity";
+		final CodeableConcept codeableConcept = new CodeableConcept()
+				.addCoding(new Coding()
+						.setSystem(system)
+						.setCode("fatal"));
 
-		ValidateCodeRequest request = ValidateCodeRequest.builder()
-			.url(system)
-			.codeableConcept(codeableConcept)
-			.build();
-		
-		Fhir fhirParameters = new Parameters.Fhir(request);
-		String jsonBody = objectMapper.writeValueAsString(fhirParameters);
+		var parameters = new CodeSystemValidateCodeParameters()
+			.setUrl(system)
+			.setCodeableConcept(codeableConcept);
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.contentType(APPLICATION_FHIR_JSON)
-			.body(jsonBody)
+			.body(toJson(parameters.getParameters()))
 			.when().post("/CodeSystem/$validate-code")
 			.then()
 			.body("resourceType", equalTo("Parameters"))
@@ -306,12 +273,8 @@ public class ValidateFhirCodeRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 	
-	
-	private ValidateCodeResult convertToValidateCodeResult(String responseString) throws Exception {
-		Fhir parameters = objectMapper.readValue(responseString, Parameters.Fhir.class);
-		Json json = new Parameters.Json(parameters);
-		return objectMapper.convertValue(json, ValidateCodeResult.class);
+	private CodeSystemValidateCodeResultParameters convertToValidateCodeResult(String responseString) throws Exception {
+		return new CodeSystemValidateCodeResultParameters((Parameters) new JsonParser().parse(responseString));
 	}
-	
 
 }

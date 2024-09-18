@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2018-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult.SubsumptionType;
 import com.b2international.snowowl.fhir.rest.tests.FhirRestTest;
 
 /**

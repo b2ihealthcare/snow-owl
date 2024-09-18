@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,9 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
+import org.hl7.fhir.r5.model.Enumerations.CapabilityStatementKind;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.core.codesystems.CapabilityStatementKind;
-import com.b2international.snowowl.fhir.core.model.capabilitystatement.CapabilityStatement;
-import com.b2international.snowowl.fhir.core.model.operationdefinition.OperationDefinition;
 import com.b2international.snowowl.fhir.rest.tests.FhirRestTest;
 
 /**
@@ -48,11 +46,10 @@ public class CapabilityStatementRestTest extends FhirRestTest {
 			.body("status", notNullValue())
 			.body("date", notNullValue())
 			.body("description", notNullValue())
-			.body("kind", equalTo(CapabilityStatementKind.INSTANCE.getCodeValue()))
+			.body("kind", equalTo(CapabilityStatementKind.INSTANCE.getDefinition()))
 			.body("fhirVersion", equalTo("5.0.0"))
 			.body("rest[0]", notNullValue())
 			.body("rest[0].resource[0]", notNullValue());
-			
 	}
 	
 	@Test

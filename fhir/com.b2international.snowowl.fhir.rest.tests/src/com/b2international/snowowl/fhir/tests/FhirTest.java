@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2018-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,25 +15,12 @@
  */
 package com.b2international.snowowl.fhir.tests;
 
+import org.hl7.fhir.r5.formats.JsonParser;
+import org.hl7.fhir.r5.model.Resource;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
-import org.springframework.http.converter.json.MappingJacksonValue;
 
-import com.b2international.snowowl.core.repository.JsonSupport;
-import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
-import com.b2international.snowowl.fhir.core.codesystems.IssueType;
-import com.b2international.snowowl.fhir.core.model.Issue;
-import com.b2international.snowowl.fhir.core.model.Issue.Builder;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
 import com.b2international.snowowl.test.commons.TestMethodNameRule;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
-
-import io.restassured.path.json.JsonPath;
 
 /**
  * Superclass for common test functionality
@@ -43,53 +30,49 @@ public class FhirTest {
 	
 	protected static final String TEST_DATE_STRING = "2018-03-23T07:49:40.000+00:00"; //$NON-NLS-N$
 	
-	protected static final ObjectMapper objectMapper = JsonSupport.getRestObjectMapper();
-	
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 	
 	@Rule
 	public TestMethodNameRule methodNameRule = new TestMethodNameRule();
 	
-	protected Builder validationErrorIssueBuilder = Issue.builder()
-			.code(IssueType.INVALID)
-			.severity(IssueSeverity.ERROR)
-			.diagnostics("1 validation error");
+//	protected Builder validationErrorIssueBuilder = Issue.builder()
+//			.code(IssueType.INVALID)
+//			.severity(IssueSeverity.ERROR)
+//			.diagnostics("1 validation error");
+//	
+//	protected void printPrettyJson(Object object) throws Exception {
+//		String result = objectMapper.writeValueAsString(object);
+//		Object json = objectMapper.readValue(result, Object.class);
+//		String prettyPrint = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
+//		System.out.println(prettyPrint);
+//	}
+//	
+//	protected void applyFilter(Object filteredObject) {
+//		SimpleFilterProvider filterProvider = new SimpleFilterProvider().setFailOnUnknownId(false);
+//		MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(filteredObject);
+//		mappingJacksonValue.setFilters(filterProvider);
+//		objectMapper.setFilterProvider(filterProvider);
+//	}
+//	
+//	protected JsonPath getJsonPath(Object object) throws JsonProcessingException {
+//		return new JsonPath(objectMapper.writeValueAsString(object));
+//	}
 	
-	protected void printPrettyJson(Object object) throws Exception {
-		String result = objectMapper.writeValueAsString(object);
-		Object json = objectMapper.readValue(result, Object.class);
-		String prettyPrint = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
-		System.out.println(prettyPrint);
-	}
+//	/**
+//	 * Converts the parameter-formatted response string to a {@link LookupResult} object
+//	 * @param responseString
+//	 * @return
+//	 * @throws Exception
+//	 */
+//	protected LookupResult convertToResult(String responseString) throws Exception {
+//		Fhir parameters = objectMapper.readValue(responseString, Parameters.Fhir.class);
+//		Json json = new Parameters.Json(parameters);
+//		return objectMapper.convertValue(json, LookupResult.class);
+//	}
 	
-	protected void applyFilter(Object filteredObject) {
-		SimpleFilterProvider filterProvider = new SimpleFilterProvider().setFailOnUnknownId(false);
-		MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(filteredObject);
-		mappingJacksonValue.setFilters(filterProvider);
-		objectMapper.setFilterProvider(filterProvider);
-	}
-	
-	protected JsonPath getJsonPath(Object object) throws JsonProcessingException {
-		return new JsonPath(objectMapper.writeValueAsString(object));
-	}
-	
-	/**
-	 * Converts the parameter-formatted response string to a {@link LookupResult} object
-	 * @param responseString
-	 * @return
-	 * @throws Exception
-	 */
-	protected LookupResult convertToResult(String responseString) throws Exception {
-		Fhir parameters = objectMapper.readValue(responseString, Parameters.Fhir.class);
-		Json json = new Parameters.Json(parameters);
-		return objectMapper.convertValue(json, LookupResult.class);
-	}
-	
-	
-	protected String toFhirParameters(Object request) throws Exception {
-		Fhir fhirParameters = new Parameters.Fhir(request);
-		return objectMapper.writeValueAsString(fhirParameters);
+	protected final String toJson(Resource resource) throws Exception {
+		return new JsonParser().composeString(resource);
 	}
 
 }

@@ -34,7 +34,7 @@ import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequest
  */
 public abstract class FhirRestTest extends FhirTest {
 	
-	protected static final String APPLICATION_FHIR_JSON = "application/fhir+json;charset=utf-8";
+	protected static final String APPLICATION_FHIR_JSON = "application/fhir+json";
 	
 	public static final String FHIR_ROOT_CONTEXT = "/fhir"; //$NON-NLS-N$
 	
@@ -52,7 +52,7 @@ public abstract class FhirRestTest extends FhirTest {
 		return methodNameRule.get().replaceAll("\\$", "");
 	}
 	
-	private final Set<String> createdCodeSystems = new HashSet<>(); 
+	private final Set<String> createdCodeSystems = new HashSet<>(3); 
 	
 	@Before
 	public void before() {

@@ -20,10 +20,10 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 
+import org.hl7.fhir.r5.model.Coding;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.core.model.codesystem.ValidateCodeRequest;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.operations.CodeSystemValidateCodeParameters;
 import com.b2international.snowowl.fhir.rest.tests.FhirRestTest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
@@ -82,14 +82,13 @@ public class FhirCodeSystemValidateCodeOperationTest extends FhirRestTest {
 	
 	@Test
 	public void POST_CodeSystem_$validate_code_Existing() throws Exception {
-		ValidateCodeRequest request = ValidateCodeRequest.builder()
-				.url(SNOMEDCT_URL)
-				.coding(Coding.of(SNOMEDCT_URL, Concepts.ROOT_CONCEPT))
-				.build();
+		var parameters = new CodeSystemValidateCodeParameters()
+				.setUrl(SNOMEDCT_URL)
+				.setCoding(new Coding().setSystem(SNOMEDCT_URL).setCode(Concepts.ROOT_CONCEPT));
 
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.contentType(APPLICATION_FHIR_JSON)
-			.body(toFhirParameters(request))
+			.body(toJson(parameters.getParameters()))
 			.when().post(CODESYSTEM_VALIDATE_CODE)
 			.then().assertThat()
 			.statusCode(200)
