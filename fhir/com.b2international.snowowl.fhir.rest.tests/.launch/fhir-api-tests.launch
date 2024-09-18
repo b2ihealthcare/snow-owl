@@ -43,6 +43,7 @@
         <setEntry value="assertj-core@default:default"/>
         <setEntry value="ch.qos.logback.classic@2:true"/>
         <setEntry value="ch.qos.logback.core@2:true"/>
+        <setEntry value="com.b2ihealthcare.fhir.terminology.service.model@default:default"/>
         <setEntry value="com.b2international.snomed.ecl@default:default"/>
         <setEntry value="com.diffplug.osgi.extension.sun.misc@default:false"/>
         <setEntry value="com.fasterxml.classmate@default:default"/>

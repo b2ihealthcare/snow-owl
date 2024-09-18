@@ -27,6 +27,7 @@ import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirCodeSystemLook
 import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirCodeSystemSubsumesOperationTest;
 import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirCodeSystemValidateCodeOperationTest;
 import com.b2international.snowowl.fhir.rest.tests.valueset.FhirValueSetSnomedExpandTest;
+import com.b2international.snowowl.fhir.tests.SnomedUriParsingTest;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.test.commons.Resources;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
@@ -37,9 +38,11 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
  * @since 6.6
  */
 @RunWith(Suite.class)
-@SuiteClasses({ 
-	// CodeSystem API
+@SuiteClasses({
+	// Helpers
+	SnomedUriParsingTest.class,
 	
+	// CodeSystem API
 	FhirCodeSystemApiTest.class,
 	FhirCodeSystemLookupOperationTest.class,
 	FhirCodeSystemSubsumesOperationTest.class,
