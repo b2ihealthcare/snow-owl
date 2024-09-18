@@ -43,6 +43,7 @@ import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.search.TermFilter;
 import com.b2international.snowowl.core.version.VersionDocument;
+import com.b2international.snowowl.fhir.core.FhirCodeSystems;
 import com.b2international.snowowl.fhir.core.R5ObjectFields;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -54,11 +55,6 @@ public abstract class FhirResourceSearchRequest<T extends MetadataResource> exte
 
 	private static final long serialVersionUID = 1L;
 
-	public static final Coding CODING_SUBSETTED = new Coding()
-			.setSystem("http://hl7.org/fhir/v3/ObservationValue")
-			.setCode("SUBSETTED")
-			.setDisplay("As requested, resource is not fully detailed.");
-	
 	private static final Set<String> EXTERNAL_FHIR_RESOURCE_FIELDS = Set.of(
 		R5ObjectFields.MetadataResource.NAME,
 		R5ObjectFields.MetadataResource.META,
@@ -200,7 +196,7 @@ public abstract class FhirResourceSearchRequest<T extends MetadataResource> exte
 		return (Bundle) new Bundle(BundleType.SEARCHSET)
 				.setId(getResourceType()) // TODO is this a good ID here?
 				.setMeta(new Meta()
-						.addTag(CompareUtils.isEmpty(fields()) ? null : CODING_SUBSETTED)
+						.addTag(CompareUtils.isEmpty(fields()) ? null : FhirCodeSystems.CODING_SUBSETTED)
 						.setLastUpdated(new Date()));
 	}
 
