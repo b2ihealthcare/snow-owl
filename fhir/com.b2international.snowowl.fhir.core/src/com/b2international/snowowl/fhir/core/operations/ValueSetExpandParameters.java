@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.hl7.fhir.r5.model.*;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 
 /**

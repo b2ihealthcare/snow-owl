@@ -15,14 +15,21 @@
  */
 package com.b2international.snowowl.fhir.core.operations;
 
-import org.hl7.fhir.exceptions.FHIRException;
+import java.util.Date;
+
 import org.hl7.fhir.r5.model.*;
+
+import com.b2international.snowowl.fhir.core.FhirDates;
 
 /**
  * @since 9.2 
  */
 public class ValueSetValidateCodeParameters extends BaseParameters {
 
+	public ValueSetValidateCodeParameters() {
+		super(new Parameters());
+	}
+	
 	public ValueSetValidateCodeParameters(Parameters parameters) {
 		super(parameters);
 	}
@@ -36,7 +43,7 @@ public class ValueSetValidateCodeParameters extends BaseParameters {
 	}
 	
 	public ValueSet getValueSet() {
-		throw new FHIRException("Inline input parameter 'valueSet' is not supported.");
+		return getParameterValue("valueSet", value -> (ValueSet) value.getResource());
 	}
 	
 	public StringType getValueSetVersion() {
@@ -44,22 +51,18 @@ public class ValueSetValidateCodeParameters extends BaseParameters {
 	}
 	
 	public CodeType getCode() {
-//		if (code != null) {
-//			return code;
-//		} else if (coding != null) {
-//			return coding.getCode().getCodeValue();
-//		}
-//		return null;
 		return getParameterValue("code", Parameters.ParametersParameterComponent::getValueCodeType);
 	}
 
+	public Coding getCoding() {
+		return getParameterValue("coding", Parameters.ParametersParameterComponent::getValueCoding);
+	}
+	
+	public CodeableConcept getCodeableConcept() {
+		return getParameterValue("codeableConcept", Parameters.ParametersParameterComponent::getValueCodeableConcept);
+	}
+	
 	public StringType getSystem() {
-//		if (system != null) {
-//			return system;
-//		} else if (coding != null && coding.getSystem() != null) {
-//			return coding.getSystem().getUriValue();
-//		}
-//		return null;
 		return getParameterValue("system", Parameters.ParametersParameterComponent::getValueStringType); 
 	}
 
@@ -69,14 +72,6 @@ public class ValueSetValidateCodeParameters extends BaseParameters {
 	
 	public StringType getDisplay() {
 		return getParameterValue("display", Parameters.ParametersParameterComponent::getValueStringType);
-	}
-
-	public Coding getCoding() {
-		return getParameterValue("coding", Parameters.ParametersParameterComponent::getValueCoding);
-	}
-	
-	public CodeableConcept getCodeableConcept() {
-		return getParameterValue("codeableConcept", Parameters.ParametersParameterComponent::getValueCodeableConcept);
 	}
 
 	public DateType getDate() {
@@ -89,6 +84,110 @@ public class ValueSetValidateCodeParameters extends BaseParameters {
 
 	public CodeType getDisplayLanguage() {
 		return getParameterValue("displayLanguage", Parameters.ParametersParameterComponent::getValueCodeType);
+	}
+
+	public ValueSetValidateCodeParameters setUrl(String url) {
+		return setUrl(new UriType(url));
+	}
+
+	public ValueSetValidateCodeParameters setUrl(UriType url) {
+		getParameters().addParameter("url", url);
+		return this;
+	}
+	
+	public ValueSetValidateCodeParameters setContext(String context) {
+		return setContext(new UriType(context));
+	}
+	
+	public ValueSetValidateCodeParameters setContext(UriType context) {
+		getParameters().addParameter("context", context);
+		return this;
+	}
+	
+	public ValueSetValidateCodeParameters setValueSetVersion(String valueSetVersion) {
+		return setValueSetVersion(new StringType(valueSetVersion));
+	}
+	
+	public ValueSetValidateCodeParameters setValueSetVersion(StringType valueSetVersion) {
+		getParameters().addParameter("valueSetVersion", valueSetVersion);
+		return this;
+	}
+	
+	public ValueSetValidateCodeParameters setCode(String code) {
+		return setCode(new CodeType(code));
+	}
+
+	public ValueSetValidateCodeParameters setCode(CodeType code) {
+		getParameters().addParameter("code", code);
+		return this;
+	}
+	
+	public ValueSetValidateCodeParameters setSystem(String system) {
+		return setSystem(new UriType(system));
+	}
+	
+	public ValueSetValidateCodeParameters setSystem(UriType system) {
+		getParameters().addParameter("system", system);
+		return this;
+	}
+	
+	public ValueSetValidateCodeParameters setSystemVersion(String systemVersion) {
+		return setSystemVersion(new StringType(systemVersion));
+	}
+	
+	public ValueSetValidateCodeParameters setSystemVersion(StringType systemVersion) {
+		getParameters().addParameter("systemVersion", systemVersion);
+		return this;
+	}
+	
+	public ValueSetValidateCodeParameters setDisplay(String display) {
+		return setDisplay(new StringType(display));
+	}
+
+	public ValueSetValidateCodeParameters setDisplay(StringType display) {
+		getParameters().addParameter("display", display);
+		return this;
+	}
+	
+	public ValueSetValidateCodeParameters setCoding(Coding coding) {
+		getParameters().addParameter("coding", coding);
+		return this;
+	}
+	
+	public ValueSetValidateCodeParameters setCodeableConcept(CodeableConcept codeableConcept) {
+		getParameters().addParameter("codeableConcept", codeableConcept);
+		return this;
+	}
+	
+	public ValueSetValidateCodeParameters setDate(String date) {
+		return setDate(date == null ? null : FhirDates.parse(date));
+	}
+	
+	public ValueSetValidateCodeParameters setDate(Date date) {
+		return setDate(new DateType(date));
+	}
+	
+	public ValueSetValidateCodeParameters setDate(DateType date) {
+		getParameters().addParameter("date", date);
+		return this;
+	}
+	
+	public ValueSetValidateCodeParameters setAbstract(Boolean isAbstract) {
+		return setAbstract(new BooleanType(isAbstract));
+	}
+	
+	public ValueSetValidateCodeParameters setAbstract(BooleanType isAbstract) {
+		getParameters().addParameter("abstract", isAbstract);
+		return this;
+	}
+	
+	public ValueSetValidateCodeParameters setDisplayLanguage(String displayLanguage) {
+		return setDisplayLanguage(new CodeType(displayLanguage));
+	}
+	
+	public ValueSetValidateCodeParameters setDisplayLanguage(CodeType displayLanguage) {
+		getParameters().addParameter("displayLanguage", displayLanguage);
+		return this;
 	}
 
 }

@@ -21,6 +21,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
+import com.b2international.snowowl.fhir.core.operations.ValueSetValidateCodeParameters;
 import com.b2international.snowowl.fhir.core.operations.ValueSetValidateCodeResultParameters;
 
 /**
@@ -30,13 +31,17 @@ public final class FhirValueSetValidateCodeRequestBuilder
 		extends BaseRequestBuilder<FhirValueSetValidateCodeRequestBuilder, ServiceProvider, ValueSetValidateCodeResultParameters>
 		implements SystemRequestBuilder<ValueSetValidateCodeResultParameters> {
 
-	private Parameters parameters;
+	private ValueSetValidateCodeParameters parameters;
 	
-	public FhirValueSetValidateCodeRequestBuilder setRequest(Parameters parameters) {
+	public FhirValueSetValidateCodeRequestBuilder setParameters(Parameters parameters) {
+		return setParameters(new ValueSetValidateCodeParameters(parameters));
+	}
+	
+	public FhirValueSetValidateCodeRequestBuilder setParameters(ValueSetValidateCodeParameters parameters) {
 		this.parameters = parameters;
 		return getSelf();
 	}
-	
+
 	@Override
 	protected Request<ServiceProvider, ValueSetValidateCodeResultParameters> doBuild() {
 		return new FhirValueSetValidateCodeRequest(parameters);

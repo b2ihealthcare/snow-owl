@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.fhir.core.request.valueset;
 
-import org.hl7.fhir.r5.model.Parameters;
 import org.hl7.fhir.r5.model.ValueSet;
 
 import com.b2international.snowowl.core.RepositoryManager;
@@ -35,8 +34,8 @@ final class FhirValueSetValidateCodeRequest implements Request<ServiceProvider, 
 	
 	private final ValueSetValidateCodeParameters parameters;
 	
-	public FhirValueSetValidateCodeRequest(Parameters parameters) {
-		this.parameters = new ValueSetValidateCodeParameters(parameters);
+	public FhirValueSetValidateCodeRequest(ValueSetValidateCodeParameters parameters) {
+		this.parameters = parameters;
 	}
 	
 	@Override

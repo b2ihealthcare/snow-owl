@@ -24,9 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
-import com.b2international.snowowl.fhir.core.model.converter.ValueSetConverter_50;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
+import com.b2international.snowowl.fhir.core.operations.ValueSetValidateCodeParameters;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -144,20 +142,18 @@ public class FhirValueSetValidateCodeController extends AbstractFhirController {
 		
 	) {
 		
-		ValidateCodeRequest.Builder builder = ValidateCodeRequest.builder()
-			.url(url)
-			.code(code)
-			.valueSetVersion(valueSetVersion.orElse(null))
-			.system(system.orElse(null))
-			.systemVersion(systemVersion.orElse(null))
-			.display(display.orElse(null))
-			.isAbstract(isAbstract.orElse(null));
+		var parameters = new ValueSetValidateCodeParameters()
+			.setUrl(url)
+			.setCode(code);
 		
-		if (date.isPresent()) {
-			builder.date(date.get());
-		}
+		valueSetVersion.ifPresent(parameters::setValueSetVersion);
+		system.ifPresent(parameters::setSystem);
+		systemVersion.ifPresent(parameters::setSystemVersion);
+		display.ifPresent(parameters::setDisplay);
+		isAbstract.ifPresent(parameters::setAbstract);
+		date.ifPresent(parameters::setDate);
 				
-		return validateCode(builder.build(), accept, _format, _pretty);
+		return validateCode(parameters, accept, _format, _pretty);
 	}
 	
 	/**
@@ -230,7 +226,7 @@ public class FhirValueSetValidateCodeController extends AbstractFhirController {
 	) {
 		
 		final var fhirParameters = toFhirParameters(requestBody, contentType);
-		final ValidateCodeRequest request = ValueSetConverter_50.INSTANCE.toValidateCodeRequest(fhirParameters);
+		final var request = new ValueSetValidateCodeParameters(fhirParameters);
 		
 		return validateCode(request, accept, _format, _pretty);
 	}
@@ -335,22 +331,20 @@ public class FhirValueSetValidateCodeController extends AbstractFhirController {
 	
 	) {
 		
-		ValidateCodeRequest.Builder builder = ValidateCodeRequest.builder()
+		var parameters = new ValueSetValidateCodeParameters()
 			// XXX: Inject value set ID as a URI into the request
-			.url(valueSetId)
-			.code(code)
-			.code(code)
-			.valueSetVersion(valueSetVersion.orElse(null))
-			.system(system.orElse(null))
-			.systemVersion(systemVersion.orElse(null))
-			.display(display.orElse(null))
-			.isAbstract(isAbstract.orElse(null));
+			.setUrl(valueSetId)
+			.setCode(code);
 		
-		if (date.isPresent()) {
-			builder.date(date.get());
-		}
+			
+		valueSetVersion.ifPresent(parameters::setValueSetVersion);
+		system.ifPresent(parameters::setSystem);
+		systemVersion.ifPresent(parameters::setSystemVersion);
+		display.ifPresent(parameters::setDisplay);
+		isAbstract.ifPresent(parameters::setAbstract);
+		date.ifPresent(parameters::setDate);
 		
-		return validateCode(builder.build(), accept, _format, _pretty);
+		return validateCode(parameters, accept, _format, _pretty);
 	}
 	
 	/**
@@ -430,27 +424,26 @@ public class FhirValueSetValidateCodeController extends AbstractFhirController {
 	) {
 		
 		final var fhirParameters = toFhirParameters(requestBody, contentType);
-		final ValidateCodeRequest request = ValueSetConverter_50.INSTANCE.toValidateCodeRequest(fhirParameters);
+		final var request = new ValueSetValidateCodeParameters(fhirParameters);
 		
 		// Before execution set the URI to match the path variable
-		request.setUrl(new Uri(valueSetId));
+		request.setUrl(valueSetId);
 		
 		return validateCode(request, accept, _format, _pretty);
 	}
 
 	private Promise<ResponseEntity<byte[]>> validateCode(
-		final ValidateCodeRequest validateCodeRequest,
+		final ValueSetValidateCodeParameters parameters,
 		final String accept,
 		final String _format,
 		final Boolean _pretty
 	) {
 		return FhirRequests.valueSets().prepareValidateCode()
-			.setRequest(validateCodeRequest)
+			.setParameters(parameters)
 			.buildAsync()
 			.execute(getBus())
-			.then(soValidateCodeResult -> {
-				var fhirValidateCodeResult = ValueSetConverter_50.INSTANCE.fromValidateCodeResult(soValidateCodeResult);
-				return toResponseEntity(fhirValidateCodeResult, accept, _format, _pretty);
+			.then(result -> {
+				return toResponseEntity(result.getParameters(), accept, _format, _pretty);
 			});
 	}
 }
