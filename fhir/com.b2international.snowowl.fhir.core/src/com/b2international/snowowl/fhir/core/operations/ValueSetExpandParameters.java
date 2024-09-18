@@ -20,6 +20,9 @@ import java.util.List;
 
 import org.hl7.fhir.r5.model.*;
 
+import com.b2international.commons.CompareUtils;
+import com.b2international.snowowl.fhir.core.exceptions.FhirException;
+
 /**
  * This class represents a FHIR ValueSet$expand operation request in the R5 version.
  * 
@@ -77,8 +80,8 @@ public final class ValueSetExpandParameters extends BaseParameters {
 		return getParameterValue("includeDesignations", Parameters.ParametersParameterComponent::getValueBooleanType);
 	}
 	
-	public List<StringType> getDesignations() {
-		return getParameters("designations").stream().map(Parameters.ParametersParameterComponent::getValueStringType).toList();
+	public List<StringType> getDesignation() {
+		return getParameters("designation").stream().map(Parameters.ParametersParameterComponent::getValueStringType).toList();
 	}
 
 	public BooleanType getIncludeDefinition() {
@@ -121,15 +124,6 @@ public final class ValueSetExpandParameters extends BaseParameters {
 		return getParameterValue("forceSystemVersion", Parameters.ParametersParameterComponent::getValueUriType);
 	}
 
-	// extra Snowy specific parameters
-	public StringType getAfter() {
-		return getParameterValue("after", Parameters.ParametersParameterComponent::getValueStringType);
-	}
-	
-	public BooleanType getWithHistorySupplements() {
-		return getParameterValue("withHistorySupplements", Parameters.ParametersParameterComponent::getValueBooleanType);
-	}
-	
 	public ValueSetExpandParameters setUrl(String url) {
 		return setUrl(new UriType(url));
 	}
@@ -204,6 +198,140 @@ public final class ValueSetExpandParameters extends BaseParameters {
 	
 	public ValueSetExpandParameters setCount(IntegerType count) {
 		getParameters().addParameter("count", count);
+		return this;
+	}
+	
+	public ValueSetExpandParameters setIncludeDesignations(Boolean includeDesignations) {
+		return setIncludeDesignations(new BooleanType(includeDesignations));
+	}
+	
+	public ValueSetExpandParameters setIncludeDesignations(BooleanType includeDesignations) {
+		getParameters().addParameter("includeDesignations", includeDesignations);
+		return this;
+	}
+	
+	public ValueSetExpandParameters setDesignation(List<?> designation) {
+		if (designation != null && !designation.isEmpty()) {
+			designation.stream().map(d -> {
+				if (d instanceof StringType) {
+					return (StringType) d;
+				} else if (d instanceof String) {
+					return new StringType((String) d);
+				} else {
+					throw new FhirException("", null);
+				}
+			}).forEach(designationValue -> getParameters().addParameter("designation", designationValue));
+		}
+		return this;
+	}
+	
+	public ValueSetExpandParameters setIncludeDefinition(Boolean includeDefinition) {
+		return setIncludeDefinition(new BooleanType(includeDefinition));
+	}
+	
+	public ValueSetExpandParameters setIncludeDefinition(BooleanType includeDefinition) {
+		getParameters().addParameter("includeDefinition", includeDefinition);
+		return this;
+	}
+	
+	public ValueSetExpandParameters setActiveOnly(Boolean activeOnly) {
+		return setActiveOnly(new BooleanType(activeOnly));
+	}
+	
+	public ValueSetExpandParameters setActiveOnly(BooleanType activeOnly) {
+		getParameters().addParameter("activeOnly", activeOnly);
+		return this;
+	}
+	
+	public ValueSetExpandParameters setExcludeNested(Boolean excludeNested) {
+		return setExcludeNested(new BooleanType(excludeNested));
+	}
+	
+	public ValueSetExpandParameters setExcludeNested(BooleanType excludeNested) {
+		getParameters().addParameter("excludeNested", excludeNested);
+		return this;
+	}
+	
+	public ValueSetExpandParameters setExcludeNestedForUI(Boolean excludeNestedForUI) {
+		return setExcludeNestedForUI(new BooleanType(excludeNestedForUI));
+	}
+	
+	public ValueSetExpandParameters setExcludeNestedForUI(BooleanType excludeNestedForUI) {
+		getParameters().addParameter("excludeNestedForUI", excludeNestedForUI);
+		return this;
+	}
+	
+	public ValueSetExpandParameters setExcludeNestedPostCoordinated(Boolean excludeNestedPostCoordinated) {
+		return setExcludeNestedPostCoordinated(new BooleanType(excludeNestedPostCoordinated));
+	}
+	
+	public ValueSetExpandParameters setExcludeNestedPostCoordinated(BooleanType excludeNestedPostCoordinated) {
+		getParameters().addParameter("excludeNestedPostCoordinated", excludeNestedPostCoordinated);
+		return this;
+	}
+	
+	public ValueSetExpandParameters setDisplayLanguage(String displayLanguage) {
+		return setDisplayLanguage(new CodeType(displayLanguage));
+	}
+	
+	public ValueSetExpandParameters setDisplayLanguage(CodeType displayLanguage) {
+		getParameters().addParameter("displayLanguage", displayLanguage);
+		return this;
+	}
+	
+	public ValueSetExpandParameters setExcludeSystem(String excludeSystem) {
+		return setExcludeSystem(new UriType(excludeSystem));
+	}
+	
+	public ValueSetExpandParameters setExcludeSystem(UriType excludeSystem) {
+		getParameters().addParameter("excludeSystem", excludeSystem);
+		return this;
+	}
+	
+	public ValueSetExpandParameters setSystemVersion(String systemVersion) {
+		return setSystemVersion(new UriType(systemVersion));
+	}
+	
+	public ValueSetExpandParameters setSystemVersion(UriType systemVersion) {
+		getParameters().addParameter("systemVersion", systemVersion);
+		return this;
+	}
+	
+	public ValueSetExpandParameters setCheckSystemVersion(String checkSystemVersion) {
+		return setCheckSystemVersion(new UriType(checkSystemVersion));
+	}
+	
+	public ValueSetExpandParameters setCheckSystemVersion(UriType checkSystemVersion) {
+		getParameters().addParameter("checkSystemVersion", checkSystemVersion);
+		return this;
+	}
+	
+	public ValueSetExpandParameters setForceSystemVersion(String forceSystemVersion) {
+		return setForceSystemVersion(new UriType(forceSystemVersion));
+	}
+	
+	public ValueSetExpandParameters setForceSystemVersion(UriType forceSystemVersion) {
+		getParameters().addParameter("forceSystemVersion", forceSystemVersion);
+		return this;
+	}
+	
+	// XXX Snowy specific parameters
+	
+	public StringType getAfter() {
+		return getParameterValue("after", Parameters.ParametersParameterComponent::getValueStringType);
+	}
+	
+	public BooleanType getWithHistorySupplements() {
+		return getParameterValue("withHistorySupplements", Parameters.ParametersParameterComponent::getValueBooleanType);
+	}
+	
+	public ValueSetExpandParameters setAfter(String after) {
+		getParameters().addParameter("after", after);
+		return this;
+	}
+	
+	public ValueSetExpandParameters setWithHistorySupplements(Boolean withHistorySupplements) {
+		getParameters().addParameter("withHistorySupplements", withHistorySupplements);
 		return this;
 	}
  

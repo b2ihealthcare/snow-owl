@@ -372,7 +372,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 			.setActiveOnly(activeOnly)
 			.setCount(count)
 			.setDisplayLanguage(displayLanguage)
-			.withHistorySupplements(withHistorySupplements)
+			.setWithHistorySupplements(withHistorySupplements)
 			.setIncludeDesignations(includeDesignations);
 		
 		return expand(expandRequest, nextUriBuilder, accept, _format, _pretty);
