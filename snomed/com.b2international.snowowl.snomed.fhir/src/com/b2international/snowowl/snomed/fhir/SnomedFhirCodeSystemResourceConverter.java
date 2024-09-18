@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.snomed.fhir;
 
+import static com.b2international.snowowl.snomed.fhir.SnomedFhirConstants.*;
+
 import java.util.List;
 
 import org.hl7.fhir.r5.model.CodeSystem;
+import org.hl7.fhir.r5.model.CodeSystem.PropertyType;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
@@ -41,10 +44,13 @@ public class SnomedFhirCodeSystemResourceConverter implements FhirCodeSystemReso
 		properties.addAll(FhirCodeSystemResourceConverter.super.expandProperties(context, resourceURI, locales));
 		
 		// add basic properties
-		properties.add(CoreSnomedConceptProperties.INACTIVE); 
-		properties.add(CoreSnomedConceptProperties.MODULE_ID);
-		properties.add(CoreSnomedConceptProperties.EFFECTIVE_TIME); 
-		properties.add(CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED); 
+		properties.add(SNOMED_PROPERTY_EFFECTIVE_TIME); 
+		properties.add(SNOMED_PROPERTY_INACTIVE); 
+		properties.add(SNOMED_PROPERTY_MODULE_ID);
+		properties.add(SNOMED_PROPERTY_NORMAL_FORM);
+		properties.add(SNOMED_PROPERTY_NORMAL_FORM_TERSE);
+		properties.add(SNOMED_PROPERTY_SEMANTIC_TAG);
+		properties.add(SNOMED_PROPERTY_SUFFICIENTLY_DEFINED); 
 		
 		// fetch available relationship types and register them as supported concept property
 		// TODO concrete domain values???
@@ -60,8 +66,7 @@ public class SnomedFhirCodeSystemResourceConverter implements FhirCodeSystemReso
 			.stream()
 			.map(typeConcept -> {
 				final String displayName = typeConcept.getPt() == null ? typeConcept.getId() : typeConcept.getPt().getTerm();
-				return new CodeSystem.PropertyComponent()
-						.setCode(typeConcept.getId())
+				return new CodeSystem.PropertyComponent(typeConcept.getId(), PropertyType.CODE)
 						.setUri(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/id" + typeConcept.getId())
 						.setDescription(displayName);
 			})
@@ -72,12 +77,7 @@ public class SnomedFhirCodeSystemResourceConverter implements FhirCodeSystemReso
 	
 	@Override
 	public List<CodeSystem.CodeSystemFilterComponent> expandFilters(ServiceProvider context, ResourceURI resourceURI, List<ExtendedLocale> list) {
-		return List.of(
-			Filters.EXPRESSION_FILTER, 
-			Filters.EXPRESSIONS_FILTER,
-			Filters.IS_A_FILTER, 
-			Filters.REFSET_MEMBER_OF
-		);
+		return SUPPORTED_SNOMED_CODESYSTEM_FILTERS;
 	}
 	
 }

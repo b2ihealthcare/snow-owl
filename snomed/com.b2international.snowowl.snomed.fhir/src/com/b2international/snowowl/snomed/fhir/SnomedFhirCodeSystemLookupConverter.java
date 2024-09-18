@@ -23,12 +23,12 @@ import java.util.stream.Collectors;
 
 import org.hl7.fhir.r5.model.*;
 
+import com.b2international.fhir.r5.operations.CodeSystemLookupParameters;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Description;
-import com.b2international.snowowl.fhir.core.operations.CodeSystemLookupParameters;
 import com.b2international.snowowl.fhir.core.request.codesystem.FhirCodeSystemLookupConverter;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -90,20 +90,28 @@ public final class SnomedFhirCodeSystemLookupConverter implements FhirCodeSystem
 		List<CodeSystem.ConceptPropertyComponent> properties = new ArrayList<>();
 		
 		// add basic SNOMED properties
-		if (parameters.isPropertyRequested(CoreSnomedConceptProperties.INACTIVE)) {
-			properties.add(CoreSnomedConceptProperties.INACTIVE.propertyOf(!snomedConcept.isActive()));
+		if (parameters.isPropertyRequested(SnomedFhirConstants.SNOMED_PROPERTY_INACTIVE.getCode())) {
+			properties.add(new CodeSystem.ConceptPropertyComponent()
+					.setCode(SnomedFhirConstants.SNOMED_PROPERTY_INACTIVE.getCode())
+					.setValue(new BooleanType(!snomedConcept.isActive())));
 		}
 		
-		if (parameters.isPropertyRequested(CoreSnomedConceptProperties.MODULE_ID)) {
-			properties.add(CoreSnomedConceptProperties.MODULE_ID.propertyOf(snomedConcept.getModuleId()));
+		if (parameters.isPropertyRequested(SnomedFhirConstants.SNOMED_PROPERTY_MODULE_ID.getCode())) {
+			properties.add(new CodeSystem.ConceptPropertyComponent()
+					.setCode(SnomedFhirConstants.SNOMED_PROPERTY_MODULE_ID.getCode())
+					.setValue(new CodeType(snomedConcept.getModuleId())));
 		}
 		
-		if (parameters.isPropertyRequested(CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED)) {
-			properties.add(CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED.propertyOf(!snomedConcept.isPrimitive()));
+		if (parameters.isPropertyRequested(SnomedFhirConstants.SNOMED_PROPERTY_SUFFICIENTLY_DEFINED.getCode())) {
+			properties.add(new CodeSystem.ConceptPropertyComponent()
+					.setCode(SnomedFhirConstants.SNOMED_PROPERTY_SUFFICIENTLY_DEFINED.getCode())
+					.setValue(new BooleanType(!snomedConcept.isPrimitive())));
 		}
 		
-		if (parameters.isPropertyRequested(CoreSnomedConceptProperties.EFFECTIVE_TIME)) {
-			properties.add(CoreSnomedConceptProperties.EFFECTIVE_TIME.propertyOf(EffectiveTimes.format(snomedConcept.getEffectiveTime(), DateFormats.SHORT)));
+		if (parameters.isPropertyRequested(SnomedFhirConstants.SNOMED_PROPERTY_EFFECTIVE_TIME.getCode())) {
+			properties.add(new CodeSystem.ConceptPropertyComponent()
+					.setCode(SnomedFhirConstants.SNOMED_PROPERTY_EFFECTIVE_TIME.getCode())
+					.setValue(new DateType(EffectiveTimes.format(snomedConcept.getEffectiveTime(), DateFormats.SHORT))));
 		}
 		
 		// Optionally requested properties
