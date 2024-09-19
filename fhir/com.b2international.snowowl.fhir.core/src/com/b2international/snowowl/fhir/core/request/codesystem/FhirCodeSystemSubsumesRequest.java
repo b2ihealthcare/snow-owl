@@ -38,7 +38,7 @@ final class FhirCodeSystemSubsumesRequest extends FhirRequest<CodeSystemSubsumpt
 	private final CodeSystemSubsumptionParameters parameters;
 
 	public FhirCodeSystemSubsumesRequest(CodeSystemSubsumptionParameters parameters) {
-		super(parameters.getSystem().getValue(), parameters.getVersion().getValue());
+		super(parameters.extractSystem(), parameters.extractSystemVersion());
 		this.parameters = parameters;
 	}
 
