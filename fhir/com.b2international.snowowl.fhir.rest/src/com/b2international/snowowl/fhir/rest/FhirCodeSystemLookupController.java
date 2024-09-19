@@ -16,7 +16,6 @@
 package com.b2international.snowowl.fhir.rest;
 
 import java.io.InputStream;
-import java.text.ParseException;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,7 +24,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.http.AcceptLanguageHeader;
-import com.b2international.fhir.FhirDates;
 import com.b2international.fhir.r5.operations.CodeSystemLookupParameters;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
@@ -65,8 +63,6 @@ public class FhirCodeSystemLookupController extends AbstractFhirController {
 	 * @param _format
 	 * @param _pretty
 	 * @return
-	 * 
-	 * @throws ParseException
 	 */
 	@Operation(
 		summary = "Concept lookup and decomposition",
@@ -134,18 +130,10 @@ public class FhirCodeSystemLookupController extends AbstractFhirController {
 			.setCode(code)
 			.setSystem(system);
 		
-		if (version.isPresent()) {
-			request.setVersion(version.get());
-		}
+		version.ifPresent(request::setVersion);
+		date.ifPresent(request::setDate);
+		displayLanguage.ifPresent(request::setDisplayLanguage);
 		
-		if (date.isPresent()) {
-			request.setDate(FhirDates.parse(date.get()));
-		}
-
-		if (displayLanguage.isPresent()) {
-			request.setDisplayLanguage(displayLanguage.get());
-		}
-
 		if (properties != null && !properties.isEmpty()) {
 			request.setProperty(properties);
 		}
