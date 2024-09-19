@@ -111,7 +111,7 @@ final class FhirValidateCodeRequest extends FhirRequest<CodeSystemValidateCodeRe
 		if (parameters.getCode() != null) {
 			Coding coding = new Coding()
 					.setCode(parameters.getCode().getValue())
-					.setDisplay(parameters.getDisplay().getValue());
+					.setDisplay(parameters.getDisplay() != null ? parameters.getDisplay().getValue() : null);
 			
 			codings.add(coding);
 		}
