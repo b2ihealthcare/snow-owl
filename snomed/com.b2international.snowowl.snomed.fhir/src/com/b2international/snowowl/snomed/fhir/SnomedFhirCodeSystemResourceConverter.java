@@ -67,7 +67,7 @@ public class SnomedFhirCodeSystemResourceConverter implements FhirCodeSystemReso
 			.map(typeConcept -> {
 				final String displayName = typeConcept.getPt() == null ? typeConcept.getId() : typeConcept.getPt().getTerm();
 				return new CodeSystem.PropertyComponent(typeConcept.getId(), PropertyType.CODE)
-						.setUri(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/id" + typeConcept.getId())
+						.setUri(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/id/" + typeConcept.getId())
 						.setDescription(displayName);
 			})
 			.forEach(properties::add);
