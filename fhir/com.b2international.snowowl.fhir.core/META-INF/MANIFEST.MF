@@ -7,7 +7,6 @@ Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: com.b2international.snowowl.fhir.core,
  com.b2international.snowowl.fhir.core.exceptions,
- com.b2international.snowowl.fhir.core.operations,
  com.b2international.snowowl.fhir.core.request,
  com.b2international.snowowl.fhir.core.request.bundle,
  com.b2international.snowowl.fhir.core.request.codesystem,
@@ -23,7 +22,6 @@ Import-Package: com.b2international.fhir.r5.operations;version="0.1.0",
  org.slf4j;version="2.0.0"
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.snowowl.core;visibility:=reexport,
- org.apache.commons.lang3;bundle-version="3.14.0",
  io.swagger.core.v3.swagger-annotations.jakarta;bundle-version="2.2.20"
 Bundle-ClassPath: .
 Bundle-ActivationPolicy: lazy
