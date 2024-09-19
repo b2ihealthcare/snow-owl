@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import org.hl7.fhir.r5.model.CodeSystem;
 
 import com.b2international.fhir.r5.operations.CodeSystemLookupParameters;
+import com.b2international.fhir.r5.operations.CodeSystemLookupResultParameters;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.Concept;
 
@@ -55,11 +56,11 @@ public interface FhirCodeSystemLookupConverter {
 	 * @param acceptLanguage
 	 * @return
 	 */
-	default List<CodeSystem.ConceptDefinitionDesignationComponent> expandDesignations(ServiceProvider context, CodeSystem codeSystem, Concept concept, CodeSystemLookupParameters parameters, String acceptLanguage) {
+	default List<CodeSystemLookupResultParameters.Designation> expandDesignations(ServiceProvider context, CodeSystem codeSystem, Concept concept, CodeSystemLookupParameters parameters, String acceptLanguage) {
 		if (parameters.isPropertyRequested("designation")) {
 			return concept.getDescriptions()
 				.stream()
-				.map(description -> new CodeSystem.ConceptDefinitionDesignationComponent().setValue(description.getTerm()).setLanguage(description.getLanguage()))
+				.map(description -> new CodeSystemLookupResultParameters.Designation().setValue(description.getTerm()).setLanguage(description.getLanguage()))
 				.collect(Collectors.toList());
 		} else {
 			return null;
@@ -76,7 +77,7 @@ public interface FhirCodeSystemLookupConverter {
 	 * @param parameters
 	 * @return
 	 */
-	default List<CodeSystem.ConceptPropertyComponent> expandProperties(ServiceProvider context, CodeSystem codeSystem, Concept concept, CodeSystemLookupParameters parameters) {
+	default List<CodeSystemLookupResultParameters.Property> expandProperties(ServiceProvider context, CodeSystem codeSystem, Concept concept, CodeSystemLookupParameters parameters) {
 		return null;
 	}
 
