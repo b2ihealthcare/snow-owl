@@ -25,11 +25,11 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.fhir.r5.operations.CodeSystemLookupParameters;
 import com.b2international.fhir.r5.operations.CodeSystemLookupResultParameters;
 import com.b2international.snowowl.core.RepositoryManager;
-import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Concept;
+import com.b2international.snowowl.fhir.core.ResourceToResourceURI;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.google.common.collect.Sets;
 
@@ -53,7 +53,7 @@ final class FhirCodeSystemLookupRequest extends FhirRequest<CodeSystemLookupResu
 	private final CodeSystemLookupParameters parameters;
 
 	FhirCodeSystemLookupRequest(CodeSystemLookupParameters parameters) {
-		super(parameters.getSystem().getValue(), parameters.getVersion().getValue());
+		super(parameters.extractSystem(), parameters.extractSystemVersion());
 		this.parameters = parameters;
 	}
 
@@ -71,8 +71,8 @@ final class FhirCodeSystemLookupRequest extends FhirRequest<CodeSystemLookupResu
 		
 		Concept concept = CodeSystemRequests.prepareSearchConcepts()
 			.one()
-			.filterByCodeSystemUri(new ResourceURI(codeSystem.getUserString(TerminologyResource.Fields.RESOURCE_URI)))
-			.filterById(parameters.getCode().getCode())
+			.filterByCodeSystemUri(ResourceToResourceURI.from(codeSystem))
+			.filterById(parameters.extractCode())
 			.setLocales(acceptLanguage)
 			.setExpand(conceptExpand)
 			.buildAsync()
