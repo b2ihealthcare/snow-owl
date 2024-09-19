@@ -17,8 +17,8 @@ package com.b2international.snowowl.fhir.core.request.valueset;
 
 import org.hl7.fhir.r5.model.ValueSet;
 
+import com.b2international.fhir.r5.operations.ValueSetExpandParameters;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.fhir.core.operations.ValueSetExpandParameters;
 
 /**
  * @since 8.0

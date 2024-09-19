@@ -31,6 +31,7 @@ import org.hl7.fhir.utilities.xhtml.XhtmlNode;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
+import com.b2international.fhir.FhirCodeSystems;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -44,7 +45,6 @@ import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.search.TermFilter;
 import com.b2international.snowowl.core.version.VersionDocument;
-import com.b2international.snowowl.fhir.core.FhirCodeSystems;
 import com.b2international.snowowl.fhir.core.R5ObjectFields;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;

@@ -25,7 +25,7 @@ import java.util.UUID;
 import org.junit.Test;
 
 import com.b2international.commons.json.Json;
-import com.b2international.snowowl.fhir.core.FhirCodeSystems;
+import com.b2international.fhir.FhirCodeSystems;
 import com.b2international.snowowl.fhir.core.R5ObjectFields;
 import com.b2international.snowowl.fhir.rest.tests.FhirRestTest;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;

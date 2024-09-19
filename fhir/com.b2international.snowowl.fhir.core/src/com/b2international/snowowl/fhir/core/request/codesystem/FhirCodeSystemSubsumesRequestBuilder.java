@@ -17,12 +17,12 @@ package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import org.hl7.fhir.r5.model.Parameters;
 
+import com.b2international.fhir.r5.operations.CodeSystemSubsumptionParameters;
+import com.b2international.fhir.r5.operations.CodeSystemSubsumptionResultParameters;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
-import com.b2international.snowowl.fhir.core.operations.CodeSystemSubsumptionParameters;
-import com.b2international.snowowl.fhir.core.operations.CodeSystemSubsumptionResultParameters;
 
 /**
  * @since 8.0

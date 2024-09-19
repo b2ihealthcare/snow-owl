@@ -33,6 +33,7 @@ import org.hl7.fhir.r5.model.ValueSet.ConceptReferenceDesignationComponent;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.fhir.r5.operations.ValueSetExpandParameters;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -47,7 +48,6 @@ import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.fhir.core.R5ObjectFields;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.operations.ValueSetExpandParameters;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.b2international.snowowl.fhir.core.request.codesystem.FhirRequest;
 import com.google.common.base.Charsets;

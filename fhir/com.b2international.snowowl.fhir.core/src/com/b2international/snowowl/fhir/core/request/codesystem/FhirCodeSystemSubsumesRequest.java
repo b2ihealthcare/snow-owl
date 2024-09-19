@@ -19,11 +19,11 @@ import java.util.Objects;
 
 import org.hl7.fhir.r5.model.CodeSystem;
 
+import com.b2international.fhir.r5.operations.CodeSystemSubsumptionParameters;
+import com.b2international.fhir.r5.operations.CodeSystemSubsumptionResultParameters;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.fhir.core.operations.CodeSystemSubsumptionParameters;
-import com.b2international.snowowl.fhir.core.operations.CodeSystemSubsumptionResultParameters;
 
 /**
  * Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).

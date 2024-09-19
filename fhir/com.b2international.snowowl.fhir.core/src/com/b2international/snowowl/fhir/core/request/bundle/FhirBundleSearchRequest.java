@@ -23,10 +23,10 @@ import org.hl7.fhir.r5.model.Bundle.BundleType;
 import org.hl7.fhir.r5.model.Meta;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.fhir.FhirCodeSystems;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.fhir.core.FhirCodeSystems;
 
 /**
  * @since 8.0.0

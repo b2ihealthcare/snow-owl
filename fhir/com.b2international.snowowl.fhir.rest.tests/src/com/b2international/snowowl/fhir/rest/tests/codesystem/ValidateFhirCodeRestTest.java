@@ -27,8 +27,8 @@ import org.hl7.fhir.r5.model.Coding;
 import org.hl7.fhir.r5.model.Parameters;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.core.operations.CodeSystemValidateCodeParameters;
-import com.b2international.snowowl.fhir.core.operations.CodeSystemValidateCodeResultParameters;
+import com.b2international.fhir.r5.operations.CodeSystemValidateCodeParameters;
+import com.b2international.fhir.r5.operations.CodeSystemValidateCodeResultParameters;
 import com.b2international.snowowl.fhir.rest.tests.FhirRestTest;
 
 /**

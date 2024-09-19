@@ -18,12 +18,12 @@ package com.b2international.snowowl.fhir.core.request.conceptmap;
 import org.elasticsearch.core.List;
 import org.hl7.fhir.r5.model.ConceptMap;
 
+import com.b2international.fhir.r5.operations.ConceptMapTranslateParameters;
+import com.b2international.fhir.r5.operations.ConceptMapTranslateResultParameters;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.fhir.core.R5ObjectFields;
-import com.b2international.snowowl.fhir.core.operations.ConceptMapTranslateParameters;
-import com.b2international.snowowl.fhir.core.operations.ConceptMapTranslateResultParameters;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 /**
