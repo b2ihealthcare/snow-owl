@@ -35,7 +35,6 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.fhir.r5.operations.ValueSetExpandParameters;
 import com.b2international.snowowl.core.RepositoryManager;
-import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -47,6 +46,7 @@ import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.fhir.core.R5ObjectFields;
+import com.b2international.snowowl.fhir.core.ResourceToResourceURI;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.b2international.snowowl.fhir.core.request.codesystem.FhirRequest;
@@ -145,17 +145,19 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 				.setIdentifier(id)
 				.setTimestamp(new Date());
 		
+		final String termFilter = parameters.getFilter() == null ? null : parameters.getFilter().getValue();
+		
 		ConceptSearchRequestBuilder req = CodeSystemRequests.prepareSearchConcepts()
-				.filterByCodeSystemUri(new ResourceURI(codeSystem.getUserString(TerminologyResource.Fields.RESOURCE_URI)))
-				.filterByActive(parameters.getActiveOnly().getValue())
-				.filterByTerm(parameters.getFilter().getValue())
+				.filterByCodeSystemUri(ResourceToResourceURI.from(codeSystem))
+				.filterByActive(parameters.getActiveOnly() == null ? null : parameters.getActiveOnly().getValue())
+				.filterByTerm(termFilter)
 				.setLimit(parameters.getCount() == null ? 10 : parameters.getCount().getValue())
 				.setSearchAfter(parameters.getAfter() == null ? null : parameters.getAfter().getValue())
 				// SNOMED only preferred display support (VS should always use FSN)
 				.setPreferredDisplay("FSN") 
 				.setLocales(FhirRequest.extractLocales(parameters.getDisplayLanguage()))
 				// always return sorted results for consistency, in case of term filtering return by score otherwise by ID
-				.sortBy(!CompareUtils.isEmpty(parameters.getFilter()) ? SearchIndexResourceRequest.SCORE : SearchResourceRequest.Sort.fieldAsc("id"));
+				.sortBy(!CompareUtils.isEmpty(termFilter) ? SearchIndexResourceRequest.SCORE : SearchResourceRequest.Sort.fieldAsc("id"));
 
 		ValueSet.ValueSetComposeComponent compose = null;
 		
@@ -256,7 +258,7 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 				
 			);
 			
-			if (parameters.getIncludeDesignations().booleanValue()) {
+			if (parameters.getIncludeDesignations() != null && parameters.getIncludeDesignations().getValue()) {
 				contains.setDesignation(fromDescriptions(concept.getDescriptions()));
 			}
 			

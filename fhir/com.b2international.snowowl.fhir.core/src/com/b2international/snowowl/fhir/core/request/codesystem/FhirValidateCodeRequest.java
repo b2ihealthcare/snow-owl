@@ -52,7 +52,7 @@ final class FhirValidateCodeRequest extends FhirRequest<CodeSystemValidateCodeRe
 	private final CodeSystemValidateCodeParameters parameters;
 	
 	FhirValidateCodeRequest(CodeSystemValidateCodeParameters parameters) {
-		super(parameters.getUrl() != null ? parameters.getUrl().getValue() : parameters.getCoding().getSystem(), parameters.getVersion().getValue());
+		super(parameters.extractUrl(), parameters.extractVersion());
 		this.parameters = parameters;
 	}
 
