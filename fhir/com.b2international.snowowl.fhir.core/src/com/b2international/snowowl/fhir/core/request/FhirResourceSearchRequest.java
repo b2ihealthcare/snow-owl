@@ -262,6 +262,9 @@ public abstract class FhirResourceSearchRequest<T extends MetadataResource> exte
 				.setId(resource.getId())
 				.setMeta(toMeta(resource));
 		
+		// attach toolingId as userData
+		entry.setUserData("toolingId", resource.getToolingId());
+		
 		// optional fields
 		// we are using the ID of the resource as machine readable name
 		includeIfFieldSelected(R5ObjectFields.MetadataResource.NAME, resource::getId, entry::setName);
