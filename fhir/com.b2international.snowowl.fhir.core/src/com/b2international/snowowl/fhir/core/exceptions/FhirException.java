@@ -17,7 +17,6 @@ package com.b2international.snowowl.fhir.core.exceptions;
 
 import java.util.List;
 
-import org.elasticsearch.common.Strings;
 import org.hl7.fhir.r5.model.CodeableConcept;
 import org.hl7.fhir.r5.model.Coding;
 import org.hl7.fhir.r5.model.OperationOutcome;
@@ -26,6 +25,7 @@ import org.hl7.fhir.r5.model.OperationOutcome.IssueType;
 import org.hl7.fhir.r5.model.OperationOutcome.OperationOutcomeIssueComponent;
 
 import com.b2international.commons.exceptions.ApiException;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
 
 /**
