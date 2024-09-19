@@ -52,7 +52,7 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 			.statusCode(404)
 			.body("resourceType", equalTo("OperationOutcome"))
 			.body("issue.severity", hasItem("error"))
-			.body("issue.code", hasItem("not_found"))
+			.body("issue.code", hasItem("not-found"))
 			.body("issue.diagnostics", hasItem("CodeSystem with identifier 'unknown' could not be found."));
 	}
 	
@@ -67,7 +67,7 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 			.statusCode(404)
 			.body("resourceType", equalTo("OperationOutcome"))
 			.body("issue.severity", hasItem("error"))
-			.body("issue.code", hasItem("not_found"))
+			.body("issue.code", hasItem("not-found"))
 			.body("issue.diagnostics", hasItem("Concept with identifier '12345' could not be found."));
 	}
 	
@@ -99,10 +99,10 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 			.body("resourceType", equalTo("Parameters"))
 			.body("parameter[0].name", equalTo("name"))
 			.body("parameter[0].valueString", equalTo("SNOMEDCT/2002-01-31"))
-			.body("parameter[1].name", equalTo("version"))
-			.body("parameter[1].valueString", equalTo("2002-01-31"))
-			.body("parameter[2].name", equalTo("display"))
-			.body("parameter[2].valueString", equalTo("SNOMED CT Concept"));
+			.body("parameter[1].name", equalTo("display"))
+			.body("parameter[1].valueString", equalTo("SNOMED CT Concept"))
+			.body("parameter[2].name", equalTo("version"))
+			.body("parameter[2].valueString", equalTo("2002-01-31"));
 	}
 	
 	@Test
@@ -118,10 +118,10 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 			.body("resourceType", equalTo("Parameters"))
 			.body("parameter[0].name", equalTo("name"))
 			.body("parameter[0].valueString", equalTo("SNOMEDCT/2002-01-31"))
-			.body("parameter[1].name", equalTo("version"))
-			.body("parameter[1].valueString", equalTo("2002-01-31"))
-			.body("parameter[2].name", equalTo("display"))
-			.body("parameter[2].valueString", equalTo("SNOMED CT Concept"));
+			.body("parameter[1].name", equalTo("display"))
+			.body("parameter[1].valueString", equalTo("SNOMED CT Concept"))
+			.body("parameter[2].name", equalTo("version"))
+			.body("parameter[2].valueString", equalTo("2002-01-31"));
 	}
 	
 	@Test
