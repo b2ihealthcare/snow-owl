@@ -45,6 +45,7 @@ import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.search.TermFilter;
 import com.b2international.snowowl.core.version.VersionDocument;
+import com.b2international.snowowl.fhir.core.FhirModelHelpers;
 import com.b2international.snowowl.fhir.core.R5ObjectFields;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -198,7 +199,7 @@ public abstract class FhirResourceSearchRequest<T extends MetadataResource> exte
 				.setId(getResourceType()) // TODO is this a good ID here?
 				.setMeta(new Meta()
 						.addTag(CompareUtils.isEmpty(fields()) ? null : FhirCodeSystems.CODING_SUBSETTED)
-						.setLastUpdated(new Date()));
+						.setLastUpdatedElement(FhirModelHelpers.toInstantElement(new Date())));
 	}
 
 	/**
@@ -274,7 +275,7 @@ public abstract class FhirResourceSearchRequest<T extends MetadataResource> exte
 		includeIfFieldSelected(R5ObjectFields.MetadataResource.VERSION, resource::getVersion, entry::setVersion);
 		includeIfFieldSelected(R5ObjectFields.MetadataResource.PUBLISHER, () -> getPublisher(resource), entry::setPublisher);
 		includeIfFieldSelected(R5ObjectFields.Resource.LANGUAGE, resource::getLanguage, entry::setLanguage);
-		includeIfFieldSelected(R5ObjectFields.MetadataResource.DATE, () -> resource.getEffectiveTime() == null ? null : new Date(resource.getEffectiveTime()), entry::setDate);
+		includeIfFieldSelected(R5ObjectFields.MetadataResource.DATE, () -> FhirModelHelpers.toDateTimeElement(resource.getEffectiveTime()), entry::setDateElement);
 		// XXX: use the resource's description in all cases
 		includeIfFieldSelected(R5ObjectFields.MetadataResource.DESCRIPTION, resource::getResourceDescription, entry::setDescription);
 		includeIfFieldSelected(R5ObjectFields.MetadataResource.PURPOSE, resource::getPurpose, entry::setPurpose);
@@ -308,10 +309,10 @@ public abstract class FhirResourceSearchRequest<T extends MetadataResource> exte
 	private Meta toMeta(ResourceFragment resource) {
 		final Meta meta = new Meta();
 			// updatedAt returns version creation time (createdAt and updatedAt is the same) or latest updateAt value from the resource :gold:
-		meta.setLastUpdated(Optional.ofNullable(resource.getUpdatedAt())
+		meta.setLastUpdatedElement(Optional.ofNullable(resource.getUpdatedAt())
 			// fall back to createdAt if updatedAt is not present
 			.or(() -> Optional.ofNullable(resource.getCreatedAt()))
-			.map(Date::new)
+			.map(FhirModelHelpers::toInstantElement)
 			// or null if none of them
 			.orElse(null)
 		);

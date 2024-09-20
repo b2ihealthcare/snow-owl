@@ -29,7 +29,7 @@ import com.b2international.fhir.r5.operations.CodeSystemValidateCodeResultParame
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Concept;
-import com.b2international.snowowl.fhir.core.ResourceToResourceURI;
+import com.b2international.snowowl.fhir.core.FhirModelHelpers;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.common.collect.ImmutableSortedSet;
@@ -64,7 +64,7 @@ final class FhirValidateCodeRequest extends FhirRequest<CodeSystemValidateCodeRe
 		// extract locales from the request
 		Map<String, Concept> conceptsById = CodeSystemRequests.prepareSearchConcepts()
 				.setLimit(codingsById.keySet().size())
-				.filterByCodeSystemUri(ResourceToResourceURI.from(codeSystem))
+				.filterByCodeSystemUri(FhirModelHelpers.resourceUriFrom(codeSystem))
 				.filterByIds(codingsById.keySet())
 				.setLocales(extractLocales(parameters.getDisplayLanguage()))
 				.buildAsync()

@@ -46,8 +46,8 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.fhir.core.FhirModelHelpers;
 import com.b2international.snowowl.fhir.core.R5ObjectFields;
-import com.b2international.snowowl.fhir.core.ResourceToResourceURI;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.b2international.snowowl.fhir.core.request.codesystem.FhirRequest;
@@ -144,12 +144,12 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 		
 		final ValueSet.ValueSetExpansionComponent expansion = new ValueSet.ValueSetExpansionComponent()
 				.setIdentifier(id)
-				.setTimestamp(new Date());
+				.setTimestampElement(FhirModelHelpers.toDateTimeElement(new Date()));
 		
 		final String termFilter = parameters.getFilter() == null ? null : parameters.getFilter().getValue();
 		
 		ConceptSearchRequestBuilder req = CodeSystemRequests.prepareSearchConcepts()
-				.filterByCodeSystemUri(ResourceToResourceURI.from(codeSystem))
+				.filterByCodeSystemUri(FhirModelHelpers.resourceUriFrom(codeSystem))
 				.filterByActive(parameters.getActiveOnly() == null ? null : parameters.getActiveOnly().getValue())
 				.filterByTerm(termFilter)
 				.setLimit(parameters.getCount() == null ? 10 : parameters.getCount().getValue())

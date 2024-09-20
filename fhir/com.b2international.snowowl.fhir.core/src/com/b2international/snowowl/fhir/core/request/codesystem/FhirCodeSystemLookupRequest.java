@@ -29,7 +29,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Concept;
-import com.b2international.snowowl.fhir.core.ResourceToResourceURI;
+import com.b2international.snowowl.fhir.core.FhirModelHelpers;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.google.common.collect.Sets;
 
@@ -71,7 +71,7 @@ final class FhirCodeSystemLookupRequest extends FhirRequest<CodeSystemLookupResu
 		
 		Concept concept = CodeSystemRequests.prepareSearchConcepts()
 			.one()
-			.filterByCodeSystemUri(ResourceToResourceURI.from(codeSystem))
+			.filterByCodeSystemUri(FhirModelHelpers.resourceUriFrom(codeSystem))
 			.filterById(parameters.extractCode())
 			.setLocales(acceptLanguage)
 			.setExpand(conceptExpand)

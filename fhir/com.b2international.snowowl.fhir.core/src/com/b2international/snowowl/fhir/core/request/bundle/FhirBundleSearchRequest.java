@@ -27,6 +27,7 @@ import com.b2international.fhir.FhirCodeSystems;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.fhir.core.FhirModelHelpers;
 
 /**
  * @since 8.0.0
@@ -50,7 +51,7 @@ public class FhirBundleSearchRequest extends SearchResourceRequest<RepositoryCon
 				.setId(IDs.base62UUID())
 				.setMeta(new Meta()
 						.addTag(CompareUtils.isEmpty(fields()) ? null : FhirCodeSystems.CODING_SUBSETTED)
-						.setLastUpdated(new Date())
+						.setLastUpdatedElement(FhirModelHelpers.toInstantElement(new Date()))
 				);
 	}
 
