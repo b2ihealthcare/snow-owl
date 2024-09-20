@@ -49,7 +49,7 @@ public class FhirConceptMapApiTest extends FhirRestTest {
 	@BeforeClass
 	public static void setupMaps() {
 		String mainBranch = IBranchPath.MAIN_BRANCH;
-		mapTypeRefSetIds = TestMapTypeReferenceSetCreator.createSimpleMapTypeReferenceSets(mainBranch, 
+		mapTypeRefSetIds = FhirSnomedConceptMapGenerator.createSimpleMapTypeReferenceSets(mainBranch, 
 				SIMPLE_MAP_TYPE_REFSET_NAME, 
 				COMPLEX_MAP_TYPE_REFSET_NAME,
 				COMPLEX_BLOCK_MAP_TYPE_REFSET_NAME,

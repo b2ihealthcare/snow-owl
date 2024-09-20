@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2018-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,16 +48,8 @@ import com.google.common.collect.Maps;
 /**
  * @since 7.0
  */
-public class TestMapTypeReferenceSetCreator {
+public class FhirSnomedConceptMapGenerator {
 	
-	
-	/**
-	 * 
-	 * @param branchPath
-	 * @param simpleMapName
-	 * @param version
-	 * @return
-	 */
 	public static List<String> createSimpleMapTypeReferenceSets(String branchPath, 
 			String simpleMapName, 
 			String complexMapName, 
