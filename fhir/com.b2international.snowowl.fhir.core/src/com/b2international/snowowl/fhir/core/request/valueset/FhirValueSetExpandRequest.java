@@ -33,6 +33,7 @@ import org.hl7.fhir.r5.model.ValueSet.ConceptReferenceDesignationComponent;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.fhir.r5.operations.CodeSystemLookupResultParameters.Designation;
 import com.b2international.fhir.r5.operations.ValueSetExpandParameters;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -250,13 +251,9 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 		
 		for (Concept concept : concepts) {
 			var contains = new ValueSet.ValueSetExpansionContainsComponent()
-			.setCode(concept.getId())
-			.setSystem(baseUrl)
-			.setDisplay(concept.getTerm());
-			
-			expansion.addContains(
-				
-			);
+				.setCode(concept.getId())
+				.setSystem(baseUrl)
+				.setDisplay(concept.getTerm());
 			
 			if (parameters.getIncludeDesignations() != null && parameters.getIncludeDesignations().getValue()) {
 				contains.setDesignation(fromDescriptions(concept.getDescriptions()));
