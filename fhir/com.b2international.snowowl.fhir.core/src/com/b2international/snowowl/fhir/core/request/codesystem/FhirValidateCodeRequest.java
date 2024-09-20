@@ -96,8 +96,8 @@ final class FhirValidateCodeRequest extends FhirRequest<CodeSystemValidateCodeRe
 				if (!providedCoding.getDisplay().equals(concept.getTerm())) {
 					return new CodeSystemValidateCodeResultParameters()
 							.setResult(false)
-							.setDisplay(concept.getTerm())
-							.setMessage(String.format("Incorrect display '%s' for code '%s'.", providedCoding.getDisplay(), providedCoding.getCode())); 
+							.setMessage(String.format("Incorrect display '%s' for code '%s'.", providedCoding.getDisplay(), providedCoding.getCode())) 
+							.setDisplay(concept.getTerm());
 				}
 			}
 		}
