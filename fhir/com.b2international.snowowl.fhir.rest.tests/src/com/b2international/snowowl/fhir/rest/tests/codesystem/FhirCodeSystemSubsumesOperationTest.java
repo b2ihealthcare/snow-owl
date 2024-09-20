@@ -115,7 +115,7 @@ public class FhirCodeSystemSubsumesOperationTest extends FhirRestTest {
 			.body("issue[0].severity", equalTo("error"))
 			.body("issue[0].code", equalTo("invalid"))
 			.body("issue[0].diagnostics", equalTo("Version specified in the URI [http://snomed.info/sct/900000000000207008/version/20170131] "
-					+ "does not match the version set in the request [2018-01-31]"))
+					+ "does not match the version set in the version parameter [2018-01-31]"))
 			.statusCode(400);
 	}
 }

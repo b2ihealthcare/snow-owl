@@ -433,7 +433,7 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 
 		// Check system (URL) against version 
 		if (!StringUtils.isEmpty(system) && !StringUtils.isEmpty(version) && !system.endsWith("/" + version)) {
-			throw new BadRequestException(String.format("Version specified in the URI [%s] does not match the version set in the request [%s]",
+			throw new BadRequestException(String.format("Version specified in the URI [%s] does not match the version set in the version parameter [%s]",
 				system, version));
 		}
 	}

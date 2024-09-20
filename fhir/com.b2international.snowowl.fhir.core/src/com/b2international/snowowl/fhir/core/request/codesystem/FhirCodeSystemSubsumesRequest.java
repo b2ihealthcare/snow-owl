@@ -22,8 +22,8 @@ import org.hl7.fhir.r5.model.CodeSystem;
 import com.b2international.fhir.r5.operations.CodeSystemSubsumptionParameters;
 import com.b2international.fhir.r5.operations.CodeSystemSubsumptionResultParameters;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.fhir.core.ResourceToResourceURI;
 
 /**
  * Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).
@@ -62,7 +62,7 @@ final class FhirCodeSystemSubsumesRequest extends FhirRequest<CodeSystemSubsumpt
 	private boolean isSubsumedBy(ServiceProvider context, CodeSystem codeSystem, final String subType, final String superType) {
 		return CodeSystemRequests.prepareSearchConcepts()
 			.setLimit(0)
-			.filterByCodeSystem(codeSystem.getUserString(TerminologyResource.Fields.RESOURCE_URI))
+			.filterByCodeSystemUri(ResourceToResourceURI.from(codeSystem))
 			.filterById(subType)
 			.filterByAncestor(superType)
 			.buildAsync()
