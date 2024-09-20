@@ -33,7 +33,7 @@ import com.b2international.snowowl.test.commons.rest.RestExtensions;
  * 
  * @since 7.17.0
  */
-public class FhirCodeSystemValidateCodeOperationTest extends FhirRestTest {
+public class FhirSnomedCodeSystemValidateCodeTest extends FhirRestTest {
 	
 	@Test
 	public void GET_CodeSystem_$validate_code_NonExisting() throws Exception {

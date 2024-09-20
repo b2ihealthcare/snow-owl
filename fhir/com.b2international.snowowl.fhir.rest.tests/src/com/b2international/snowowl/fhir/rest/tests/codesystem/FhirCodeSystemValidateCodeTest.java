@@ -34,9 +34,11 @@ import com.b2international.snowowl.fhir.rest.tests.FhirRestTest;
 /**
  * CodeSystem $validate-code operation for FHIR code systems REST end-point test cases
  * 
+ * TODO move this to the ext repository as the necessary services are there
+ * 
  * @since 7.17.0
  */
-public class ValidateFhirCodeRestTest extends FhirRestTest {
+public class FhirCodeSystemValidateCodeTest extends FhirRestTest {
 	
 	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_URI = "http://hl7.org/fhir/issue-type";
 	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_ID = "fhir/issue-type";
@@ -115,11 +117,11 @@ public class ValidateFhirCodeRestTest extends FhirRestTest {
 			.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID)
 			.body(toJson(parameters.getParameters()))
 			.when().post("/CodeSystem/{id}/$validate-code")
-			.then()
+			.then().assertThat()
+			.statusCode(200)
 			.body("resourceType", equalTo("Parameters"))
 			.body("parameter[0].name", equalTo("result"))
-			.body("parameter[0].valueBoolean", equalTo(true))
-			.statusCode(200);
+			.body("parameter[0].valueBoolean", equalTo(true));
 	}
 	
 	@Test
@@ -135,13 +137,13 @@ public class ValidateFhirCodeRestTest extends FhirRestTest {
 			.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID)
 			.body(toJson(parameters.getParameters()))
 			.when().post("/CodeSystem/{id}/$validate-code")
-			.then()
+			.then().assertThat()
+			.statusCode(400)
 			.body("resourceType", equalTo("OperationOutcome"))
 			.body("issue.severity", hasItem("error"))
 			.body("issue.code", hasItem("invalid"))
 			.body("issue.diagnostics", hasItem("Parameter 'url' cannot be specified when the code system ID is set."))
-			.body("issue.details.text", hasItem("Parameter 'ValidateCodeRequest.url' content is invalid"))
-			.statusCode(400);
+			.body("issue.details.text", hasItem("Parameter 'url' content is invalid"));
 		
 		//Coding
 		parameters = new CodeSystemValidateCodeParameters()
@@ -155,13 +157,13 @@ public class ValidateFhirCodeRestTest extends FhirRestTest {
 			.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID)
 			.body(toJson(parameters.getParameters()))
 			.when().post("/CodeSystem/{id}/$validate-code")
-			.then()
+			.then().assertThat()
+			.statusCode(400)
 			.body("resourceType", equalTo("OperationOutcome"))
 			.body("issue.severity", hasItem("error"))
 			.body("issue.code", hasItem("invalid"))
 			.body("issue.diagnostics", hasItem("Parameter 'coding' cannot be specified when the code system ID is set."))
-			.body("issue.details.text", hasItem("Parameter 'ValidateCodeRequest.coding' content is invalid"))
-			.statusCode(400);
+			.body("issue.details.text", hasItem("Parameter 'coding' content is invalid"));
 		
 		//CodeableConcept
 		parameters = new CodeSystemValidateCodeParameters()
@@ -175,13 +177,13 @@ public class ValidateFhirCodeRestTest extends FhirRestTest {
 			.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID)
 			.body(toJson(parameters.getParameters()))
 			.when().post("/CodeSystem/{id}/$validate-code")
-			.then()
+			.then().assertThat()
+			.statusCode(400)
 			.body("resourceType", equalTo("OperationOutcome"))
 			.body("issue.severity", hasItem("error"))
 			.body("issue.code", hasItem("invalid"))
 			.body("issue.diagnostics", hasItem("Parameter 'codeableConcept' cannot be specified when the code system ID is set."))
-			.body("issue.details.text", hasItem("Parameter 'ValidateCodeRequest.codeableConcept' content is invalid"))
-			.statusCode(400);
+			.body("issue.details.text", hasItem("Parameter 'codeableConcept' content is invalid"));
 	}
 	
 	/*
@@ -242,11 +244,11 @@ public class ValidateFhirCodeRestTest extends FhirRestTest {
 			.contentType(APPLICATION_FHIR_JSON)
 			.body(toJson(parameters.getParameters()))
 			.when().post("/CodeSystem/$validate-code")
-			.then()
+			.then().assertThat()
+			.statusCode(200)
 			.body("resourceType", equalTo("Parameters"))
 			.body("parameter[0].name", equalTo("result"))
-			.body("parameter[0].valueBoolean", equalTo(true))
-			.statusCode(200);
+			.body("parameter[0].valueBoolean", equalTo(true));
 	}
 	
 	@Test
@@ -266,11 +268,11 @@ public class ValidateFhirCodeRestTest extends FhirRestTest {
 			.contentType(APPLICATION_FHIR_JSON)
 			.body(toJson(parameters.getParameters()))
 			.when().post("/CodeSystem/$validate-code")
-			.then()
+			.then().assertThat()
+			.statusCode(200)
 			.body("resourceType", equalTo("Parameters"))
 			.body("parameter[0].name", equalTo("result"))
-			.body("parameter[0].valueBoolean", equalTo(true))
-			.statusCode(200);
+			.body("parameter[0].valueBoolean", equalTo(true));
 	}
 	
 	private CodeSystemValidateCodeResultParameters convertToValidateCodeResult(String responseString) throws Exception {

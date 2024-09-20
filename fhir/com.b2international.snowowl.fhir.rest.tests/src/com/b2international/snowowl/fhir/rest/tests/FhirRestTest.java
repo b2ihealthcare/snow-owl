@@ -20,9 +20,10 @@ import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 
-import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.test.commons.TestMethodNameRule;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 
 /**
@@ -39,6 +40,9 @@ public abstract class FhirRestTest extends FhirTest {
 	public static final String FHIR_ROOT_CONTEXT = "/fhir"; //$NON-NLS-N$
 	
 	public static final String SNOMEDCT_URL = SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/900000000000207008";
+	
+	@Rule
+	public TestMethodNameRule methodNameRule = new TestMethodNameRule();
 	
 	public static final class Endpoints {
 		public static final String CODESYSTEM = "/CodeSystem";

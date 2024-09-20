@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2018-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.tests;
+package com.b2international.snowowl.fhir.rest.tests;
+
+import org.hl7.fhir.r5.formats.JsonParser;
+import org.hl7.fhir.r5.model.Resource;
 
 /**
- * @since 7.1.0
+ * Superclass for common test functionality
+ * @since 6.3
  */
-public final class FhirTestConcepts {
+public class FhirTest {
 	
-	private FhirTestConcepts() {};
+	protected final String toJson(Resource resource) throws Exception {
+		return new JsonParser().composeString(resource);
+	}
 	
-	public static final String MICROORGANISM = "264395009";
-	public static final String ORGANISM = "410607006";
-	public static final String BACTERIA = "409822003";
+	protected final <T> T fromJson(String resource) throws Exception {
+		return (T) new JsonParser().parse(resource);
+	}
 
 }

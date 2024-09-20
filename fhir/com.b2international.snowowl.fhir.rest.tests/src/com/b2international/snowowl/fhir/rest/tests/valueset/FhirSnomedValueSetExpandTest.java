@@ -32,7 +32,7 @@ import com.b2international.snowowl.test.commons.rest.RestExtensions;
 /**
  * @since 8.0
  */
-public class FhirValueSetSnomedExpandTest extends FhirRestTest {
+public class FhirSnomedValueSetExpandTest extends FhirRestTest {
 
 	@Test
 	public void expandSnomedCodeSystemURL() throws Exception {

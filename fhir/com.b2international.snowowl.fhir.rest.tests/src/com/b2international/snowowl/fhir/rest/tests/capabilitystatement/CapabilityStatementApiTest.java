@@ -29,7 +29,7 @@ import com.b2international.snowowl.fhir.rest.tests.FhirRestTest;
  * 
  * @since 8.0.0
  */
-public class CapabilityStatementRestTest extends FhirRestTest {
+public class CapabilityStatementApiTest extends FhirRestTest {
 	
 	@Test
 	public void capabilityStatementTest() {

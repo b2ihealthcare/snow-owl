@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.tests;
+package com.b2international.snowowl.fhir.rest.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

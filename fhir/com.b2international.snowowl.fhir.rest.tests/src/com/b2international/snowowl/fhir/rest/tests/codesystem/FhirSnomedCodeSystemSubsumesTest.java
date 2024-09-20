@@ -16,7 +16,7 @@
 package com.b2international.snowowl.fhir.rest.tests.codesystem;
 
 import static com.b2international.snowowl.fhir.rest.tests.FhirRestTest.Endpoints.CODESYSTEM_SUBSUMES;
-import static com.b2international.snowowl.fhir.tests.FhirTestConcepts.BACTERIA;
+import static com.b2international.snowowl.fhir.rest.tests.FhirTestConcepts.BACTERIA;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
 
@@ -29,7 +29,7 @@ import com.b2international.snowowl.fhir.rest.tests.FhirRestTest;
  * 
  * @since 6.7
  */
-public class FhirCodeSystemSubsumesOperationTest extends FhirRestTest {
+public class FhirSnomedCodeSystemSubsumesTest extends FhirRestTest {
 	
 	private static final String PROCEDURE = "71388002";
 	private static final String ORGANISM_TOP_LEVEL = "410607006";

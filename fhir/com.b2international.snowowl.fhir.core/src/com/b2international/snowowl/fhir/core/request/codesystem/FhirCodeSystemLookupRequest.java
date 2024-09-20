@@ -25,6 +25,7 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.fhir.r5.operations.CodeSystemLookupParameters;
 import com.b2international.fhir.r5.operations.CodeSystemLookupResultParameters;
 import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -69,9 +70,10 @@ final class FhirCodeSystemLookupRequest extends FhirRequest<CodeSystemLookupResu
 		
 		final String conceptExpand = converter.configureConceptExpand(parameters);
 		
+		final ResourceURI resourceUri = FhirModelHelpers.resourceUriFrom(codeSystem);
 		Concept concept = CodeSystemRequests.prepareSearchConcepts()
 			.one()
-			.filterByCodeSystemUri(FhirModelHelpers.resourceUriFrom(codeSystem))
+			.filterByCodeSystemUri(resourceUri)
 			.filterById(parameters.extractCode())
 			.setLocales(acceptLanguage)
 			.setExpand(conceptExpand)
@@ -88,7 +90,7 @@ final class FhirCodeSystemLookupRequest extends FhirRequest<CodeSystemLookupResu
 		result.setDesignation(converter.expandDesignations(context, codeSystem, concept, parameters, acceptLanguage));
 		result.setProperty(converter.expandProperties(context, codeSystem, concept, parameters));
 		
-		return result; 
+		return result;
 	}
 	
 	private void validateRequestedProperties(CodeSystem codeSystem) {

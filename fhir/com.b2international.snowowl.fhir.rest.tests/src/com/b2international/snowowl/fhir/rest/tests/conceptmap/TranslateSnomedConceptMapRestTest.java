@@ -28,13 +28,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.fhir.core.model.conceptmap.Match;
-import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateResult;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
 import com.b2international.snowowl.fhir.rest.tests.FhirRestTest;
-import com.b2international.snowowl.fhir.tests.FhirTestConcepts;
+import com.b2international.snowowl.fhir.rest.tests.FhirTestConcepts;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.fhir.SnomedUri;
 

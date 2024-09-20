@@ -37,7 +37,7 @@ import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequest
  * 
  * @since 6.6
  */
-public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
+public class FhirSnomedCodeSystemLookupTest extends FhirRestTest {
 
 	private static final String CLINICAL_FINDING = "404684003";
 

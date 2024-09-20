@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,9 +33,10 @@ import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
  * Generic Concept Map REST end-point test cases for SNOMED Map Type reference sets
+ * 
  * @since 6.7
  */
-public class SnomedConceptMapRestTest extends FhirRestTest {
+public class FhirConceptMapApiTest extends FhirRestTest {
 	
 	private static final String SIMPLE_MAP_TYPE_REFSET_NAME = "FHIR Automated Test Map Type Reference Sets";
 	private static final String COMPLEX_MAP_TYPE_REFSET_NAME = "FHIR Automated Test Complex Map Type Reference Sets";
@@ -44,7 +45,6 @@ public class SnomedConceptMapRestTest extends FhirRestTest {
 	private static final String FHIR_MAP_TYPE_REFSET_VERSION = "FHIR_MAP_TYPE_REFSET_VERSION";
 	
 	protected static List<String> mapTypeRefSetIds;
-
 
 	@BeforeClass
 	public static void setupMaps() {
