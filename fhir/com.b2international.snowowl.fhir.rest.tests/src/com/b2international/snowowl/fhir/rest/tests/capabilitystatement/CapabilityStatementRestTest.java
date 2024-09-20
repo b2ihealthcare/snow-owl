@@ -46,7 +46,7 @@ public class CapabilityStatementRestTest extends FhirRestTest {
 			.body("status", notNullValue())
 			.body("date", notNullValue())
 			.body("description", notNullValue())
-			.body("kind", equalTo(CapabilityStatementKind.INSTANCE.getDefinition()))
+			.body("kind", equalTo(CapabilityStatementKind.INSTANCE.toCode()))
 			.body("fhirVersion", equalTo("5.0.0"))
 			.body("rest[0]", notNullValue())
 			.body("rest[0].resource[0]", notNullValue());
@@ -72,7 +72,7 @@ public class CapabilityStatementRestTest extends FhirRestTest {
 			.assertThat()
 			.statusCode(404)
 			.body("resourceType", equalTo("OperationOutcome"))
-			.body("issue[0].code", equalTo("not_found"));
+			.body("issue[0].code", equalTo("not-found"));
 	}
 
 }

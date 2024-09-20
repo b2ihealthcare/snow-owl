@@ -329,7 +329,7 @@ public class FhirMetadataController extends AbstractFhirController {
 		for (final OperationDefinition operationDefinition : operationDefinitions) {
 			for (final Enumeration<VersionIndependentResourceTypesAll> code : operationDefinition.getResource()) {
 				// The "$" separator is already built in
-				final String key = code.getValue() + operationDefinition.getName();
+				final String key = code.getCode() + operationDefinition.getName();
 				operationMap.put(key, operationDefinition);
 			}
 		}
