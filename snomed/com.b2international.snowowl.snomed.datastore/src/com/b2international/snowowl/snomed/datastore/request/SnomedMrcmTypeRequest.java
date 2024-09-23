@@ -16,9 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import static com.b2international.index.revision.Revision.Fields.ID;
-import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.CONCEPT_MODEL_DATA_ATTRIBUTE;
-import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.UNAPPROVED_ATTRIBUTE;
-import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields.MRCM_RULE_REFSET_ID;
 
 import java.util.HashSet;
@@ -29,6 +26,8 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.options.Options;
 import com.b2international.snomed.ecl.Ecl;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -36,6 +35,8 @@ import com.b2international.snowowl.snomed.core.MrcmAttributeType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.datastore.config.SnomedMrcmConfig;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
@@ -89,15 +90,23 @@ final class SnomedMrcmTypeRequest extends SearchResourceRequest<BranchContext, S
 		
 		final String eclConstraint;
 		
+		SnomedMrcmConfig mrcmConfiguration = ApplicationContext.getInstance()
+			.getServiceChecked(SnowOwlConfiguration.class)
+			.getModuleConfig(SnomedCoreConfiguration.class)
+			.getMrcmConfiguration();
+		
+		String allowedDataAttributesExpression = mrcmConfiguration.getAllowedDataAttributesExpression();
+		String allowedObjectAttributesExpression = mrcmConfiguration.getAllowedObjectAttributesExpression();
+		
 		switch (attributeType) {
 		case DATA: 
-			eclConstraint = String.format("<%s", CONCEPT_MODEL_DATA_ATTRIBUTE);
+			eclConstraint = allowedDataAttributesExpression;
 			break;
 		case OBJECT: 
-			eclConstraint = String.format("<%s OR <%s", CONCEPT_MODEL_OBJECT_ATTRIBUTE, UNAPPROVED_ATTRIBUTE);
+			eclConstraint = allowedObjectAttributesExpression;
 			break;
 		case ALL: 
-			eclConstraint = String.format("<%s OR <%s OR <%s", CONCEPT_MODEL_OBJECT_ATTRIBUTE, UNAPPROVED_ATTRIBUTE, CONCEPT_MODEL_DATA_ATTRIBUTE);
+			eclConstraint = Ecl.or(allowedDataAttributesExpression, allowedObjectAttributesExpression);
 			break;
 		default: 
 			eclConstraint = Ecl.ANY;
