@@ -48,16 +48,25 @@ public abstract class TerminologyResource extends Resource {
 	public static class DependencyScope {
 
 		/**
-		 * Constant denoting a dependency as the base resource of this resource. Points to the resource (or versioned resource) that this resource is
-		 * the extension of.
+		 * Constant denoting a dependency as the base resource of this resource. Points
+		 * to the resource (or versioned resource) that this resource is the extension
+		 * of.
 		 */
 		public static final String EXTENSION_OF = "extensionOf";
 
 		/**
-		 * Constant denoting a dependency as the development version of this upgrade resource. Points to the resource that this resource is the
-		 * upgrade of.
+		 * Constant denoting a dependency as the development version of this upgrade
+		 * resource. Points to the resource that this resource is the upgrade of.
 		 */
 		public static final String UPGRADE_OF = "upgradeOf";
+		
+		/**
+		 * Constant denoting a dependency as a derivative of this resource (where eg.
+		 * content is generated based on the components of this resource). Derivatives
+		 * should be versioned together with their sources if the URI in the dependency
+		 * is not versioned.
+		 */
+		public static final String SOURCE_OF = "sourceOf";
 	}
 
 	/**
