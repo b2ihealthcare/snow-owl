@@ -285,21 +285,22 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 					.map(uri -> uri.getResourceId())
 					.collect(Collectors.toSet());
 				
-				ResourceRequests.prepareSearch()
-					.filterByIds(derivativeIds)
-					.setLimit(derivativeIds.size())
-					.buildAsync()
-					.execute(context)
-					.stream()
-					.filter(TerminologyResource.class::isInstance)
-					.map(TerminologyResource.class::cast)
-					.forEach(resource -> {
-						// skip child resources that are in deprecated state and should not be versioned anymore
-						if (!TerminologyResourceCommitRequestBuilder.READ_ONLY_STATUSES.contains(resource.getStatus())) {
-							resourcesToVersion.put(resource.getResourceURI(), resource);
-						}
-					});
-
+				if (!derivativeIds.isEmpty()) {
+					ResourceRequests.prepareSearch()
+						.filterByIds(derivativeIds)
+						.setLimit(derivativeIds.size())
+						.buildAsync()
+						.execute(context)
+						.stream()
+						.filter(TerminologyResource.class::isInstance)
+						.map(TerminologyResource.class::cast)
+						.forEach(resource -> {
+							// skip child resources that are in deprecated state and should not be versioned anymore
+							if (!TerminologyResourceCommitRequestBuilder.READ_ONLY_STATUSES.contains(resource.getStatus())) {
+								resourcesToVersion.put(resource.getResourceURI(), resource);
+							}
+						});
+				}
 			}
 
 			// add the "main" resource to the end of the map (preserving iteration order)
