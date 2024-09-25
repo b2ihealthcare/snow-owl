@@ -197,7 +197,7 @@ public final class Concept extends BaseComponent {
 	 */
 	public static final String toConceptString(String id, String term) {
 		Preconditions.checkArgument(!Strings.isNullOrEmpty(id), "ID may not be null or empty");
-		if (Strings.isNullOrEmpty(term)) {
+		if (Strings.isNullOrEmpty(term) || id.equals(term)) {
 			return id;
 		} else {
 			return String.format("%s|%s|", id, term);
