@@ -273,7 +273,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 							resourcesToVersion.put(resource.getResourceURI(), resource);
 						}
 					});
-			} else {
+			} else if (!CompareUtils.isEmpty(terminologyResource.getDependencies())) {
 				// otherwise look for derived resources (direct dependencies only)
 				Set<String> derivativeIds = terminologyResource.getDependencies()
 					.stream()
