@@ -264,7 +264,7 @@ public abstract class FhirResourceSearchRequest<T extends MetadataResource> exte
 				.setMeta(toMeta(resource));
 		
 		// attach toolingId as userData
-		entry.setUserData("toolingId", resource.getToolingId());
+		entry.setUserData(TerminologyResource.Fields.TOOLING_ID, resource.getToolingId());
 		
 		// optional fields
 		// we are using the ID of the resource as machine readable name
@@ -316,9 +316,6 @@ public abstract class FhirResourceSearchRequest<T extends MetadataResource> exte
 			// or null if none of them
 			.orElse(null)
 		);
-		// XXX append the toolingId as user supplied metadata for now, it is needed when executing tooling specific request based on a FHIR Resource data
-		meta.setUserData(TerminologyResource.Fields.TOOLING_ID, resource.getToolingId());
-		meta.setUserData(TerminologyResource.Fields.RESOURCE_URI, resource.getResourceURI().toString());
 		return meta;
 	}
 
