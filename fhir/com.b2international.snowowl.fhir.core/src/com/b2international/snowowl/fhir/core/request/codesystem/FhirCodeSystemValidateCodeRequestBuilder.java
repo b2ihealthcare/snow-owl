@@ -27,24 +27,24 @@ import com.b2international.snowowl.core.request.SystemRequestBuilder;
 /**
  * @since 8.0
  */
-public final class FhirValidateCodeRequestBuilder 
-		extends BaseRequestBuilder<FhirValidateCodeRequestBuilder, ServiceProvider, CodeSystemValidateCodeResultParameters>
+public final class FhirCodeSystemValidateCodeRequestBuilder 
+		extends BaseRequestBuilder<FhirCodeSystemValidateCodeRequestBuilder, ServiceProvider, CodeSystemValidateCodeResultParameters>
 		implements SystemRequestBuilder<CodeSystemValidateCodeResultParameters> {
 
 	private CodeSystemValidateCodeParameters parameters;
 	
-	public FhirValidateCodeRequestBuilder setParameters(Parameters parameters) {
+	public FhirCodeSystemValidateCodeRequestBuilder setParameters(Parameters parameters) {
 		return setParameters(new CodeSystemValidateCodeParameters(parameters));
 	}
 	
-	public FhirValidateCodeRequestBuilder setParameters(CodeSystemValidateCodeParameters parameters) {
+	public FhirCodeSystemValidateCodeRequestBuilder setParameters(CodeSystemValidateCodeParameters parameters) {
 		this.parameters = parameters;
 		return getSelf();
 	}
 	
 	@Override
 	protected Request<ServiceProvider, CodeSystemValidateCodeResultParameters> doBuild() {
-		return new FhirValidateCodeRequest(parameters);
+		return new FhirCodeSystemValidateCodeRequest(parameters);
 	}
 
 }

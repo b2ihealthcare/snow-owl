@@ -41,7 +41,7 @@ import jakarta.validation.constraints.NotNull;
 /**
  * @since 8.0
  */
-final class FhirValidateCodeRequest extends FhirRequest<CodeSystemValidateCodeResultParameters> {
+final class FhirCodeSystemValidateCodeRequest extends FhirRequest<CodeSystemValidateCodeResultParameters> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -51,7 +51,7 @@ final class FhirValidateCodeRequest extends FhirRequest<CodeSystemValidateCodeRe
 	@JsonUnwrapped
 	private final CodeSystemValidateCodeParameters parameters;
 	
-	FhirValidateCodeRequest(CodeSystemValidateCodeParameters parameters) {
+	FhirCodeSystemValidateCodeRequest(CodeSystemValidateCodeParameters parameters) {
 		super(parameters.extractUrl(), parameters.extractVersion());
 		this.parameters = parameters;
 	}

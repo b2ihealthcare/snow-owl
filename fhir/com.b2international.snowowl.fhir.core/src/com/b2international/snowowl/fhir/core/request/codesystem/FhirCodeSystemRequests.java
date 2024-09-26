@@ -43,8 +43,8 @@ public final class FhirCodeSystemRequests {
 		return new FhirCodeSystemSubsumesRequestBuilder();
 	}
 
-	public FhirValidateCodeRequestBuilder prepareValidateCode() {
-		return new FhirValidateCodeRequestBuilder();
+	public FhirCodeSystemValidateCodeRequestBuilder prepareValidateCode() {
+		return new FhirCodeSystemValidateCodeRequestBuilder();
 	}
 
 	public ResourceDeleteRequestBuilder prepareDelete(final String codeSystemId) {
