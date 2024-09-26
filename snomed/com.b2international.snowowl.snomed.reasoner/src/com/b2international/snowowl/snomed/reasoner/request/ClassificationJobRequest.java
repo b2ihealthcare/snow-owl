@@ -73,6 +73,8 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("reasoner");
 	
+	private static final int PAGE_SIZE = 50_000;
+	
 	@NotEmpty
 	private String reasonerId;
 
@@ -135,7 +137,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 
 		final ReasonerTaxonomy taxonomy;
 		try (Locks<BranchContext> locks = Locks.forContext(DatastoreLockContextDescriptions.CLASSIFY, parentLockContext).lock(context)) {
-			taxonomy = buildTaxonomy(revisionSearcher, reasonerExcludedModuleIds, concreteDomainSupported, context.getPageSize());
+			taxonomy = buildTaxonomy(revisionSearcher, reasonerExcludedModuleIds, concreteDomainSupported, PAGE_SIZE);
 		} catch (final LockedException e) {
 			throw new ReasonerApiException("Couldn't acquire exclusive access to terminology store for classification; %s", e.getMessage(), e);
 		}
