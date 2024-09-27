@@ -45,7 +45,7 @@ public abstract class RefSetSupport {
 			.put(SnomedRefSetType.ATTRIBUTE_VALUE, SnomedConcept.TYPE)
 			.put(SnomedRefSetType.ATTRIBUTE_VALUE, SnomedDescription.TYPE)
 			.put(SnomedRefSetType.ATTRIBUTE_VALUE, SnomedRelationship.TYPE)
-			.put(SnomedRefSetType.CONCRETE_DATA_TYPE, TerminologyRegistry.UNSPECIFIED)
+			.put(SnomedRefSetType.CONCRETE_DATA_TYPE, SnomedConcept.TYPE)
 			.put(SnomedRefSetType.COMPLEX_MAP, SnomedConcept.TYPE)
 			.put(SnomedRefSetType.COMPLEX_BLOCK_MAP, SnomedConcept.TYPE)
 			.put(SnomedRefSetType.DESCRIPTION_TYPE, SnomedConcept.TYPE)
