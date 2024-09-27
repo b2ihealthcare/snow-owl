@@ -25,7 +25,7 @@ import com.google.common.collect.Sets;
 import io.restassured.http.ContentType;
 
 /**
- * @since 9.3
+ * @since 9.3.0
  */
 public class ValidationApiTest {
 	
