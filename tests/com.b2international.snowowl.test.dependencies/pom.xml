@@ -8,7 +8,7 @@
   
   <parent>
     <groupId>com.b2international.snowowl</groupId>
-    <version>6.29.4</version>
+    <version>6.29.5-SNAPSHOT</version>
     <artifactId>tests-parent</artifactId>
   </parent>
   
