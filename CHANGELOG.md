@@ -1,6 +1,32 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 9.3.0
+
+### Core
+- Introduce 'sourceOf' dependency scope (#1327)
+  * Special scope marker to indicate that a resource is used as a source of another
+  * When versioning a resource, all sourceOf dependencies will be versioned with it at the same time
+
+### SNOMED CT
+- Introduce `snomed.mrcm.allowedDataAttributesExpression` and `snomed.mrcm.allowedObjectAttributesExpression` configurations (#1325)
+  * By default they use the corresponding attribute concept's descendants from SNOMED CT International Edition
+  * They can be changed to accommodate additional requirements (e.g. allow additional hierarchies to be used as relationship types)
+
+### Validation
+- Validation threading changes (#1320)
+  * Introduce `validation.workerPoolSize` configuration setting
+  * Deprecate `validation.numberOfValidationThreads` configuration setting
+  * Increased allowed maximum pool size to `99`
+  * A more reasonable default pool size is computed based on the available resources on the current node
+
+### Bugs/Improvements
+- [core] improve detection of non-connected cycles in SimpleTaxonomyGraph (#1322)
+- [api] fixed an issue where retrieving validation results could result in a server error (#1310)
+- [snomed] ensure that concrete data type reference sets can be created for concept component types (e4525b1)
+- [snomed] fixen an issue where language configuration merging could result in serialization error (796f1f4)
+- [classification] increase page size when gathering information for classification runs (ac34e31)
+
 ## 9.2.3
 
 ### Bugs/Improvements
