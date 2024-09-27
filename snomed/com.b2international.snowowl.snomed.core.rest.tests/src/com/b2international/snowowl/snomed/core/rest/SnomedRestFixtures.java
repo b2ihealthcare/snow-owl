@@ -36,7 +36,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -647,7 +646,7 @@ public abstract class SnomedRestFixtures {
 			Json.object(
 				"id", refSetId,
 				"type", SnomedRefSetType.CONCRETE_DATA_TYPE,
-				"referencedComponentType", TerminologyRegistry.UNSPECIFIED,
+				"referencedComponentType", SnomedConcept.TYPE,
 				"commitComment", "Created new concrete domain reference set"
 			)
 		);
