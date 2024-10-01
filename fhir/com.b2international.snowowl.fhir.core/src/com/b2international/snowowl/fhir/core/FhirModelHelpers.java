@@ -60,4 +60,9 @@ public class FhirModelHelpers {
 		}
 	}
 	
+	public static final boolean isOid(String system) {
+		// TODO implement oid checker
+		return false;
+	}
+	
 }
