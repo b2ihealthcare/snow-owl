@@ -17,10 +17,12 @@ package com.b2international.snowowl.fhir.core;
 
 import java.util.Date;
 
+import org.hl7.fhir.r5.model.CanonicalType;
 import org.hl7.fhir.r5.model.DateTimeType;
 import org.hl7.fhir.r5.model.InstantType;
 import org.hl7.fhir.r5.model.Resource;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ResourceURI;
 
 /**
@@ -28,6 +30,8 @@ import com.b2international.snowowl.core.ResourceURI;
  */
 public class FhirModelHelpers {
 
+	public static final String OID_PREFIX = "urn:oid:";
+	
 	public static ResourceURI resourceUriFrom(Resource resource) {
 		return ResourceURI.of(resource.getResourceType().name().toLowerCase() + "s", resource.getId());
 	}
@@ -60,9 +64,28 @@ public class FhirModelHelpers {
 		}
 	}
 	
+	public static final boolean isOid(CanonicalType system) {
+		return system != null & isOid(system.getValue());
+	}
+	
 	public static final boolean isOid(String system) {
-		// TODO implement oid checker
-		return false;
+		return system != null && system.startsWith(OID_PREFIX);
+	}
+
+	public static String getSystemWithoutOidPrefix(CanonicalType system) {
+		return getSystemWithoutOidPrefix(system == null ? null : system.getValue());
+	}
+	
+	public static String getSystemWithoutOidPrefix(String system) {
+		if (CompareUtils.isEmpty(system)) {
+			return "";
+		}
+		
+		if (isOid(system)) {
+			return system.substring(OID_PREFIX.length());
+		}
+		
+		return system;
 	}
 	
 }
