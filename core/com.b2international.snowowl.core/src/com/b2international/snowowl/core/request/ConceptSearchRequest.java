@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2023 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -94,7 +95,13 @@ public final class ConceptSearchRequest extends SearchResourceRequest<ServicePro
 			.stream()
 			.map(codeSystem -> {
 				final ResourceURI uriToEvaluateOn = codeSystemResourceFiltersByResource.getOrDefault(codeSystem.getResourceURI(), codeSystem.getResourceURI());
-				return context.service(RepositoryManager.class).get(codeSystem.getToolingId()).service(ConceptSearchRequestEvaluator.class).evaluate(uriToEvaluateOn, context, conceptSearchOptions);
+				final Repository repository = context.service(RepositoryManager.class).get(codeSystem.getToolingId());
+				if (repository == null) {
+					context.log().warn("Tooling module '{}' is missing from this deployment.", codeSystem.getToolingId());
+					return new Concepts(0, 0);
+				} else {
+					return repository.service(ConceptSearchRequestEvaluator.class).evaluate(uriToEvaluateOn, context, conceptSearchOptions);
+				}
 			})
 //			.sorted(comparator) // TODO perform Java SORT on Concept fields
 //			.limit(limit)
