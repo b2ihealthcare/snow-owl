@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 8.13.2
+- [icd10] fixed an issue where multipart file validation of an ICD-10 ClaML import caused a HTTP 500 error
+
 ## 8.13.1
 
 ### Bugs/Improvements
