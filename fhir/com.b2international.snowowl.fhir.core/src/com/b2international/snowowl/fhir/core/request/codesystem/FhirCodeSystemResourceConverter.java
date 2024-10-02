@@ -19,6 +19,8 @@ import java.util.List;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.r4.model.codesystems.ConceptProperties;
 import org.hl7.fhir.r5.model.CodeSystem;
 import org.hl7.fhir.r5.model.CodeSystem.PropertyType;
 
@@ -85,8 +87,22 @@ public interface FhirCodeSystemResourceConverter {
 	@OverridingMethodsMustInvokeSuper
 	default List<CodeSystem.PropertyComponent> expandProperties(ServiceProvider context, ResourceURI resourceURI, List<ExtendedLocale> locales) {
 		return CodeSystemLookupParameters.OFFICIAL_R5_PROPERTY_VALUES.stream().map(propertyValue -> {
-			// TODO fix typing of properties?
-			return new CodeSystem.PropertyComponent(propertyValue, PropertyType.STRING);
+			try {
+				PropertyType propertyType = PropertyType.STRING;
+				var conceptProperty = ConceptProperties.fromCode(propertyValue);
+				if (ConceptProperties.PARENT == conceptProperty || ConceptProperties.CHILD == conceptProperty) {
+					propertyType = PropertyType.CODE;
+				}
+				return new CodeSystem.PropertyComponent()
+						.setCode(conceptProperty.toCode())
+						.setUri(String.join("/", conceptProperty.getSystem(), conceptProperty.toCode()))
+						.setDescription(conceptProperty.getDefinition())
+						.setType(propertyType);
+			} catch (FHIRException e) {
+				// ignore
+				return new CodeSystem.PropertyComponent(propertyValue, PropertyType.STRING);
+			}
+			
 		}).toList();
 	}
 	
