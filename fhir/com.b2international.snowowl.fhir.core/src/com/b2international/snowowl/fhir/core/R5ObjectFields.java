@@ -69,7 +69,7 @@ public final class R5ObjectFields {
 		
 		public static final Set<String> SUMMARY = ImmutableSet.<String>builder()
 				.addAll(Resource.SUMMARY)
-				.add(URL, VERSION, NAME, TITLE, DATE, PUBLISHER)
+				.add(URL, VERSION, NAME, TITLE, DATE, PUBLISHER, CONTACT)
 				.build();
 		
 	}
