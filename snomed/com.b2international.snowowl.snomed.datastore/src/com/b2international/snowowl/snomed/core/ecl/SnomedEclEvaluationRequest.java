@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.core.ecl;
 import static com.b2international.snomed.ecl.Ecl.isAnyExpression;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.activeMemberOf;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.ACTIVE_MEMBER_OF;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -646,55 +647,40 @@ final class SnomedEclEvaluationRequest extends EclEvaluationRequest<BranchContex
 	}
 
 	@Override
-	protected void addParentIds(IComponent concept, Set<String> collection) {
-		if (concept instanceof SnomedConcept) {
-			SnomedConcept snomedConcept = (SnomedConcept) concept;
-			if (Trees.INFERRED_FORM.equals(expressionForm)) {
-				if (snomedConcept.getParentIds() != null) {
-					for (long parent : snomedConcept.getParentIds()) {
-						if (IComponent.ROOT_IDL != parent) {
-							collection.add(Long.toString(parent));
-						}
-					}
-				}
-			} else {
-				if (snomedConcept.getStatedParentIds() != null) {
-					for (long statedParent : snomedConcept.getStatedParentIds()) {
-						if (IComponent.ROOT_IDL != statedParent) {
-							collection.add(Long.toString(statedParent));
-						}
-					}
-				}
-			}
+	protected Collection<String> getParentIds(IComponent concept) {
+		if (!(concept instanceof SnomedConcept snomedConcept)) {
+			return super.getParentIds(concept);
+		}
+		
+		if (Trees.INFERRED_FORM.equals(expressionForm)) {
+			return toStringSet(snomedConcept.getParentIds());
 		} else {
-			super.addParentIds(concept, collection);
+			return toStringSet(snomedConcept.getStatedParentIds());
+		}
+	}
+
+	@Override
+	protected Collection<String> getAncestorIds(IComponent concept) {
+		if (!(concept instanceof SnomedConcept snomedConcept)) {
+			return super.getAncestorIds(concept);
+		}
+
+		if (Trees.INFERRED_FORM.equals(expressionForm)) {
+			return toStringSet(snomedConcept.getAncestorIds());
+		} else {
+			return toStringSet(snomedConcept.getStatedAncestorIds());
 		}
 	}
 	
-	@Override
-	protected void addAncestorIds(IComponent concept, Set<String> collection) {
-		if (concept instanceof SnomedConcept) {
-			SnomedConcept snomedConcept = (SnomedConcept) concept;
-			if (Trees.INFERRED_FORM.equals(expressionForm)) {
-				if (snomedConcept.getAncestorIds() != null) {
-					for (long ancestor : snomedConcept.getAncestorIds()) {
-						if (IComponent.ROOT_IDL != ancestor) {
-							collection.add(Long.toString(ancestor));
-						}
-					}
-				}
-			} else {
-				if (snomedConcept.getStatedAncestorIds() != null) {
-					for (long statedAncestor : snomedConcept.getStatedAncestorIds()) {
-						if (IComponent.ROOT_IDL != statedAncestor) {
-							collection.add(Long.toString(statedAncestor));
-						}
-					}
-				}
-			}
-		} else {
-			super.addAncestorIds(concept, collection);
+	private Set<String> toStringSet(final long[] idArray) {
+		if (idArray == null || idArray.length < 1) {
+			return newHashSet();
 		}
+		
+		return Arrays.stream(idArray)
+			.filter(parent -> IComponent.ROOT_IDL != parent)
+			.mapToObj(Long::toString)
+			.collect(Collectors.toSet());
 	}
 	
 	/*package*/ static String extractTerm(TypedSearchTermClause clause) {

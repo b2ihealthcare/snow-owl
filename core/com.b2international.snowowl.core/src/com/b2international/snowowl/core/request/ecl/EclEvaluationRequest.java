@@ -22,6 +22,7 @@ import static com.b2international.snomed.ecl.Ecl.isAnyExpression;
 import static com.b2international.snomed.ecl.Ecl.isEclConceptReference;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +33,7 @@ import javax.annotation.Nullable;
 
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.util.PolymorphicDispatcher;
 
 import com.b2international.commons.CompareUtils;
@@ -146,6 +148,10 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 			.collect(ImmutableSet.toImmutableSet());
 		
 		return Promise.immediate(ids(conceptIds));
+	}
+	
+	protected Promise<Expression> eval(C context, AlternateIdentifier alternateIdentifier) {
+		return throwUnsupported(alternateIdentifier);
 	}
 	
 	/**
@@ -300,6 +306,61 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 		}
 	}
 	
+	/**
+	 * Handles "top of set" simple expression constraints
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.12+Top+and+Bottom
+	 */
+	protected Promise<Expression> eval(C context, final Top topOfSet) {
+		final ExpressionConstraint innerConstraint = topOfSet.getConstraint();
+		if (isAnyExpression(innerConstraint)) {
+			// !!>* should eval to root concepts (direct descendants of the virtual root, -1)
+			return Promise.immediate(parentsExpression(Collections.singleton(IComponent.ROOT_ID)));
+		} else {
+			// Otherwise evaluate the equivalent expression constraint: !!>X is changed to X MINUS <X
+			final ExclusionExpressionConstraint minus = EclFactory.eINSTANCE.createExclusionExpressionConstraint();
+			minus.setLeft(EcoreUtil.copy(innerConstraint));
+			
+			final DescendantOf descendantsOfInner = EclFactory.eINSTANCE.createDescendantOf();
+			descendantsOfInner.setConstraint(EcoreUtil.copy(innerConstraint));
+			minus.setRight(descendantsOfInner);
+			
+			return eval(context, minus);
+		}
+	}
+	
+	/**
+	 * Handles "bottom of set" simple expression constraints
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.12+Top+and+Bottom
+	 */
+	protected Promise<Expression> eval(C context, final Bottom bottomOfSet) {
+		final ExpressionConstraint innerConstraint = bottomOfSet.getConstraint();
+		if (isAnyExpression(innerConstraint)) {
+			// !!<* should eval to all leaf nodes in the dataset, which we don't have any means of retrieving in an efficient manner
+			throw new TooCostlyException("ECL expression attempted to enumerate all leaf concepts.");
+		} else {
+			return resolveConcepts(context, innerConstraint)
+				.then(concepts -> {
+					final Set<String> results = newHashSet();
+					
+					// Add all concepts in the result set first
+					for (IComponent concept : concepts) {
+						results.add(concept.getId());
+					}
+					
+					if (results.size() > 1) {
+						// Then remove all parents and ancestors recorded on the concepts
+						for (IComponent concept : concepts) {
+							removeParentIds(concept, results);
+							removeAncestorIds(concept, results);
+						}
+					}
+					
+					return results;
+				})
+				.then(matchIdsOrNone());
+		}
+	}
+
 	/**
 	 * Handles conjunction binary operator expressions
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.4+Conjunction+and+Disjunction
@@ -631,12 +692,27 @@ public abstract class EclEvaluationRequest<C extends ServiceProvider> implements
 
 	protected abstract Class<?> getDocumentType();
 	
-	protected void addParentIds(IComponent concept, final Set<String> collection) {
-		throw new UnsupportedOperationException();
+	protected final void addParentIds(IComponent concept, final Set<String> collection) {
+		collection.addAll(getParentIds(concept));
+	}
+
+	protected final void removeParentIds(IComponent concept, final Set<String> collection) {
+		collection.removeAll(getParentIds(concept));
+	}
+
+	protected final void addAncestorIds(IComponent concept, final Set<String> collection) {
+		collection.addAll(getAncestorIds(concept));
 	}
 	
-	protected void addAncestorIds(IComponent concept, final Set<String> collection) {
+	protected final void removeAncestorIds(IComponent concept, final Set<String> collection) {
+		collection.removeAll(getAncestorIds(concept));
+	}
+
+	protected Collection<String> getParentIds(IComponent concept) {
 		throw new UnsupportedOperationException();
 	}
-	
+
+	protected Collection<String> getAncestorIds(IComponent concept) {
+		throw new UnsupportedOperationException();
+	}
 }

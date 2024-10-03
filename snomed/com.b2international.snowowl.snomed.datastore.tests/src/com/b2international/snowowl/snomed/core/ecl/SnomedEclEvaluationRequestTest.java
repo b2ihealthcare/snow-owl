@@ -159,6 +159,11 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 		assertEquals(expected, actual);
 	}
 	
+	@Test(expected = BadRequestException.class)
+	public void alternateIdentifierUnsupported() throws Exception {
+		eval("LOINC#12345-6");
+	}
+	
 	@Test
 	public void selfWithTerm() throws Exception {
 		final Expression actual = eval(String.format("%s|SNOMED CT Root|", ROOT_ID));
@@ -394,6 +399,73 @@ public class SnomedEclEvaluationRequestTest extends BaseSnomedEclEvaluationReque
 	public void ancestorOrSelfOfAny() throws Exception {
 		final Expression actual = eval(">> *");
 		assertEquals(Expressions.matchAll(), actual);
+	}
+
+	@Test
+	public void topOf() throws Exception {
+		// SCT core module and nested model component module
+		indexRevision(MAIN, concept(Concepts.MODULE_SCT_CORE)
+			.ancestors(Long.parseLong(Concepts.ROOT_CONCEPT))
+			.parents(Long.parseLong(Concepts.MODULE_ROOT))
+			.statedAncestors(Long.parseLong(Concepts.ROOT_CONCEPT))
+			.statedParents(Long.parseLong(Concepts.MODULE_ROOT))
+			.build());
+
+		indexRevision(MAIN, concept(Concepts.MODULE_SCT_MODEL_COMPONENT)
+			.ancestors(Long.parseLong(Concepts.ROOT_CONCEPT), Long.parseLong(Concepts.MODULE_ROOT))
+			.parents(Long.parseLong(Concepts.MODULE_SCT_CORE))
+			.statedAncestors(Long.parseLong(Concepts.ROOT_CONCEPT), Long.parseLong(Concepts.MODULE_ROOT))
+			.statedParents(Long.parseLong(Concepts.MODULE_SCT_CORE))
+			.build());
+		
+		final Expression actual = eval("!!> (< " + Concepts.MODULE_ROOT + ")");
+		final Expression expected = Expressions.bool()
+			.filter(descendantsOf(Concepts.MODULE_ROOT))
+			.mustNot(descendantsOf(Concepts.MODULE_SCT_CORE, Concepts.MODULE_SCT_MODEL_COMPONENT))
+			.build();
+		
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void topOfAny() throws Exception {
+		final Expression actual = eval("!!> *");
+		final Expression expected;
+		
+		if (isInferred()) {
+			expected = parents(Collections.singleton(IComponent.ROOT_ID));
+		} else {
+			expected = statedParents(Collections.singleton(IComponent.ROOT_ID));
+		}
+
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void bottomOf() throws Exception {
+		// SCT core module and nested model component module
+		indexRevision(MAIN, concept(Concepts.MODULE_SCT_CORE)
+			.ancestors(Long.parseLong(Concepts.ROOT_CONCEPT))
+			.parents(Long.parseLong(Concepts.MODULE_ROOT))
+			.statedAncestors(Long.parseLong(Concepts.ROOT_CONCEPT))
+			.statedParents(Long.parseLong(Concepts.MODULE_ROOT))
+			.build());
+
+		indexRevision(MAIN, concept(Concepts.MODULE_SCT_MODEL_COMPONENT)
+			.ancestors(Long.parseLong(Concepts.ROOT_CONCEPT), Long.parseLong(Concepts.MODULE_ROOT))
+			.parents(Long.parseLong(Concepts.MODULE_SCT_CORE))
+			.statedAncestors(Long.parseLong(Concepts.ROOT_CONCEPT), Long.parseLong(Concepts.MODULE_ROOT))
+			.statedParents(Long.parseLong(Concepts.MODULE_SCT_CORE))
+			.build());
+		
+		final Expression actual = eval("!!< (< " + Concepts.MODULE_ROOT + ")");
+		final Expression expected = ids(Set.of(Concepts.MODULE_SCT_MODEL_COMPONENT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test(expected = TooCostlyException.class)
+	public void bottomOfAnyTooCostly() throws Exception {
+		eval("!!< *");
 	}
 	
 	@Test
