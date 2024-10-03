@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2022-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@
 package com.b2international.snowowl.core.taxonomy;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
 
@@ -31,6 +33,10 @@ public class SimpleTaxonomyGraphTest {
 
 	private SimpleTaxonomyGraph graph = new SimpleTaxonomyGraph(10, 10);
 	
+	private boolean graphHasErrors() {
+		return !graph.build().isEmpty();
+	}
+
 	@Test
 	public void isBuilt() {
 		assertFalse("Graph should start out in the not-built state.", graph.isBuilt());
@@ -38,10 +44,10 @@ public class SimpleTaxonomyGraphTest {
 	
 	@Test
 	public void buildSetsFlag() {
-		assertFalse("Graph build should report no errors.", graph.build());
+		assertFalse("Graph build should report no errors.", graphHasErrors());
 		assertTrue("Graph should be built.", graph.isBuilt());
 	}
-	
+
 	@Test
 	public void getDescendantIdsWithoutBuild() {
 		assertThrows(IllegalStateException.class, () -> graph.getDescendantIds("A"));
@@ -69,7 +75,7 @@ public class SimpleTaxonomyGraphTest {
 		 */
 		graph.addEdge("A", "B");
 		graph.addEdge("A", "C");
-		assertFalse("Graph build should report no errors.", graph.build());
+		assertFalse("Graph build should report no errors.", graphHasErrors());
 		
 		assertThat(graph.getParentIds("A")).containsOnly("C");
 	}
@@ -91,26 +97,26 @@ public class SimpleTaxonomyGraphTest {
 	
 	@Test
 	public void getDescendantIdsUnknownId() {
-		assertFalse("Graph build should report no errors.", graph.build());
+		assertFalse("Graph build should report no errors.", graphHasErrors());
 		assertThrows(NotFoundException.class, () -> graph.getDescendantIds("A"));
 	}
 	
 	@Test
 	public void getParentIdsUnknownId() {
-		assertFalse("Graph build should report no errors.", graph.build());
+		assertFalse("Graph build should report no errors.", graphHasErrors());
 		assertThrows(NotFoundException.class, () -> graph.getParentIds("A"));
 	}
 	
 	@Test
 	public void getIndirectAncestorIdsUnknownId() {
-		assertFalse("Graph build should report no errors.", graph.build());
+		assertFalse("Graph build should report no errors.", graphHasErrors());
 		assertThrows(NotFoundException.class, () -> graph.getIndirectAncestorIds("A"));
 	}
 	
 	@Test
 	public void singleNode() {
 		graph.addNode("A");
-		assertFalse("Graph build should report no errors.", graph.build());
+		assertFalse("Graph build should report no errors.", graphHasErrors());
 		
 		assertThat(graph.getDescendantIds("A")).isEmpty();
 		assertThat(graph.getParentIds("A")).isEmpty();
@@ -121,7 +127,7 @@ public class SimpleTaxonomyGraphTest {
 	public void twoIsolatedNodes() {
 		graph.addNode("A");
 		graph.addNode("B");
-		assertFalse("Graph build should report no errors.", graph.build());
+		assertFalse("Graph build should report no errors.", graphHasErrors());
 		
 		assertThat(graph.getDescendantIds("A")).isEmpty();
 		assertThat(graph.getParentIds("A")).isEmpty();
@@ -136,7 +142,7 @@ public class SimpleTaxonomyGraphTest {
 		graph.addNode("A");
 		graph.addNode("B");
 		graph.addEdge("A", "B");
-		assertFalse("Graph build should report no errors.", graph.build());
+		assertFalse("Graph build should report no errors.", graphHasErrors());
 		
 		assertThat(graph.getDescendantIds("A")).isEmpty();
 		assertThat(graph.getParentIds("A")).containsOnly("B");
@@ -153,7 +159,7 @@ public class SimpleTaxonomyGraphTest {
 		graph.addNode("C");
 		graph.addEdge("A", "B");
 		graph.addEdge("B", "C");
-		assertFalse("Graph build should report no errors.", graph.build());
+		assertFalse("Graph build should report no errors.", graphHasErrors());
 		
 		assertThat(graph.getDescendantIds("A")).isEmpty();
 		assertThat(graph.getParentIds("A")).containsOnly("B");
@@ -181,7 +187,7 @@ public class SimpleTaxonomyGraphTest {
 		graph.addEdge("A2", "B");
 		graph.addEdge("A3", "B");
 		graph.addEdge("B", Set.of("C1", "C2"));
-		assertFalse("Graph build should report no errors.", graph.build());
+		assertFalse("Graph build should report no errors.", graphHasErrors());
 		
 		assertThat(graph.getDescendantIds("A1")).isEmpty();
 		assertThat(graph.getParentIds("A1")).containsOnly("B");
@@ -223,7 +229,7 @@ public class SimpleTaxonomyGraphTest {
 		graph.addEdge("A3", "B");
 		graph.addEdge("B", "C");
 		graph.addEdge("C", Set.of("D1", "D2"));
-		assertFalse("Graph build should report no errors.", graph.build());
+		assertFalse("Graph build should report no errors.", graphHasErrors());
 		
 		assertThat(graph.getDescendantIds("A1")).isEmpty();
 		assertThat(graph.getParentIds("A1")).containsOnly("B", "D1");
@@ -268,7 +274,7 @@ public class SimpleTaxonomyGraphTest {
 		graph.addEdge("C1", "D");
 		graph.addEdge("C2", "D");
 		graph.addEdge("D", "E");
-		assertFalse("Graph build should report no errors.", graph.build());
+		assertFalse("Graph build should report no errors.", graphHasErrors());
 		
 		assertThat(graph.getDescendantIds("D")).containsOnly("A", "B", "C1", "C2");
 		assertThat(graph.getDescendantIds("E")).containsOnly("A", "B", "C1", "C2", "D");
@@ -278,7 +284,7 @@ public class SimpleTaxonomyGraphTest {
 	public void buildUnknownSourceId() {
 		graph.addNode("B");
 		graph.addEdge("A", "B");
-		assertTrue("Graph build should report an error.", graph.build());
+		assertTrue("Graph build should report an error.", graphHasErrors());
 	}
 	
 	@Test
@@ -286,7 +292,7 @@ public class SimpleTaxonomyGraphTest {
 		graph.addNode("A");
 		graph.addNode("B");
 		graph.addEdge("A", Set.of("B", "C", "D"));
-		assertTrue("Graph build should report an error.", graph.build());
+		assertTrue("Graph build should report an error.", graphHasErrors());
 	}
 	
 	@Test
@@ -296,7 +302,17 @@ public class SimpleTaxonomyGraphTest {
 		graph.addNode("C");
 		graph.addEdge("A", Set.of("A", "B"));
 		graph.addEdge("B", "C");
-		assertTrue("Graph build should report an error.", graph.build());
+		assertTrue("Graph build should report an error.", graphHasErrors());
+	}
+	
+	@Test
+	public void buildShortCycle() {
+		graph.addNode("A");
+		graph.addNode("B");
+		graph.addNode("C");
+		graph.addEdge("A", "B");
+		graph.addEdge("B", "A");
+		assertTrue("Graph build should report an error.", graphHasErrors());
 	}
 	
 	@Test
@@ -310,7 +326,7 @@ public class SimpleTaxonomyGraphTest {
 		graph.addEdge("B", "C");
 		graph.addEdge("C", "D");
 		graph.addEdge("D", Set.of("E", "B"));
-		assertTrue("Graph build should report an error.", graph.build());
+		assertTrue("Graph build should report an error.", graphHasErrors());
 	}
 	
 	@Test
@@ -322,6 +338,6 @@ public class SimpleTaxonomyGraphTest {
 		graph.addEdge("B", "C");
 		graph.removeNode("B");
 		graph.removeEdge("B");
-		assertTrue("Graph build should not report an error.", graph.build());
+		assertTrue("Graph build should not report an error.", graphHasErrors());
 	}
 }

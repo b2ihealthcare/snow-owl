@@ -250,9 +250,9 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 			.map(TerminologyResource.class::cast)
 			.findFirst();
 
-		// if the resource to version is a collection URI then version all child resources as well
 		optionalResource.ifPresent(terminologyResource -> {
 			if (terminologyResource instanceof TerminologyResourceCollection resourceCollection) {
+				// if the resource to version is a collection URI then version all child resources as well
 				final var registry = context.service(TerminologyResourceCollectionToolingSupport.Registry.class);
 				final Set<String> childResourceTypes = registry.getAllByToolingId(resourceCollection.getToolingId())
 					.stream()
@@ -273,6 +273,34 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 							resourcesToVersion.put(resource.getResourceURI(), resource);
 						}
 					});
+			} else if (!CompareUtils.isEmpty(terminologyResource.getDependencies())) {
+				// otherwise look for derived resources (direct dependencies only)
+				Set<String> derivativeIds = terminologyResource.getDependencies()
+					.stream()
+					.filter(d -> TerminologyResource.DependencyScope.SOURCE_OF.equals(d.getScope()))
+					.map(d -> d.getUri())
+					.filter(uriWithQuery -> !uriWithQuery.hasQueryPart())
+					.map(uriWithQuery -> uriWithQuery.getResourceUri())
+					.filter(uri -> uri.isHead())
+					.map(uri -> uri.getResourceId())
+					.collect(Collectors.toSet());
+				
+				if (!derivativeIds.isEmpty()) {
+					ResourceRequests.prepareSearch()
+						.filterByIds(derivativeIds)
+						.setLimit(derivativeIds.size())
+						.buildAsync()
+						.execute(context)
+						.stream()
+						.filter(TerminologyResource.class::isInstance)
+						.map(TerminologyResource.class::cast)
+						.forEach(resource -> {
+							// skip child resources that are in deprecated state and should not be versioned anymore
+							if (!TerminologyResourceCommitRequestBuilder.READ_ONLY_STATUSES.contains(resource.getStatus())) {
+								resourcesToVersion.put(resource.getResourceURI(), resource);
+							}
+						});
+				}
 			}
 
 			// add the "main" resource to the end of the map (preserving iteration order)

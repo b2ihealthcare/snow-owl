@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2022 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public abstract class RefSetSupport {
 			.put(SnomedRefSetType.ATTRIBUTE_VALUE, SnomedConcept.TYPE)
 			.put(SnomedRefSetType.ATTRIBUTE_VALUE, SnomedDescription.TYPE)
 			.put(SnomedRefSetType.ATTRIBUTE_VALUE, SnomedRelationship.TYPE)
-			.put(SnomedRefSetType.CONCRETE_DATA_TYPE, TerminologyRegistry.UNSPECIFIED)
+			.put(SnomedRefSetType.CONCRETE_DATA_TYPE, SnomedConcept.TYPE)
 			.put(SnomedRefSetType.COMPLEX_MAP, SnomedConcept.TYPE)
 			.put(SnomedRefSetType.COMPLEX_BLOCK_MAP, SnomedConcept.TYPE)
 			.put(SnomedRefSetType.DESCRIPTION_TYPE, SnomedConcept.TYPE)

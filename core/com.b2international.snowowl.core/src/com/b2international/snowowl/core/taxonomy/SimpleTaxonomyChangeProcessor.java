@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2022-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,19 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.CycleDetectedException;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
 import com.b2international.snowowl.core.repository.RevisionDocument;
+import com.b2international.snowowl.core.taxonomy.SimpleTaxonomyGraph.Issue;
 import com.google.common.collect.Sets;
 
 /**
@@ -160,8 +164,19 @@ public abstract class SimpleTaxonomyChangeProcessor<D extends RevisionDocument> 
 			taxonomy.removeNode(conceptId);
 		});
 		
-		if (taxonomy.build()) {
-			throw new IllegalStateException("Failed to build updated taxonomy.");
+		final List<SimpleTaxonomyGraph.Issue> issues = taxonomy.build();
+		if (!issues.isEmpty()) {
+			final Optional<Issue> cycleIssue = issues.stream()
+				.filter(SimpleTaxonomyGraph.NodePartOfCycle.class::isInstance)
+				.findFirst();
+			
+			if (cycleIssue.isPresent()) {
+				// Use the message from the first encountered cycle participant
+				throw new CycleDetectedException(cycleIssue.get().toString());
+			} else {
+				// Get the message from the first encountered issue
+				throw new BadRequestException(issues.iterator().next().toString());
+			}
 		}
 		
 		// Update new concepts, changed concepts (that were not deleted) and their descendants

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2022-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,11 @@
 package com.b2international.snowowl.core.taxonomy;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.IntConsumer;
@@ -40,6 +42,34 @@ import com.google.common.collect.ImmutableSet;
 public final class SimpleTaxonomyGraph {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("taxonomy-issues");
+	
+	private static final int MAX_ISSUES = 100;
+	
+	public interface Issue {
+		@Override
+		public String toString();
+	}
+	
+	public record MissingSource(String sourceId) implements Issue {
+		@Override
+		public String toString() {
+			return String.format("Concept '%s' is referenced as a source ID, but it is not registered as a node.", sourceId);
+		}
+	}
+	
+	public record MissingDestination(String destinationId) implements Issue { 
+		@Override
+		public String toString() {
+			return String.format("Concept '%s' is referenced as a destination ID, but it is not registered as a node.", destinationId);
+		}
+	}
+	
+	public record NodePartOfCycle(String cycleNodeId) implements Issue {
+		@Override
+		public String toString() {
+			return String.format("Node '%s' is part of a cycle.", cycleNodeId);
+		}		
+	}
 
 	private final OrderedSetImpl<String> nodes;
 	private final Map<String, SimpleEdge> edges;
@@ -135,8 +165,8 @@ public final class SimpleTaxonomyGraph {
 		built = false;
 	}
 
-	public boolean build() {
-		boolean hasErrors = false;
+	public List<Issue> build() {
+		final List<Issue> issues = newArrayList();
 		final int conceptCount = nodes.size();
 
 		parents = new SparseFixedBitSet[conceptCount];
@@ -151,15 +181,13 @@ public final class SimpleTaxonomyGraph {
 			final String sourceId = edges.getSourceId();
 			final int sourceIdx = nodes.indexOf(sourceId);
 			if (sourceIdx < 0) {
-				LOGGER.error("Concept '{}' is referenced as a source ID, but it is not registered as a node.", sourceId);
-				hasErrors = true;
+				addIssue(issues, new MissingSource(sourceId));
 			}
 
 			for (final String destinationId : edges.getDestinationIds()) {
 				final int destinationIdx = nodes.indexOf(destinationId);
 				if (destinationIdx < 0) {
-					LOGGER.error("Concept '{}' is referenced as a destination ID, but it is not registered as a node.", destinationId);
-					hasErrors = true;
+					issues.add(new MissingDestination(destinationId));
 				} else if (sourceIdx >= 0) {
 					getBitSet(parents, sourceIdx).set(destinationIdx);
 					getBitSet(descendants, destinationIdx).set(sourceIdx);
@@ -167,6 +195,35 @@ public final class SimpleTaxonomyGraph {
 			}
 		}
 
+		// Look for cycles based on direct parent information
+		for (int idx = 0; idx < conceptCount; idx++) {
+			final SparseFixedBitSet visited = new SparseFixedBitSet(nodes.size());
+			final IntDeque toProcess = PrimitiveLists.newIntArrayDeque();
+			visited.set(idx);
+			toProcess.add(idx);
+
+			while (!toProcess.isEmpty()) {
+				final int currentIdx = toProcess.removeInt(0);
+				final SparseFixedBitSet parentsOfCurrent = parents[currentIdx];
+
+				if (parentsOfCurrent == null || parentsOfCurrent.isEmpty()) {
+					continue;
+				}
+				
+				if (parentsOfCurrent.get(idx)) {
+					String cycleNodeId = getNodeId(idx);
+					issues.add(new NodePartOfCycle(cycleNodeId));
+				}
+				
+				forEachBit(parentsOfCurrent, parentIdx -> {
+					if (!visited.get(parentIdx)) {
+						visited.set(parentIdx);
+						toProcess.add(parentIdx);
+					}
+				});				
+			}
+		}
+		
 		for (int idx = 0; idx < conceptCount; idx++) {
 			final SparseFixedBitSet parentsOfConcept = parents[idx];
 			if (parentsOfConcept != null && !parentsOfConcept.isEmpty()) {
@@ -285,26 +342,19 @@ public final class SimpleTaxonomyGraph {
 				});
 			}
 		}
-		
-		for (int idx = 0; idx < conceptCount; idx++) {
-			boolean nodeInCycle = false;
-			if (!nodeInCycle) { nodeInCycle = checkCycles(parents[idx], idx); }
-			if (!nodeInCycle) { nodeInCycle = checkCycles(indirectAncestors[idx], idx); }
-			if (!nodeInCycle) { nodeInCycle = checkCycles(descendants[idx], idx); }
-			if (nodeInCycle) { hasErrors = true; }
-		}
 
 		built = true;
-		return hasErrors;
+		issues.forEach(i -> LOGGER.error(i.toString()));
+		return issues;
 	}
 
-	private boolean checkCycles(final SparseFixedBitSet bitSet, final int idx) {
-		if (bitSet != null && bitSet.get(idx)) {
-			LOGGER.error("Node '{}' is part of a cycle.", getNodeId(idx));
-			return true;
-		}
+	private void addIssue(final List<Issue> list, final Issue issue) {
+		list.add(issue);
 		
-		return false;
+		// Maintain a sliding window of the most recently recorded issues
+		if (list.size() > MAX_ISSUES) {
+			list.remove(0);
+		}
 	}
 
 	private SparseFixedBitSet getBitSet(final SparseFixedBitSet[] bitSets, final int sourceIdx) {

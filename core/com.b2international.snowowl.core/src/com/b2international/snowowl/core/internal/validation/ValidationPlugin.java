@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2017-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.primitives.Ints;
 
 /**
  * @since 6.0
@@ -99,12 +100,17 @@ public final class ValidationPlugin extends Plugin {
 			// initialize validation thread pool
 			final ValidationConfiguration validationConfig = configuration.getModuleConfig(ValidationConfiguration.class);
 
-			int numberOfValidationThreads = validationConfig.getNumberOfValidationThreads();
+			Integer workerPoolSize = validationConfig.getWorkerPoolSize();
+			if (workerPoolSize == null) {
+				// Restrict thread pool size to the [4..12] range (both inclusive)
+				workerPoolSize = Ints.constrainToRange(Runtime.getRuntime().availableProcessors() / 2, 4, 12);
+			}
+			
 			int maxConcurrentExpensiveJobs = validationConfig.getMaxConcurrentExpensiveJobs();
 			int maxConcurrentNormalJobs = validationConfig.getMaxConcurrentNormalJobs();
 			
 			env.services().registerService(ValidationConfiguration.class, validationConfig);
-			env.services().registerService(ValidationThreadPool.class, new ValidationThreadPool(numberOfValidationThreads, maxConcurrentExpensiveJobs, maxConcurrentNormalJobs));
+			env.services().registerService(ValidationThreadPool.class, new ValidationThreadPool(workerPoolSize, maxConcurrentExpensiveJobs, maxConcurrentNormalJobs));
 			env.services().registerService(ValidationIssueDetailExtensionProvider.class, new ValidationIssueDetailExtensionProvider(env.service(ClassPathScanner.class)));
 			
 			final List<File> listOfFiles = validationDirectories.stream().flatMap(path -> Arrays.asList(path.toFile().listFiles()).stream()).toList();

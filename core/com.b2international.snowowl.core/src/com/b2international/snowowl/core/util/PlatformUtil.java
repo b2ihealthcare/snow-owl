@@ -42,7 +42,14 @@ public class PlatformUtil {
 
 	public static final String UNQUALIFIED = "qualifier";
 
+	// Delay platform checks by using an inner constants class
+	private static class OS {
+		private static final boolean OSX = Platform.OS_MACOSX.equals(Platform.getOS());
+		private static final boolean WIN11 = System.getProperty("os.name").equals("Windows 11");
+	}
+	
 	private PlatformUtil() {
+		// Prevent instantiation
 	}
 	
 	/**
@@ -174,7 +181,7 @@ public class PlatformUtil {
 	 * @return
 	 */
 	public static boolean isOSX() {
-		return Platform.OS_MACOSX.equals(Platform.getOS());
+		return OS.OSX;
 	}
 	
 	/**
@@ -182,7 +189,6 @@ public class PlatformUtil {
 	 * @return
 	 */
 	public static boolean isWindows11() {
-		return System.getProperty("os.name").equals("Windows 11");
+		return OS.WIN11;
 	}
-
 }
