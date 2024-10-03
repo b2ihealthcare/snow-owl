@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.rest;
 
 import java.io.InputStream;
 
+import org.hl7.fhir.r5.model.ValueSet;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,16 +25,12 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.commons.http.AcceptLanguageHeader;
+import com.b2international.fhir.r5.operations.ValueSetExpandParameters;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.model.converter.ValueSetConverter_50;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
-import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
-import com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
+import com.b2international.snowowl.fhir.core.request.valueset.FhirValueSetExpander;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -151,18 +148,17 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 			_format,
 			_pretty);
 		
-		final ExpandValueSetRequest expandRequest = ExpandValueSetRequest.builder()
-			.url(url)
-			.filter(filter)
-			.after(after)
-			.activeOnly(activeOnly)
-			.count(count)
-			.displayLanguage(displayLanguage == null ? null : new Code(displayLanguage))
-			.withHistorySupplements(withHistorySupplements)
-			.includeDesignations(includeDesignations)
-			.build();
+		final var parameters = new ValueSetExpandParameters()
+			.setUrl(url)
+			.setFilter(filter)
+			.setAfter(after)
+			.setActiveOnly(activeOnly)
+			.setCount(count)
+			.setDisplayLanguage(displayLanguage)
+			.setWithHistorySupplements(withHistorySupplements)
+			.setIncludeDesignations(includeDesignations);
 		
-		return expand(expandRequest, nextUriBuilder, accept, _format, _pretty);
+		return expand(parameters, nextUriBuilder, accept, _format, _pretty);
 	}
 	
 	/**
@@ -235,35 +231,34 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 	) {
 		
 		final var fhirParameters = toFhirParameters(requestBody, contentType);
-		final ExpandValueSetRequest request = ValueSetConverter_50.INSTANCE.toExpandRequest(fhirParameters);
+		final var request = new ValueSetExpandParameters(fhirParameters);
 		
 		if (request.getUrl() == null && request.getValueSet() == null) {
 			throw new BadRequestException("Both URL and ValueSet parameters are null.", "ExpandValueSetRequest");
 		}
 
-		if (request.getUrl() == null || request.getUrl().getUriValue() == null) {
+		if (request.getUrl() == null) {
 			throw new BadRequestException("Expand request URL is not defined.", "ExpandValueSetRequest");
 		}
 		
 		if (request.getUrl() != null && 
 			request.getValueSet() != null && 
-			request.getUrl().getUriValue() != null &&
-			request.getValueSet().getUrl().getUriValue() != null &&
-			!request.getUrl().getUriValue().equals(request.getValueSet().getUrl().getUriValue())) {
+			request.getValueSet().getUrl() != null &&
+			!request.getUrl().equals(request.getValueSet().getUrl())) {
 			
 			throw new BadRequestException("URL and ValueSet.URL parameters are different.", "ExpandValueSetRequest");
 		}
 		
 		// The "next" parameter will re-use request parameters in query parameter form
 		final UriComponentsBuilder nextUriBuilder = MvcUriComponentsBuilder.fromMethodName(FhirValueSetExpandOperationController.class, "expandType", 
-			request.getUrl().getUriValue(), 
-			request.getFilter(), 
-			request.getActiveOnly(), 
-			request.getDisplayLanguage() == null ? null : request.getDisplayLanguage().getCodeValue(), 
-			request.getIncludeDesignations(), 
-			request.getWithHistorySupplements(), 
-			request.getCount(), 
-			request.getAfter(),
+			request.getUrl() == null ? null : request.getUrl().getValue(), 
+			request.getFilter() == null ? null : request.getFilter().getValue(), 
+			request.getActiveOnly() == null ? null : request.getActiveOnly().getValue(), 
+			request.getDisplayLanguage() == null ? null : request.getDisplayLanguage(), 
+			request.getIncludeDesignations() == null ? null : request.getIncludeDefinition().getValue(), 
+			request.getWithHistorySupplements() == null ? null : request.getWithHistorySupplements().getValue(), 
+			request.getCount() == null ? null : request.getCount().getValue(), 
+			request.getAfter() == null ? null : request.getAfter().getValue(),
 			accept,
 			_format,
 			_pretty);
@@ -370,46 +365,43 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 			_format,
 			_pretty);
 		
-		final ExpandValueSetRequest expandRequest = ExpandValueSetRequest.builder()
+		var expandRequest = new ValueSetExpandParameters()
 			// XXX: We use the resource IDs as the URL here 
-			.url(id)
-			.filter(filter)
-			.after(after)
-			.activeOnly(activeOnly)
-			.count(count)
-			.displayLanguage(displayLanguage == null ? null : new Code(displayLanguage))
-			.withHistorySupplements(withHistorySupplements)
-			.includeDesignations(includeDesignations)
-			.build();
+			.setUrl(id)
+			.setFilter(filter)
+			.setAfter(after)
+			.setActiveOnly(activeOnly)
+			.setCount(count)
+			.setDisplayLanguage(displayLanguage)
+			.setWithHistorySupplements(withHistorySupplements)
+			.setIncludeDesignations(includeDesignations);
 		
 		return expand(expandRequest, nextUriBuilder, accept, _format, _pretty);
 	}
 
 	private Promise<ResponseEntity<byte[]>> expand(
-		final ExpandValueSetRequest expandRequest, 
+		final ValueSetExpandParameters parameters, 
 		final UriComponentsBuilder nextUriBuilder,
 		final String accept,
 		final String _format,
 		final Boolean _pretty
 	) {
 		return FhirRequests.valueSets().prepareExpand()
-			.setRequest(expandRequest)
+			.setParameters(parameters)
 			.buildAsync()
 			.execute(getBus())
-			.then(soValueSet -> {
+			.then(valueSet -> {
 				
-				final Expansion soExpansion = soValueSet.getExpansion();
-				final Expansion soExpansionWithNext = soExpansion.withNext(searchAfter -> {
-					final String next = nextUriBuilder.replaceQueryParam("after", searchAfter)
+				final ValueSet.ValueSetExpansionComponent expansion = valueSet.getExpansion();
+				
+				// update next variable with new after value
+				final String searchAfter = (String) expansion.getExtensionString(FhirValueSetExpander.EXTENSION_AFTER_PROPERTY_URL);
+				final String next = nextUriBuilder.replaceQueryParam("after", searchAfter)
 						.build()
 						.toString();
-					
-					return new Uri(next);
-				});
+				expansion.setNext(next);
 				
-				final ValueSet soValueSetWithNext = soValueSet.withExpansion(soExpansionWithNext);
-				var fhirValueSet = ValueSetConverter_50.INSTANCE.fromInternal(soValueSetWithNext);
-				return toResponseEntity(fhirValueSet, accept, _format, _pretty);
+				return toResponseEntity(valueSet, accept, _format, _pretty);
 			});
 	}
 }

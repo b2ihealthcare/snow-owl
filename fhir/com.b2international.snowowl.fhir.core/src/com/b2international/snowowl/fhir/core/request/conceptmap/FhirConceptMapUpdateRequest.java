@@ -19,6 +19,8 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
 
+import org.hl7.fhir.r5.model.ConceptMap;
+
 import jakarta.validation.constraints.NotNull;
 
 import jakarta.validation.constraints.NotEmpty;
@@ -26,7 +28,6 @@ import jakarta.validation.constraints.NotEmpty;
 import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
 import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateRequest;
 import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
 

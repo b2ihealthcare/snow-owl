@@ -15,20 +15,19 @@
  */
 package com.b2international.snowowl.fhir.rest.tests.codesystem;
 
-import static com.b2international.snowowl.fhir.tests.FhirRestTest.Endpoints.CODESYSTEM;
-import static com.b2international.snowowl.fhir.tests.FhirRestTest.Endpoints.CODESYSTEM_ID;
+import static com.b2international.snowowl.fhir.rest.tests.FhirRestTest.Endpoints.CODESYSTEM;
+import static com.b2international.snowowl.fhir.rest.tests.FhirRestTest.Endpoints.CODESYSTEM_ID;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.*;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.junit.Test;
 
 import com.b2international.commons.json.Json;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.tests.FhirRestTest;
+import com.b2international.fhir.FhirCodeSystems;
+import com.b2international.snowowl.fhir.core.R5ObjectFields;
+import com.b2international.snowowl.fhir.rest.tests.FhirRestTest;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
@@ -47,7 +46,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
 			.body("type", equalTo("searchset"))
-			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("meta.tag.code", not(hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode())))
 			.body("total", notNullValue()) // actual number depends on test data, just verify existence
 			.body("entry[0].resource.id", equalTo(getTestCodeSystemId()))
 			.body("entry[0].resource.url", equalTo(getTestCodeSystemUrl()))
@@ -63,7 +62,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
 			.body("type", equalTo("searchset"))
-			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("meta.tag.code", not(hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode())))
 			.body("total", equalTo(0));
 	}
 	
@@ -76,7 +75,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
 			.body("type", equalTo("searchset"))
-			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("meta.tag.code", not(hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode())))
 			.body("total", equalTo(1))
 			.body("entry[0].resource.url", equalTo(getTestCodeSystemUrl()));
 	}
@@ -92,7 +91,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
 			.body("type", equalTo("searchset"))
-			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("meta.tag.code", not(hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode())))
 			.body("total", equalTo(2))
 			.body("entry.resource.id", hasItems(getTestCodeSystemId(), anotherCodeSystemId))
 			.body("entry.resource.url", hasItem(getTestCodeSystemUrl()));
@@ -107,7 +106,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
 			.body("type", equalTo("searchset"))
-			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("meta.tag.code", not(hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode())))
 			.body("total", equalTo(0));
 	}
 	
@@ -120,7 +119,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
 			.body("type", equalTo("searchset"))
-			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("meta.tag.code", not(hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode())))
 			.body("total", equalTo(1))
 			.body("entry[0].resource.id", equalTo(getTestCodeSystemId()))
 			.body("entry[0].resource.url", equalTo(getTestCodeSystemUrl()));
@@ -136,7 +135,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("meta.tag.code", not(hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode())))
 			.body("type", equalTo("searchset"))
 			.body("total", equalTo(2))
 			.body("entry.resource.id", hasItems(getTestCodeSystemId(), anotherCodeSystemId))
@@ -152,7 +151,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", hasItem(Coding.CODING_SUBSETTED.getCodeValue()))
+			.body("meta.tag.code", hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode()))
 			.body("type", equalTo("searchset"))
 			.body("total", equalTo(1))
 			.body("entry[0].resource.id", equalTo(getTestCodeSystemId()))
@@ -172,7 +171,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", hasItem(Coding.CODING_SUBSETTED.getCodeValue()))
+			.body("meta.tag.code", hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode()))
 			.body("type", equalTo("searchset"))
 			.body("total", equalTo(1))
 			// only text, id, meta and mandatory
@@ -197,7 +196,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", hasItem(Coding.CODING_SUBSETTED.getCodeValue()))
+			.body("meta.tag.code", hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode()))
 			.body("type", equalTo("searchset"))
 			.body("total", equalTo(1))
 			// only id, meta and mandatory
@@ -222,7 +221,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("meta.tag.code", not(hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode())))
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
 			.body("entry", equalTo(null));
@@ -237,7 +236,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("meta.tag.code", not(hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode())))
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
 			.body("entry[0].resource.id", equalTo(getTestCodeSystemId()))
@@ -253,7 +252,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.then().assertThat() 
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", hasItem(Coding.CODING_SUBSETTED.getCodeValue()))
+			.body("meta.tag.code", hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode()))
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
 			// mandatory fields
@@ -274,12 +273,12 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 	public void GET_CodeSystem_ElementsMixedWithSummaryFields() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.queryParam("_id", getTestCodeSystemId())
-			.queryParam("_elements", CodeSystem.Fields.ID, CodeSystem.Fields.META, CodeSystem.Fields.URL, CodeSystem.Fields.VERSION, CodeSystem.Fields.NAME, CodeSystem.Fields.TITLE, CodeSystem.Fields.DATE, CodeSystem.Fields.PUBLISHER)
+			.queryParam("_elements", R5ObjectFields.CodeSystem.ID, R5ObjectFields.CodeSystem.META, R5ObjectFields.CodeSystem.URL, R5ObjectFields.CodeSystem.VERSION, R5ObjectFields.CodeSystem.NAME, R5ObjectFields.CodeSystem.TITLE, R5ObjectFields.CodeSystem.DATE, R5ObjectFields.CodeSystem.PUBLISHER)
 			.when().get(CODESYSTEM)
 			.then().assertThat()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", hasItem(Coding.CODING_SUBSETTED.getCodeValue()))
+			.body("meta.tag.code", hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode()))
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
 			// mandatory fields
@@ -315,7 +314,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("meta.tag.code", not(hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode())))
 			.body("total", equalTo(0))
 			.body("type", equalTo("searchset"));
 	}
@@ -328,7 +327,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("meta.tag.code", not(hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode())))
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
 			.body("entry[0].resource.id", equalTo("SNOMEDCT"))
@@ -343,7 +342,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("meta.tag.code", not(hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode())))
 			.body("total", equalTo(2))
 			.body("type", equalTo("searchset"))
 			.body("entry.resource.id", hasItems("SNOMEDCT", getTestCodeSystemId()))
@@ -358,7 +357,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("meta.tag.code", not(hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode())))
 			.body("total", equalTo(0))
 			.body("type", equalTo("searchset"));
 	}
@@ -371,7 +370,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("meta.tag.code", not(hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode())))
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
 			.body("entry[0].resource.id", equalTo("SNOMEDCT"))
@@ -386,7 +385,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("meta.tag.code", not(hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode())))
 			.body("total", equalTo(2))
 			.body("type", equalTo("searchset"))
 			.body("entry.resource.id", hasItems("SNOMEDCT", getTestCodeSystemId()))
@@ -402,7 +401,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("meta.tag.code", not(hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode())))
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
 			.body("entry[0].resource.id", equalTo("SNOMEDCT"))
@@ -417,7 +416,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("meta.tag.code", not(hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode())))
 			.body("total", equalTo(0))
 			.body("type", equalTo("searchset"));
 	}
@@ -430,7 +429,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("meta.tag.code", not(hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode())))
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
 			.body("entry[0].resource.id", equalTo("SNOMEDCT/2002-01-31"))
@@ -447,7 +446,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("meta.tag.code", not(hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode())))
 			.body("total", equalTo(2))
 			.body("type", equalTo("searchset"))
 			.body("entry[0].resource.id", equalTo("SNOMEDCT/2002-01-31"))
@@ -468,7 +467,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("meta.tag.code", not(hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode())))
 			.body("total", equalTo(0))
 			.body("type", equalTo("searchset"));
 	}
@@ -485,7 +484,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("meta.tag.code", not(hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode())))
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
 			.body("entry[0].resource.id", equalTo("GET_CodeSystem_Status_Match_Single"))
@@ -506,7 +505,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.then().assertThat()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("meta.tag.code", not(hasItem(FhirCodeSystems.CODING_SUBSETTED.getCode())))
 			.body("total", equalTo(39))
 			.body("type", equalTo("searchset"))
 			.body("entry[0].resource.id", equalTo("GET_CodeSystem_Status_Match_Multiple"))

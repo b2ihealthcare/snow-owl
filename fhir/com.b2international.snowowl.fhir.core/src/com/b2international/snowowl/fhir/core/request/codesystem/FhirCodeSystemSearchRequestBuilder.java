@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,11 @@ package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import java.util.Set;
 
+import org.hl7.fhir.r5.model.Bundle;
+
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.fhir.core.model.Bundle;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.R5ObjectFields;
 import com.b2international.snowowl.fhir.core.request.FhirResourceSearchRequestBuilder;
 
 /**
@@ -35,27 +36,27 @@ public final class FhirCodeSystemSearchRequestBuilder extends FhirResourceSearch
 	
 	@Override
 	protected Set<String> getKnownResourceFields() {
-		return CodeSystem.Fields.ALL;
+		return R5ObjectFields.CodeSystem.ALL;
 	}
 	
 	@Override
 	protected Set<String> getMandatoryFields() {
-		return CodeSystem.Fields.MANDATORY;
+		return R5ObjectFields.CodeSystem.MANDATORY;
 	}
 	
 	@Override
 	protected Set<String> getSummaryFields() {
-		return CodeSystem.Fields.SUMMARY;
+		return R5ObjectFields.CodeSystem.SUMMARY;
 	}
 	
 	@Override
 	protected Set<String> getSummaryTextFields() {
-		return CodeSystem.Fields.SUMMARY_TEXT;
+		return R5ObjectFields.CodeSystem.SUMMARY_TEXT;
 	}
 	
 	@Override
 	protected Set<String> getSummaryDataFields() {
-		return CodeSystem.Fields.SUMMARY_DATA;
+		return R5ObjectFields.CodeSystem.SUMMARY_DATA;
 	}
 
 }

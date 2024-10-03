@@ -20,13 +20,14 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.time.LocalDate;
 import java.util.Optional;
 
+import org.hl7.fhir.r5.model.CodeSystem;
+
 import jakarta.validation.constraints.NotNull;
 
 import jakarta.validation.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateRequest;
 import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
 
@@ -70,7 +71,7 @@ final class FhirCodeSystemUpdateRequest extends FhirResourceUpdateRequest {
 	}
 
 	private boolean conceptCountUnderLimit() {
-		return Optional.ofNullable(fhirCodeSystem.getConcepts())
+		return Optional.ofNullable(fhirCodeSystem.getConcept())
 			.map(concepts -> concepts.size() < CONCEPT_LIMIT)
 			.orElse(Boolean.TRUE);
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,30 +15,36 @@
  */
 package com.b2international.snowowl.fhir.core.request.valueset;
 
+import org.hl7.fhir.r5.model.Parameters;
+
+import com.b2international.fhir.r5.operations.ValueSetValidateCodeParameters;
+import com.b2international.fhir.r5.operations.ValueSetValidateCodeResultParameters;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
-import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
-import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
 
 /**
  * @since 8.0
  */
 public final class FhirValueSetValidateCodeRequestBuilder 
-		extends BaseRequestBuilder<FhirValueSetValidateCodeRequestBuilder, ServiceProvider, com.b2international.snowowl.fhir.core.model.ValidateCodeResult>
-		implements SystemRequestBuilder<ValidateCodeResult> {
+		extends BaseRequestBuilder<FhirValueSetValidateCodeRequestBuilder, ServiceProvider, ValueSetValidateCodeResultParameters>
+		implements SystemRequestBuilder<ValueSetValidateCodeResultParameters> {
 
-	private ValidateCodeRequest request;
+	private ValueSetValidateCodeParameters parameters;
 	
-	public FhirValueSetValidateCodeRequestBuilder setRequest(ValidateCodeRequest request) {
-		this.request = request;
-		return getSelf();
+	public FhirValueSetValidateCodeRequestBuilder setParameters(Parameters parameters) {
+		return setParameters(new ValueSetValidateCodeParameters(parameters));
 	}
 	
+	public FhirValueSetValidateCodeRequestBuilder setParameters(ValueSetValidateCodeParameters parameters) {
+		this.parameters = parameters;
+		return getSelf();
+	}
+
 	@Override
-	protected Request<ServiceProvider, ValidateCodeResult> doBuild() {
-		return new FhirValueSetValidateCodeRequest(request);
+	protected Request<ServiceProvider, ValueSetValidateCodeResultParameters> doBuild() {
+		return new FhirValueSetValidateCodeRequest(parameters);
 	}
 
 }

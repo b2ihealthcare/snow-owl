@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2011-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,17 @@
  */
 package com.b2international.snowowl.fhir.core.exceptions;
 
+import java.util.List;
+
+import org.hl7.fhir.r5.model.CodeableConcept;
+import org.hl7.fhir.r5.model.Coding;
+import org.hl7.fhir.r5.model.OperationOutcome;
+import org.hl7.fhir.r5.model.OperationOutcome.IssueSeverity;
+import org.hl7.fhir.r5.model.OperationOutcome.IssueType;
+import org.hl7.fhir.r5.model.OperationOutcome.OperationOutcomeIssueComponent;
+
 import com.b2international.commons.exceptions.ApiException;
-import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
-import com.b2international.snowowl.fhir.core.codesystems.IssueType;
-import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
-import com.b2international.snowowl.fhir.core.model.Issue;
-import com.b2international.snowowl.fhir.core.model.OperationOutcome;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
 
 /**
@@ -28,48 +33,40 @@ import com.google.common.collect.ImmutableSortedSet;
  */
 public class FhirException extends ApiException {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 	
-	//default outcome code
-	private OperationOutcomeCode operationOutcomeCode = OperationOutcomeCode.MSG_BAD_SYNTAX;
+	private final IssueSeverity issueSeverity;
+	private final IssueType issueType;
+	private final org.hl7.fhir.r4.model.codesystems.OperationOutcome operationOutcomeCode;
+	private final String location;
+		
+	public FhirException(String message, org.hl7.fhir.r4.model.codesystems.OperationOutcome operationOutcomeCode) {
+		this(message, operationOutcomeCode, null);
+	}
 	
-	private OperationOutcome.Builder operationOutcomeBuilder = OperationOutcome.builder();
-		
-	public FhirException(IssueSeverity issueSeverity, IssueType issueType, String message, OperationOutcomeCode operationOutcomeCode, String location) {
-		
+	public FhirException(String message, org.hl7.fhir.r4.model.codesystems.OperationOutcome operationOutcomeCode, String location) {
+		this(IssueSeverity.ERROR, IssueType.EXCEPTION, message, operationOutcomeCode, location);
+	}
+	
+	public FhirException(IssueSeverity issueSeverity, IssueType issueType, String message, org.hl7.fhir.r4.model.codesystems.OperationOutcome operationOutcomeCode) {
+		this(issueSeverity, issueType, message, operationOutcomeCode, null);
+	}
+	
+	public FhirException(IssueSeverity issueSeverity, IssueType issueType, String message, org.hl7.fhir.r4.model.codesystems.OperationOutcome operationOutcomeCode, String location) {
 		super(message);
-		
-		Issue issue = Issue.builder()
-			.severity(issueSeverity)
-			.code(issueType)
-			.detailsWithDisplayArgs(operationOutcomeCode, location)
-			.diagnostics(message)
-			.addLocation(location)
-			.build();
-		
-		operationOutcomeBuilder.addIssue(issue);
+		this.issueSeverity = issueSeverity;
+		this.issueType = issueType;
+		this.operationOutcomeCode = operationOutcomeCode;
+		this.location = location;
 	}
-	
-	public FhirException(IssueSeverity issueSeverity, IssueType issueType, String message, OperationOutcomeCode operationOutcomeCode) {
-		
-		super(message);
-		
-		Issue issue = Issue.builder()
-			.severity(issueSeverity)
-			.code(issueType)
-			.outcomeDetails(operationOutcomeCode)
-			.diagnostics(message)
-			.build();
-		
-		operationOutcomeBuilder.addIssue(issue);
-	}
-	
-	public static FhirException createFhirError(String message, OperationOutcomeCode operationOutcomeCode, String location) {
-		return new FhirException(IssueSeverity.ERROR, IssueType.EXCEPTION, message, operationOutcomeCode, location);
-	}
-	
-	public static FhirException createFhirError(String message, OperationOutcomeCode operationOutcomeCode) {
-		return new FhirException(IssueSeverity.ERROR, IssueType.EXCEPTION, message, operationOutcomeCode);
+
+	protected final OperationOutcomeIssueComponent buildIssue(IssueSeverity issueSeverity, IssueType issueType, String message, org.hl7.fhir.r4.model.codesystems.OperationOutcome operationOutcomeCode, String location) {
+		return new OperationOutcome.OperationOutcomeIssueComponent()
+			.setSeverity(issueSeverity)
+			.setCode(issueType)
+			.setDetails(toDetails(operationOutcomeCode, location))
+			.setDiagnostics(message)
+			.addLocation(location);
 	}
 	
 	@Override
@@ -78,20 +75,16 @@ public class FhirException extends ApiException {
 	}
 	
 	/**
-	 * Returns the issue type associated with this exception.
-	 * Subclasses to override.
-	 * @return
+	 * @return the {@link IssueType} associated with this exception.
 	 */
-	public IssueType getIssueType() {
-		return IssueType.EXCEPTION;
+	public final IssueType getIssueType() {
+		return issueType;
 	}
 	
 	/**
-	 * Returns the most generic operation outcome code associated with this exception.
-	 * Sublasses may override.
-	 * @return
+	 * @return the {@link org.hl7.fhir.r4.model.codesystems.OperationOutcome} code associated with this exception.
 	 */
-	public OperationOutcomeCode getOperationOutcomeCode() {
+	public final org.hl7.fhir.r4.model.codesystems.OperationOutcome getOperationOutcomeCode() {
 		return operationOutcomeCode;
 	}
 	
@@ -101,26 +94,51 @@ public class FhirException extends ApiException {
 	 * 
 	 * @return {@link OperationOutcome} representation of this {@link FhirException}, never <code>null</code>.
 	 */
-	public OperationOutcome toOperationOutcome() {
+	public final OperationOutcome toOperationOutcome() {
 		
-		// additional info should be appended to the end as a series of issues
+		var operationOutcome = new OperationOutcome();
+		
+		// attach this exception as issue
+		operationOutcome.addIssue(buildIssue(issueSeverity, issueType, getMessage(), operationOutcomeCode, location));
+		
+		// attach additional info as issues separately
 		if (getAdditionalInfo() != null) {
 			for (String key : ImmutableSortedSet.copyOf(getAdditionalInfo().keySet())) {
 				Object value = getAdditionalInfo().get(key);
 				if (value instanceof String) {
-					Issue issue = Issue.builder()
-							.severity(IssueSeverity.ERROR)
-							.code(IssueType.INFORMATIONAL)
-							.outcomeDetails(operationOutcomeCode)
-							.diagnostics((String) value)
-							.build();
-					operationOutcomeBuilder.addIssue(issue);
+					operationOutcome.addIssue(buildIssue(IssueSeverity.ERROR, IssueType.INFORMATIONAL, (String) value, operationOutcomeCode, null));
 				}
 			}
 		}
 		
-		return operationOutcomeBuilder.build();
+		// attach any additional custom issues from subclasses
+		getAdditionalIssues().forEach(operationOutcome::addIssue);
+		
+		return operationOutcome;
 	}
 
+	/**
+	 * Subclasses may optionally provide {@link OperationOutcomeIssueComponent} instance that needs to be reported in the final {@link OperationOutcome} when built via {@link #toOperationOutcome()}.
+	 */
+	protected List<OperationOutcomeIssueComponent> getAdditionalIssues() {
+		return List.of();
+	}
+	
+	public static CodeableConcept toDetails(org.hl7.fhir.r4.model.codesystems.OperationOutcome operationOutcomeCode, String location) {
+		String operationOutcomeCodeDisplay = operationOutcomeCode.getDisplay();
+		// TODO should we raise IAE when location is empty but the display is a template?
+		if (operationOutcomeCodeDisplay.contains("%s") && !Strings.isNullOrEmpty(location)) {
+			operationOutcomeCodeDisplay = String.format(operationOutcomeCodeDisplay, location);
+		}
+		return new CodeableConcept()
+					.addCoding(
+						new Coding()
+							.setCode(operationOutcomeCode.toCode())
+							.setSystem(operationOutcomeCode.getSystem())
+							.setDisplay(operationOutcomeCodeDisplay)
+					)
+					.setText(operationOutcomeCodeDisplay);
+	}
 
+	
 }

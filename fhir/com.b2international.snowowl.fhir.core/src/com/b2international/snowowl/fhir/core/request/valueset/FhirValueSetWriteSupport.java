@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2022-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,10 @@ package com.b2international.snowowl.fhir.core.request.valueset;
 import java.time.LocalDate;
 import java.util.Map;
 
+import org.hl7.fhir.r5.model.ValueSet;
+
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
 import com.b2international.snowowl.fhir.core.request.conceptmap.FhirWriteSupport;
 
@@ -38,7 +39,7 @@ public interface FhirValueSetWriteSupport extends FhirWriteSupport {
 	 * @param context
 	 *            - the request context to use for creation/update
 	 * @param fhirValueSet
-	 *            - the input FHIR representation of the value set
+	 *            - the input FHIR R5 representation of the value set
 	 * @param systemUriOverrides
 	 *            - code system resource URIs are taken from this map directly instead of going through a lookup step when the value set refers to a
 	 *            system URI (stored in map keys) in any inclusion/exclusion

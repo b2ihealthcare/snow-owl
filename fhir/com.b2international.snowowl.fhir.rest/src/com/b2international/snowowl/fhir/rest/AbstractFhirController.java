@@ -16,20 +16,22 @@
 package com.b2international.snowowl.fhir.rest;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
-import org.linuxforhealth.fhir.model.format.Format;
-import org.linuxforhealth.fhir.model.generator.exception.FHIRGeneratorException;
-import org.linuxforhealth.fhir.model.parser.exception.FHIRParserException;
-import org.linuxforhealth.fhir.model.r5.generator.FHIRGenerator;
-import org.linuxforhealth.fhir.model.r5.parser.FHIRParser;
-import org.linuxforhealth.fhir.model.r5.resource.Bundle;
-import org.linuxforhealth.fhir.model.r5.resource.Parameters;
-import org.linuxforhealth.fhir.model.r5.resource.Resource;
-import org.linuxforhealth.fhir.model.r5.type.Uri;
-import org.linuxforhealth.fhir.model.r5.visitor.Visitable;
+import org.hl7.fhir.r5.elementmodel.Manager;
+import org.hl7.fhir.r5.elementmodel.Manager.FhirFormat;
+import org.hl7.fhir.r5.formats.IParser.OutputStyle;
+import org.hl7.fhir.r5.formats.JsonParser;
+import org.hl7.fhir.r5.formats.XmlParser;
+import org.hl7.fhir.r5.model.Bundle;
+import org.hl7.fhir.r5.model.OperationOutcome;
+import org.hl7.fhir.r5.model.OperationOutcome.IssueSeverity;
+import org.hl7.fhir.r5.model.OperationOutcome.IssueType;
+import org.hl7.fhir.r5.model.Parameters;
+import org.hl7.fhir.r5.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -47,14 +49,8 @@ import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.*;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
-import com.b2international.snowowl.fhir.core.codesystems.IssueType;
-import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
-import com.b2international.snowowl.fhir.core.model.Issue;
-import com.b2international.snowowl.fhir.core.model.OperationOutcome;
-import com.b2international.snowowl.fhir.core.model.converter.BundleConverter_50;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
@@ -129,7 +125,7 @@ public abstract class AbstractFhirController extends AbstractRestService {
 		return mediaTypeCandidates;
 	}
 
-	protected static Format getFormat(final String accept, final String _format) {
+	protected static Manager.FhirFormat getFormat(final String accept, final String _format) {
 		/*
 		 * The _format query parameter allows overriding whatever comes in as the "accept"
 		 * header value (for scenarios where the client has no control over the header).
@@ -145,11 +141,11 @@ public abstract class AbstractFhirController extends AbstractRestService {
 				return getFormat(accept);
 			}
 		} else {
-			return Format.JSON;
+			return Manager.FhirFormat.JSON;
 		}
 	}
 
-	private static Format getFormat(final String mediaType) {
+	private static Manager.FhirFormat getFormat(final String mediaType) {
 		switch (mediaType) {
 		
 			case FORMAT_JSON: //$FALL-THROUGH$
@@ -157,13 +153,13 @@ public abstract class AbstractFhirController extends AbstractRestService {
 			case APPLICATION_JSON_VALUE: //$FALL-THROUGH$
 			case ALL_VALUE: //$FALL-THROUGH$
 			case APPLICATION_FHIR_JSON_VALUE:
-				return Format.JSON;
+				return Manager.FhirFormat.JSON;
 				
 			case FORMAT_XML: //$FALL-THROUGH$
 			case TEXT_XML_VALUE: //$FALL-THROUGH$
 			case APPLICATION_XML_VALUE: //$FALL-THROUGH$
 			case APPLICATION_FHIR_XML_VALUE:
-				return Format.XML;
+				return Manager.FhirFormat.XML;
 				
 			default:
 				throw new NotAcceptableStatusException(SUPPORTED_MEDIA_TYPES);
@@ -227,82 +223,106 @@ public abstract class AbstractFhirController extends AbstractRestService {
 			 * XXX: There is no overriding query parameter for "input" content types, but we still
 			 * want to use JSON as the default if no type was specified
 			 */
-			final FHIRParser fhirParser = FHIRParser.parser(getFormat(contentType, null));
-			final var fhirResource = fhirParser.parse(requestBody);
+			final FhirFormat format = getFormat(contentType, null);
+			
+			final Resource fhirResource; 
+			switch (format) {
+			case JSON:
+				fhirResource = new JsonParser().parse(requestBody);
+				break;
+			case XML:
+				fhirResource = new XmlParser().parse(requestBody);
+				break;
+			default:
+				throw new IllegalStateException("Should be already handled in getFormat(contentType, null)");
+			}
+			
 	
-			if (!fhirResource.is(resourceClass)) {
+			if (!resourceClass.isAssignableFrom(fhirResource.getClass())) {
 				throw new BadRequestException(String.format("Expected a complete %s resource as the request body, got %s.",
 					resourceClass.getSimpleName(), fhirResource.getClass().getSimpleName()));
 			}
 			
-			return fhirResource.as(resourceClass);
+			return resourceClass.cast(fhirResource);
 		
-		} catch (FHIRParserException e) {
+		} catch (IOException e) {
 			throw new BadRequestException(String.format("Failed to parse request body as a complete %s resource: %s", resourceClass.getSimpleName(), e.getMessage()));
 		}
 	}
 	
 	protected static Parameters toFhirParameters(final InputStream requestBody, final String contentType) {
-		return toFhirResource(requestBody, contentType, org.linuxforhealth.fhir.model.r5.resource.Parameters.class);
+		return toFhirResource(requestBody, contentType, Parameters.class);
 	}
 	
 	protected static ResponseEntity<byte[]> toResponseEntity(
-		final Visitable fhirResult, 
+			final Resource resource, 
+			final String accept, 
+			final String _format,
+			final Boolean _pretty) {
+		return toResponseEntity(HttpStatus.OK, resource, accept, _format, _pretty);
+	}
+	
+	protected static ResponseEntity<byte[]> toResponseEntity(
+		final HttpStatus httpStatus,
+		final Resource resource, 
 		final String accept, 
 		final String _format,
 		final Boolean _pretty
 	) {
-		final boolean prettyPrinting = (_pretty != null) && _pretty; 
-		final FHIRGenerator fhirGenerator = FHIRGenerator.generator(getFormat(accept, _format), prettyPrinting);
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		
-		try {
-			fhirGenerator.generate(fhirResult, baos);
-		} catch (FHIRGeneratorException e) {
-			throw new BadRequestException(String.format("Failed to serialize FHIR resource to a response body.",
-				fhirResult.getClass().getSimpleName()));
-		}
+		final byte[] body = writeToBytes(resource, accept, _format, _pretty);
 
-		return ResponseEntity.ok()
+		return ResponseEntity.status(httpStatus)
 			.contentType(getResponseType(accept, _format))
-			.body(baos.toByteArray());
+			.body(body);
+	}
+
+	private static byte[] writeToBytes(final Resource resource, final String accept, final String _format, final Boolean _pretty) {
+		final boolean prettyPrinting = (_pretty != null) && _pretty;
+		final FhirFormat format = getFormat(accept, _format);
+		
+		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		try {
+			
+			switch (format) {
+			case JSON:
+				new JsonParser().setOutputStyle(prettyPrinting ? OutputStyle.PRETTY : OutputStyle.NORMAL).compose(baos, resource);
+				break;
+			case XML:
+				new XmlParser().setOutputStyle(prettyPrinting ? OutputStyle.PRETTY : OutputStyle.NORMAL).compose(baos, resource);
+				break;
+			default:
+				throw new IllegalStateException("Should be already handled in getFormat(accept, _format)");
+			}
+		
+		} catch (IOException e) {
+			throw new BadRequestException(String.format("Failed to serialize FHIR resource to a response body.",
+				resource.getClass().getSimpleName()));
+		}
+		return baos.toByteArray();
 	}	
 	
 	protected static ResponseEntity<byte[]> toResponseEntity(
-		final com.b2international.snowowl.fhir.core.model.Bundle soBundle, 
+		final Bundle bundle, 
 		final UriComponentsBuilder fullUrlBuilder, 
 		final String accept,
 		final String _format,
 		final Boolean _pretty
 	) {
-		var fhirBundle = BundleConverter_50.INSTANCE.fromInternal(soBundle);
-		
 		// FIXME: Temporary measure to add "fullUrl" to returned bundle entries
-		final var entries = fhirBundle.getEntry();
+		final var entries = bundle.getEntry();
 		
 		if (!entries.isEmpty()) {
-			// Clear entries in builder
-			final Bundle.Builder builder = fhirBundle.toBuilder();
-			builder.entry(List.of());
-			
 			// Add "fullUrl" to original entries, add to builder
 			for (var entry : entries) {
 				if (entry.getResource() != null) {
 					final String resourceId = entry.getResource().getId();
 					final String fullUrl = fullUrlBuilder.buildAndExpand(Map.of("id", resourceId)).toString();
-					
-					final var entryWithUrl = entry.toBuilder()
-						.fullUrl(Uri.of(fullUrl))
-						.build();
-					
-					builder.entry(entryWithUrl);
+					entry.setFullUrl(fullUrl);
 				}
 			}
-			
-			fhirBundle = builder.build();
 		}
 		
-		return toResponseEntity(fhirBundle, accept, _format, _pretty);
+		return toResponseEntity(bundle, accept, _format, _pretty);
 	}
 
 	/**
@@ -313,37 +333,37 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-	public @ResponseBody OperationOutcome handle(final Exception ex) {
+	public @ResponseBody ResponseEntity<byte[]> handle(final Exception ex) {
 		if ("broken pipe".equals(Strings.nullToEmpty(Throwables.getRootCause(ex).getMessage()).toLowerCase())) {
 	        return null; // socket is closed, cannot return any response    
 	    } else {
 	    	LOG.error("Exception during processing of a request", ex);
-	    	FhirException fhirException = FhirException.createFhirError(GENERIC_USER_MESSAGE + " Exception: " + ex.getMessage(), OperationOutcomeCode.MSG_BAD_SYNTAX);
-	    	return fhirException.toOperationOutcome();
+	    	FhirException fhirException = new FhirException(GENERIC_USER_MESSAGE + " Exception: " + ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGBADSYNTAX);
+	    	return toResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, fhirException.toOperationOutcome(), null, null, true);
 	    }
 	}
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public @ResponseBody OperationOutcome handle(final SyntaxException ex) {
-    	FhirException fhirException = FhirException.createFhirError(ex.getMessage(), OperationOutcomeCode.MSG_BAD_SYNTAX);
+	public @ResponseBody ResponseEntity<byte[]> handle(final SyntaxException ex) {
+    	FhirException fhirException = new FhirException(ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGBADSYNTAX);
     	fhirException.withAdditionalInfo(ex.getAdditionalInfo());
-    	return fhirException.toOperationOutcome();
+    	return toResponseEntity(HttpStatus.BAD_REQUEST, fhirException.toOperationOutcome(), null, null, true);
 	}
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public @ResponseBody OperationOutcome handle(final ValidationException ex) {
-		FhirException error = FhirException.createFhirError("Validation error", OperationOutcomeCode.MSG_BAD_SYNTAX);
+	public @ResponseBody ResponseEntity<byte[]> handle(final ValidationException ex) {
+		FhirException error = new FhirException("Validation error", org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGBADSYNTAX);
 		error.withAdditionalInfo(ex.getAdditionalInfo());
-    	return error.toOperationOutcome();
+		return toResponseEntity(HttpStatus.BAD_REQUEST, error.toOperationOutcome(), null, null, true);
 	}
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.UNAUTHORIZED)
-	public @ResponseBody ResponseEntity<OperationOutcome> handle(final UnauthorizedException ex) {
-		FhirException fhirException = FhirException.createFhirError(ex.getMessage(), OperationOutcomeCode.MSG_AUTH_REQUIRED);
-		OperationOutcome body = fhirException.toOperationOutcome();
+	public @ResponseBody ResponseEntity<byte[]> handle(final UnauthorizedException ex) {
+		FhirException fhirException = new FhirException(ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGAUTHREQUIRED);
+		byte[] body = writeToBytes(fhirException.toOperationOutcome(), null, null, true);
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("WWW-Authenticate", "Basic");
 		headers.add("WWW-Authenticate", "Bearer");
@@ -352,20 +372,18 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public @ResponseBody OperationOutcome handle(final BadRequestException ex) {
-		return ex.toOperationOutcome();
+	public @ResponseBody ResponseEntity<byte[]> handle(final BadRequestException ex) {
+		return toResponseEntity(HttpStatus.BAD_REQUEST, ex.toOperationOutcome(), null, null, true);
 	}
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.FORBIDDEN)
-	public @ResponseBody OperationOutcome handle(final ForbiddenException ex) {
-		return OperationOutcome.builder()
-			.addIssue(Issue.builder()
-				.severity(IssueSeverity.ERROR)
-				.code(IssueType.FORBIDDEN)
-				.diagnostics(ex.getMessage())
-				.build())
-			.build();
+	public @ResponseBody ResponseEntity<byte[]> handle(final ForbiddenException ex) {
+		return toResponseEntity(HttpStatus.FORBIDDEN, new OperationOutcome()
+			.addIssue(new OperationOutcome.OperationOutcomeIssueComponent()
+				.setSeverity(IssueSeverity.ERROR)
+				.setCode(IssueType.FORBIDDEN)
+				.setDiagnostics(ex.getMessage())), null, null, true);
 	}
 	
 	/**
@@ -376,10 +394,10 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public @ResponseBody OperationOutcome handle(HttpMessageNotReadableException ex) {
+	public @ResponseBody ResponseEntity<byte[]> handle(HttpMessageNotReadableException ex) {
 		LOG.trace("Exception during processing of a JSON document", ex);
-		FhirException fhirException = FhirException.createFhirError(GENERIC_USER_MESSAGE + " Exception: " + ex.getMessage(), OperationOutcomeCode.MSG_CANT_PARSE_CONTENT);
-		return fhirException.toOperationOutcome();
+		FhirException fhirException = new FhirException(GENERIC_USER_MESSAGE + " Exception: " + ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGCANTPARSECONTENT);
+		return toResponseEntity(HttpStatus.BAD_REQUEST, fhirException.toOperationOutcome(), null, null, true);
 	}
 
 	/**
@@ -391,18 +409,16 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.NOT_FOUND)
-	public @ResponseBody OperationOutcome handle(final NotFoundException ex) {
-		return OperationOutcome.builder()
+	public @ResponseBody ResponseEntity<byte[]> handle(final NotFoundException ex) {
+		return toResponseEntity(HttpStatus.NOT_FOUND, new OperationOutcome()
 				.addIssue(
-					Issue.builder()
-						.severity(IssueSeverity.ERROR)
-						.code(IssueType.NOT_FOUND)
-						.detailsWithDisplayArgs(OperationOutcomeCode.MSG_NO_EXIST, ex.getKey())
-						.diagnostics(ex.getMessage())
+					new OperationOutcome.OperationOutcomeIssueComponent()
+						.setSeverity(IssueSeverity.ERROR)
+						.setCode(IssueType.NOTFOUND)
+						.setDiagnostics(ex.getMessage())
 						.addLocation(ex.getKey())
-					.build()
-				)
-				.build();
+						.setDetails(FhirException.toDetails(org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGNOEXIST, ex.getKey()))
+				), null, null, true);
 	}
 
 	/**
@@ -413,9 +429,9 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
-	public @ResponseBody OperationOutcome handle(NotImplementedException ex) {
-		FhirException fhirException = FhirException.createFhirError(ex.getMessage(), OperationOutcomeCode.MSG_UNKNOWN_OPERATION);
-		return fhirException.toOperationOutcome();
+	public @ResponseBody ResponseEntity<byte[]> handle(NotImplementedException ex) {
+		FhirException fhirException = new FhirException(ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGUNKNOWNOPERATION);
+		return toResponseEntity(HttpStatus.NOT_IMPLEMENTED, fhirException.toOperationOutcome(), null, null, true);
 	}
 
 	/**
@@ -426,9 +442,9 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.CONFLICT)
-	public @ResponseBody OperationOutcome handle(final ConflictException ex) {
-		FhirException fhirException = FhirException.createFhirError(ex.getMessage(), OperationOutcomeCode.MSG_LOCAL_FAIL);
-		return fhirException.toOperationOutcome();
+	public @ResponseBody ResponseEntity<byte[]> handle(final ConflictException ex) {
+		FhirException fhirException = new FhirException(ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGLOCALFAIL);
+		return toResponseEntity(HttpStatus.CONFLICT, fhirException.toOperationOutcome(), null, null, true);
 	}
 	
 }

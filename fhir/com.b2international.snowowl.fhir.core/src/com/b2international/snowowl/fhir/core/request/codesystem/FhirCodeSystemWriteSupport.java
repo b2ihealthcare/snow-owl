@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2022-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,9 @@ package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import java.time.LocalDate;
 
+import org.hl7.fhir.r5.model.CodeSystem;
+
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.request.FhirResourceUpdateResult;
 import com.b2international.snowowl.fhir.core.request.conceptmap.FhirWriteSupport;
 
@@ -36,7 +37,7 @@ public interface FhirCodeSystemWriteSupport extends FhirWriteSupport {
 	 * @param context
 	 *            - the request context to use for creation/update
 	 * @param fhirCodeSystem
-	 *            - the input FHIR representation of the code system
+	 *            - the input FHIR R5 representation of the code system
 	 * @param author
 	 *            - the commit author
 	 * @param owner

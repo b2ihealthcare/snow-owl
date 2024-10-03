@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,17 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.hl7.fhir.r5.model.*;
+import org.hl7.fhir.r5.model.Bundle.BundleType;
+import org.hl7.fhir.r5.model.ContactPoint.ContactPointSystem;
+import org.hl7.fhir.r5.model.Enumerations.PublicationStatus;
+import org.hl7.fhir.r5.model.Narrative.NarrativeStatus;
+import org.hl7.fhir.utilities.xhtml.NodeType;
+import org.hl7.fhir.utilities.xhtml.XhtmlNode;
+
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
+import com.b2international.fhir.FhirCodeSystems;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -30,35 +39,28 @@ import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionBranchPoint;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.search.TermFilter;
 import com.b2international.snowowl.core.version.VersionDocument;
-import com.b2international.snowowl.fhir.core.codesystems.BundleType;
-import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
-import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
-import com.b2international.snowowl.fhir.core.model.*;
-import com.b2international.snowowl.fhir.core.model.Bundle.Builder;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.dt.ContactPoint;
-import com.b2international.snowowl.fhir.core.model.dt.Instant;
-import com.b2international.snowowl.fhir.core.model.dt.Narrative;
+import com.b2international.snowowl.fhir.core.FhirModelHelpers;
+import com.b2international.snowowl.fhir.core.R5ObjectFields;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 /**
  * @since 8.0
  */
-public abstract class FhirResourceSearchRequest<B extends MetadataResource.Builder<B, T>, T extends FhirResource> extends SearchResourceRequest<RepositoryContext, Bundle> {
+public abstract class FhirResourceSearchRequest<T extends MetadataResource> extends SearchResourceRequest<RepositoryContext, Bundle> {
 
 	private static final long serialVersionUID = 1L;
 
 	private static final Set<String> EXTERNAL_FHIR_RESOURCE_FIELDS = Set.of(
-		MetadataResource.Fields.NAME,
-		MetadataResource.Fields.META,
-		MetadataResource.Fields.TEXT
+		R5ObjectFields.MetadataResource.NAME,
+		R5ObjectFields.MetadataResource.META,
+		R5ObjectFields.MetadataResource.TEXT
 	);
 	
 	/**
@@ -77,7 +79,7 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 	
 	@Override
 	protected Bundle createEmptyResult(int limit) {
-		return prepareBundle().total(0).build();
+		return prepareBundle().setTotal(0);
 	}
 	
 	@Override
@@ -130,10 +132,9 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		fillResourceOnlyProperties(context, internalResources, fields);
 			
 		return prepareBundle()
-				.entry(internalResources.stream().map(codeSystem -> toFhirResourceEntry(context, codeSystem)).collect(Collectors.toList()))
+				.setEntry(internalResources.stream().map(codeSystem -> toFhirResourceEntry(context, codeSystem)).collect(Collectors.toList()))
 //				.after(internalResources.getSearchAfter())
-				.total(internalResources.getTotal())
-				.build();
+				.setTotal(internalResources.getTotal());
 	}
 
 	private final List<String> replaceFieldsToLoad(List<String> fields) {
@@ -164,19 +165,19 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		fieldsToLoad.removeAll(EXTERNAL_FHIR_RESOURCE_FIELDS);
 		fieldsToLoad.removeAll(getExternalFhirResourceFields());
 		// replace publisher with internal settings field (publisher is stored within resource metadata)
-		if (fieldsToLoad.contains(MetadataResource.Fields.PUBLISHER)) {
-			fieldsToLoad.remove(MetadataResource.Fields.PUBLISHER);
+		if (fieldsToLoad.contains(R5ObjectFields.MetadataResource.PUBLISHER)) {
+			fieldsToLoad.remove(R5ObjectFields.MetadataResource.PUBLISHER);
 			fieldsToLoad.add(ResourceDocument.Fields.SETTINGS);
 		}
 		// replace identifier with internal oid field
-		if (fieldsToLoad.contains(CodeSystem.Fields.IDENTIFIER)) {
-			fieldsToLoad.remove(CodeSystem.Fields.IDENTIFIER);
+		if (fieldsToLoad.contains(R5ObjectFields.CodeSystem.IDENTIFIER)) {
+			fieldsToLoad.remove(R5ObjectFields.CodeSystem.IDENTIFIER);
 			fieldsToLoad.add(ResourceDocument.Fields.OID);
 		}
 		
 		// for all supported FHIR Metadata Resources replace the incoming date property with the effectiveTime when requesting it
-		if (fieldsToLoad.contains(MetadataResource.Fields.DATE)) {
-			fieldsToLoad.remove(MetadataResource.Fields.DATE);
+		if (fieldsToLoad.contains(R5ObjectFields.MetadataResource.DATE)) {
+			fieldsToLoad.remove(R5ObjectFields.MetadataResource.DATE);
 			fieldsToLoad.add(VersionDocument.Fields.EFFECTIVE_TIME);
 		}
 		
@@ -193,13 +194,12 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 	protected void configureFieldsToLoad(List<String> fields) {
 	}
 
-	protected final Builder prepareBundle() {
-		return Bundle.builder(getResourceType())
-				.type(BundleType.SEARCHSET)
-				.meta(Meta.builder()
-						.addTag(CompareUtils.isEmpty(fields()) ? null : Coding.CODING_SUBSETTED)
-						.lastUpdated(Instant.builder().instant(java.time.Instant.now()).build())
-						.build());
+	protected final Bundle prepareBundle() {
+		return (Bundle) new Bundle(BundleType.SEARCHSET)
+				.setId(getResourceType()) // TODO is this a good ID here?
+				.setMeta(new Meta()
+						.addTag(CompareUtils.isEmpty(fields()) ? null : FhirCodeSystems.CODING_SUBSETTED)
+						.setLastUpdatedElement(FhirModelHelpers.toInstantElement(new Date())));
 	}
 
 	/**
@@ -252,44 +252,35 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		}
 	}
 	
-	protected final ResourceResponseEntry toFhirResourceEntry(RepositoryContext context, ResourceFragment fragment) {
-		return ResourceResponseEntry.builder().resource(toFhirResource(context, fragment)).build();
+	protected final Bundle.BundleEntryComponent toFhirResourceEntry(RepositoryContext context, ResourceFragment fragment) {
+		return new Bundle.BundleEntryComponent().setResource(toFhirResource(context, fragment));
 	}
 	
 	protected T toFhirResource(RepositoryContext context, ResourceFragment resource) {
-		B entry = createResourceBuilder()
+		T entry = (T) createResource()
 				// mandatory fields
-				.id(resource.getId())
-				.status(PublicationStatus.getByCodeValue(resource.getStatus()))
-				.meta(
-					Meta.builder()
-						// updatedAt returns version creation time (createdAt and updatedAt is the same) or latest updateAt value from the resource :gold:
-						.lastUpdated(Optional.ofNullable(resource.getUpdatedAt())
-								// fall back to createdAt if updatedAt is not present
-								.or(() -> Optional.ofNullable(resource.getCreatedAt()))
-								.map(lastUpdated -> Instant.builder().instant(lastUpdated).build())
-								// or null if none of them
-								.orElse(null)
-								)
-					.build()
-				)
-				.toolingId(resource.getToolingId()); 
+				.setStatus(toPublicationStatus(resource.getStatus()))
+				.setId(resource.getId())
+				.setMeta(toMeta(resource));
+		
+		// attach toolingId as userData
+		entry.setUserData(TerminologyResource.Fields.TOOLING_ID, resource.getToolingId());
 		
 		// optional fields
 		// we are using the ID of the resource as machine readable name
-		includeIfFieldSelected(MetadataResource.Fields.NAME, resource::getId, entry::name);
-		includeIfFieldSelected(MetadataResource.Fields.TITLE, resource::getTitle, entry::title);
-		includeIfFieldSelected(MetadataResource.Fields.URL, resource::getUrl, entry::url);
-		includeIfFieldSelected(DomainResource.Fields.TEXT, () -> Narrative.builder().div("<div xmlns=\"http://www.w3.org/1999/xhtml\"></div>").status(NarrativeStatus.EMPTY).build(), entry::text);
-		includeIfFieldSelected(MetadataResource.Fields.VERSION, resource::getVersion, entry::version);
-		includeIfFieldSelected(MetadataResource.Fields.PUBLISHER, () -> getPublisher(resource), entry::publisher);
-		includeIfFieldSelected(FhirResource.Fields.LANGUAGE, resource::getLanguage, entry::language);
-		includeIfFieldSelected(MetadataResource.Fields.DATE, () -> resource.getEffectiveTime() == null ? null : new Date(resource.getEffectiveTime()), entry::date);
+		includeIfFieldSelected(R5ObjectFields.MetadataResource.NAME, resource::getId, entry::setName);
+		includeIfFieldSelected(R5ObjectFields.MetadataResource.TITLE, resource::getTitle, entry::setTitle);
+		includeIfFieldSelected(R5ObjectFields.MetadataResource.URL, resource::getUrl, entry::setUrl);
+		includeIfFieldSelected(R5ObjectFields.DomainResource.TEXT, () -> toNarrative(resource), entry::setText);
+		includeIfFieldSelected(R5ObjectFields.MetadataResource.VERSION, resource::getVersion, entry::setVersion);
+		includeIfFieldSelected(R5ObjectFields.MetadataResource.PUBLISHER, () -> getPublisher(resource), entry::setPublisher);
+		includeIfFieldSelected(R5ObjectFields.Resource.LANGUAGE, resource::getLanguage, entry::setLanguage);
+		includeIfFieldSelected(R5ObjectFields.MetadataResource.DATE, () -> FhirModelHelpers.toDateTimeElement(resource.getEffectiveTime()), entry::setDateElement);
 		// XXX: use the resource's description in all cases
-		includeIfFieldSelected(MetadataResource.Fields.DESCRIPTION, resource::getResourceDescription, entry::description);
-		includeIfFieldSelected(MetadataResource.Fields.PURPOSE, resource::getPurpose, entry::purpose);
+		includeIfFieldSelected(R5ObjectFields.MetadataResource.DESCRIPTION, resource::getResourceDescription, entry::setDescription);
+		includeIfFieldSelected(R5ObjectFields.MetadataResource.PURPOSE, resource::getPurpose, entry::setPurpose);
 
-		if (CompareUtils.isEmpty(fields()) || fields().contains(CodeSystem.Fields.CONTACT)) {
+		if (CompareUtils.isEmpty(fields()) || fields().contains(R5ObjectFields.CodeSystem.CONTACT)) {
 			ContactDetail contact = getContact(resource);
 			if (contact != null) {
 				entry.addContact(contact);
@@ -299,11 +290,39 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 		// XXX: inclusion of the copyright field is pushed to each search request subclass as specific resource 
 		// and builder subtypes are available there.
 		//
-		// includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, resource::getCopyright, entry::copyright);
+		// includeIfFieldSelected(R5ObjectFields.CodeSystem.COPYRIGHT, resource::getCopyright, entry::copyright);
 		
 		expandResourceSpecificFields(context, entry, resource);
 		
-		return entry.build();
+		return entry;
+	}
+
+	private PublicationStatus toPublicationStatus(String status) {
+		try {
+			return PublicationStatus.fromCode(status);
+		} catch (Exception e) {
+			// ignore any errors coming from status detection and treat it as unknown status
+			return PublicationStatus.UNKNOWN;
+		}
+	}
+
+	private Meta toMeta(ResourceFragment resource) {
+		final Meta meta = new Meta();
+			// updatedAt returns version creation time (createdAt and updatedAt is the same) or latest updateAt value from the resource :gold:
+		meta.setLastUpdatedElement(Optional.ofNullable(resource.getUpdatedAt())
+			// fall back to createdAt if updatedAt is not present
+			.or(() -> Optional.ofNullable(resource.getCreatedAt()))
+			.map(FhirModelHelpers::toInstantElement)
+			// or null if none of them
+			.orElse(null)
+		);
+		return meta;
+	}
+
+	private Narrative toNarrative(ResourceFragment resource) {
+		XhtmlNode div = new XhtmlNode(NodeType.Element, "div");
+		div.setValueAsString("<div xmlns=\"http://www.w3.org/1999/xhtml\"></div>");
+		return new Narrative().setDiv(div).setStatus(NarrativeStatus.EMPTY);
 	}
 
 	private String getPublisher(ResourceFragment resource) {
@@ -312,7 +331,7 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 			return "";
 		}
 		
-		return (String) settings.getOrDefault(CodeSystem.Fields.PUBLISHER, "");
+		return (String) settings.getOrDefault(R5ObjectFields.CodeSystem.PUBLISHER, "");
 	}
 
 	private ContactDetail getContact(ResourceFragment resource) {
@@ -320,18 +339,16 @@ public abstract class FhirResourceSearchRequest<B extends MetadataResource.Build
 			return null;
 		}
 		
-		return ContactDetail.builder()
-			.addTelecom(ContactPoint.builder()
-				.system("url")
-				.value(resource.getContact())
-				.build())
-			.build();
+		return new ContactDetail()
+				.addTelecom(new ContactPoint()
+						.setSystem(ContactPointSystem.URL)
+						.setValue(resource.getContact()));
 	}
 	
-	protected void expandResourceSpecificFields(RepositoryContext context, B entry, ResourceFragment resource) {
+	protected void expandResourceSpecificFields(RepositoryContext context, T entry, ResourceFragment resource) {
 	}
 
-	protected abstract B createResourceBuilder();
+	protected abstract T createResource();
 
 	protected final <C> void includeIfFieldSelected(String field, Supplier<C> getter, Consumer<C> setter) {
 		if (CompareUtils.isEmpty(fields()) || fields().contains(field)) {

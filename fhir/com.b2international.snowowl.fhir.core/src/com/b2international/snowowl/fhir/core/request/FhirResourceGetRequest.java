@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@ package com.b2international.snowowl.fhir.core.request;
 import java.util.List;
 import java.util.Optional;
 
+import org.hl7.fhir.r5.model.Bundle;
+
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequest;
+import com.b2international.snowowl.fhir.core.Summary;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.model.Bundle;
-import com.b2international.snowowl.fhir.core.model.ResourceResponseEntry;
-import com.b2international.snowowl.fhir.core.search.Summary;
 
 /**
  * @since 8.0 
@@ -63,9 +63,9 @@ public abstract class FhirResourceGetRequest<SB extends FhirResourceSearchReques
 
 	@Override
 	protected final Optional<R> extractFirst(Bundle items) {
-		return items.first()
-				.map(ResourceResponseEntry.class::cast)
-				.map(ResourceResponseEntry::getResponseResource)
+		return items.getEntry().stream().findFirst()
+				.map(Bundle.BundleEntryComponent.class::cast)
+				.map(Bundle.BundleEntryComponent::getResource)
 				.map(resource -> (R) resource);
 	}
 	

@@ -22,12 +22,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.b2international.fhir.r5.operations.CodeSystemValidateCodeParameters;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.model.codesystem.ValidateCodeRequest;
-import com.b2international.snowowl.fhir.core.model.converter.CodeSystemConverter_50;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -134,18 +132,16 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 		
 	) {
 		
-		ValidateCodeRequest.Builder builder = ValidateCodeRequest.builder()
-			.url(url)
-			.code(code)
-			.version(version.orElse(null))
-			.display(display.orElse(null))
-			.isAbstract(isAbstract.orElse(null));
+		var parameters = new CodeSystemValidateCodeParameters()
+			.setUrl(url)
+			.setCode(code);
 		
-		if (date.isPresent()) {
-			builder.date(date.get());
-		}
-				
-		return validateCode(builder.build(), accept, _format, _pretty);
+		version.ifPresent(parameters::setVersion);
+		display.ifPresent(parameters::setDisplay);
+		isAbstract.ifPresent(parameters::setAbstract);
+		date.ifPresent(parameters::setDate);
+		
+		return validateCode(parameters, accept, _format, _pretty);
 	}
 	
 	/**
@@ -217,7 +213,7 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 			
 	) {
 		final var fhirParameters = toFhirParameters(requestBody, contentType);
-		final ValidateCodeRequest request = CodeSystemConverter_50.INSTANCE.toValidateCodeRequest(fhirParameters);
+		final var request = new CodeSystemValidateCodeParameters(fhirParameters);
 		return validateCode(request, accept, _format, _pretty);
 	}
 
@@ -312,19 +308,17 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 	
 	) {
 		
-		ValidateCodeRequest.Builder builder = ValidateCodeRequest.builder()
+		var parameters = new CodeSystemValidateCodeParameters()
 			// XXX: Inject code system ID as a URI into the request
-			.url(codeSystemId)
-			.code(code)
-			.version(version.orElse(null))
-			.display(display.orElse(null))
-			.isAbstract(isAbstract.orElse(null));
+			.setUrl(codeSystemId)
+			.setCode(code);
 		
-		if (date.isPresent()) {
-			builder.date(date.get());
-		}
+		version.ifPresent(parameters::setVersion);
+		display.ifPresent(parameters::setDisplay);
+		isAbstract.ifPresent(parameters::setAbstract);
+		date.ifPresent(parameters::setDate);
 		
-		return validateCode(builder.build(), accept, _format, _pretty);
+		return validateCode(parameters, accept, _format, _pretty);
 	}
 	
 	/**
@@ -404,44 +398,43 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 	) {
 		
 		final var fhirParameters = toFhirParameters(requestBody, contentType);
-		final ValidateCodeRequest request = CodeSystemConverter_50.INSTANCE.toValidateCodeRequest(fhirParameters);
+		final CodeSystemValidateCodeParameters parameters = new CodeSystemValidateCodeParameters(fhirParameters);
 		
 		// Validate parameters that are not allowed on the instance level
-		if (request.getUrl() != null) {
+		if (parameters.getUrl() != null) {
 			throw new BadRequestException("Parameter 'url' cannot be specified when the code system ID is set.", "ValidateCodeRequest.url");
 		}
 		
-		if (request.getCoding() != null) {
+		if (parameters.getCoding() != null) {
 			throw new BadRequestException("Parameter 'coding' cannot be specified when the code system ID is set.", "ValidateCodeRequest.coding");
 		}
 		
-		if (request.getCodeableConcept() != null) {
+		if (parameters.getCodeableConcept() != null) {
 			throw new BadRequestException("Parameter 'codeableConcept' cannot be specified when the code system ID is set.", "ValidateCodeRequest.codeableConcept");
 		}
 		
-		if (request.getCodeSystem() != null) {
+		if (parameters.getCodeSystem() != null) {
 			throw new BadRequestException("Validation against external code systems is not supported", "ValidateCodeRequest.codeSystem");
 		}
 		
 		// Before execution set the URI to match the path variable
-		request.setUrl(new Uri(codeSystemId));
+		parameters.setUrl(codeSystemId);
 		
-		return validateCode(request, accept, _format, _pretty);
+		return validateCode(parameters, accept, _format, _pretty);
 	}
 
 	private Promise<ResponseEntity<byte[]>> validateCode(
-		final ValidateCodeRequest validateCodeRequest, 
+		final CodeSystemValidateCodeParameters parameters, 
 		final String accept, 
 		final String _format, 
 		final Boolean _pretty
 	) {
 		return FhirRequests.codeSystems().prepareValidateCode()
-			.setRequest(validateCodeRequest)
+			.setParameters(parameters)
 			.buildAsync()
 			.execute(getBus())
-			.then(soValidateCodeResult -> {
-				var fhirValidateCodeResult = CodeSystemConverter_50.INSTANCE.fromValidateCodeResult(soValidateCodeResult);
-				return toResponseEntity(fhirValidateCodeResult, accept, _format, _pretty);
+			.then(result -> {
+				return toResponseEntity(result.getParameters(), accept, _format, _pretty);
 			});
 	}
 }

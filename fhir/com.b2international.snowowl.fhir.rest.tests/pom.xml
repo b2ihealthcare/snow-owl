@@ -80,20 +80,8 @@
 					</bundleStartLevel>
 				</configuration>
 				<executions>
-					<execution>
-            			<id>default-test</id>
-            			<phase>verify</phase>
-            			<goals>
-              				<goal>test</goal>
-            			</goals>
-			            <configuration>
-			            	<includes>
-								<include>**/AllFhirTests.java</include>
-							</includes>
-			            </configuration>
-          			</execution>
           			<execution>
-            			<id>api-test</id>
+            			<id>default-test</id>
             			<phase>verify</phase>
             			<goals>
               				<goal>test</goal>

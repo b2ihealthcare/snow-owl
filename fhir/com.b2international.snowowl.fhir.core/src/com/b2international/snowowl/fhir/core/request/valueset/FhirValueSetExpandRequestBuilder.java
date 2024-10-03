@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,14 @@
  */
 package com.b2international.snowowl.fhir.core.request.valueset;
 
+import org.hl7.fhir.r5.model.Parameters;
+import org.hl7.fhir.r5.model.ValueSet;
+
+import com.b2international.fhir.r5.operations.ValueSetExpandParameters;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
-import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
-import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 
 /**
  * @since 8.0
@@ -29,16 +31,20 @@ public final class FhirValueSetExpandRequestBuilder
 		extends BaseRequestBuilder<FhirValueSetExpandRequestBuilder, ServiceProvider, ValueSet>
 		implements SystemRequestBuilder<ValueSet> {
 
-	private ExpandValueSetRequest request;
+	private ValueSetExpandParameters parameters;
 
-	public FhirValueSetExpandRequestBuilder setRequest(ExpandValueSetRequest request) {
-		this.request = request;
+	public FhirValueSetExpandRequestBuilder setParameters(Parameters parameters) {
+		return setParameters(new ValueSetExpandParameters(parameters));
+	}
+	
+	public FhirValueSetExpandRequestBuilder setParameters(ValueSetExpandParameters parameters) {
+		this.parameters = parameters;
 		return getSelf();
 	}
 	
 	@Override
 	protected Request<ServiceProvider, ValueSet> doBuild() {
-		return new FhirValueSetExpandRequest(request);
+		return new FhirValueSetExpandRequest(parameters);
 	}
 
 }

@@ -21,18 +21,15 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 
+import org.hl7.fhir.r5.model.*;
+
+import com.b2international.fhir.r5.operations.CodeSystemLookupParameters;
+import com.b2international.fhir.r5.operations.CodeSystemLookupResultParameters;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Description;
-import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
-import com.b2international.snowowl.fhir.core.model.Designation;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.codesystem.Property;
-import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.request.codesystem.FhirCodeSystemLookupConverter;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -50,87 +47,101 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 public final class SnomedFhirCodeSystemLookupConverter implements FhirCodeSystemLookupConverter {
 
 	@Override
-	public String configureConceptExpand(LookupRequest request) {
-		boolean requestedChild = request.containsProperty(CommonConceptProperties.CHILD.getCode());
-		boolean requestedParent = request.containsProperty(CommonConceptProperties.PARENT.getCode());
+	public String configureConceptExpand(CodeSystemLookupParameters request) {
+		boolean requestedChild = request.isPropertyRequested(CodeSystemLookupParameters.PROPERTY_CHILD);
+		boolean requestedParent = request.isPropertyRequested(CodeSystemLookupParameters.PROPERTY_PARENT);
 		String expandDescendants = requestedChild ? ",descendants(direct:true,expand(pt()))" : "";
 		String expandAncestors = requestedParent ? ",ancestors(direct:true,expand(pt()))" : "";
 		return String.format("descriptions(expand(type(expand(pt()))),sort:\"typeId,term\"),pt()%s%s", expandDescendants, expandAncestors);
 	}
 	
 	@Override
-	public List<Designation> expandDesignations(ServiceProvider context, CodeSystem codeSystem, Concept concept, LookupRequest request, String acceptLanguage) {
+	public List<CodeSystemLookupResultParameters.Designation> expandDesignations(ServiceProvider context, CodeSystem codeSystem, Concept concept, CodeSystemLookupParameters parameters, String acceptLanguage) {
 		SnomedConcept snomedConcept = concept.getInternalConceptAs();
-		if (request.isPropertyRequested(SupportedCodeSystemRequestProperties.DESIGNATION)) {
+		if (parameters.isPropertyRequested(CodeSystemLookupParameters.PROPERTY_DESIGNATION)) {
 			final SortedSet<Description> alternativeTerms = SnomedConceptSearchRequestEvaluator.generateGenericDescriptions(snomedConcept.getDescriptions());
 			// convert to Designation model
-			final List<Designation> designations = new ArrayList<>(alternativeTerms.size());
+			final List<CodeSystemLookupResultParameters.Designation> designations = new ArrayList<>(alternativeTerms.size());
 			for (Description description : alternativeTerms) {
 				SnomedDescription snomedDescription = description.getInternalDescription();
 				// use context describes type of description
-				Coding use = Coding.builder()
-					.system(codeSystem.getUrl().getUriValue())
-					.code(snomedDescription.getTypeId())
-					.display(SnomedDisplayTermType.PT.getLabel(snomedDescription.getType()))
-					.build();
+				Coding use = new Coding()
+					.setSystem(codeSystem.getUrl())
+					.setCode(snomedDescription.getTypeId())
+					.setDisplay(SnomedDisplayTermType.PT.getLabel(snomedDescription.getType()));
 				
 				designations.add(
-					Designation.builder()
+					new CodeSystemLookupResultParameters.Designation()
 						// term and language code comes from the generated alternative term generic model
-						.value(description.getTerm())
-						.language(description.getLanguage())
-						.use(use)
-					.build()
+						.setValue(description.getTerm())
+						.setLanguage(description.getLanguage())
+						.setUse(use)
 				);
 			}
 			return designations;
 		} else {
-			return FhirCodeSystemLookupConverter.super.expandDesignations(context, codeSystem, concept, request, acceptLanguage);
+			return FhirCodeSystemLookupConverter.super.expandDesignations(context, codeSystem, concept, parameters, acceptLanguage);
 		}
 	}
 	
 	@Override
-	public List<Property> expandProperties(ServiceProvider context, CodeSystem codeSystem, Concept concept, LookupRequest lookupRequest) {
+	public List<CodeSystemLookupResultParameters.Property> expandProperties(ServiceProvider context, CodeSystem codeSystem, Concept concept, CodeSystemLookupParameters parameters) {
 		SnomedConcept snomedConcept = concept.getInternalConceptAs();
 		
-		List<Property> properties = new ArrayList<>();
+		List<CodeSystemLookupResultParameters.Property> properties = new ArrayList<>();
 		
 		// add basic SNOMED properties
-		if (lookupRequest.isPropertyRequested(CoreSnomedConceptProperties.INACTIVE)) {
-			properties.add(CoreSnomedConceptProperties.INACTIVE.propertyOf(!snomedConcept.isActive()));
+		if (parameters.isPropertyRequested(SnomedFhirConstants.SNOMED_PROPERTY_INACTIVE.getCode())) {
+			properties.add(new CodeSystemLookupResultParameters.Property()
+					.setCode(SnomedFhirConstants.SNOMED_PROPERTY_INACTIVE.getCode())
+					.setValue(new BooleanType(!snomedConcept.isActive())));
 		}
 		
-		if (lookupRequest.isPropertyRequested(CoreSnomedConceptProperties.MODULE_ID)) {
-			properties.add(CoreSnomedConceptProperties.MODULE_ID.propertyOf(snomedConcept.getModuleId()));
+		if (parameters.isPropertyRequested(SnomedFhirConstants.SNOMED_PROPERTY_MODULE_ID.getCode())) {
+			properties.add(new CodeSystemLookupResultParameters.Property()
+					.setCode(SnomedFhirConstants.SNOMED_PROPERTY_MODULE_ID.getCode())
+					.setValue(new CodeType(snomedConcept.getModuleId())));
 		}
 		
-		if (lookupRequest.isPropertyRequested(CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED)) {
-			properties.add(CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED.propertyOf(!snomedConcept.isPrimitive()));
+		if (parameters.isPropertyRequested(SnomedFhirConstants.SNOMED_PROPERTY_SUFFICIENTLY_DEFINED.getCode())) {
+			properties.add(new CodeSystemLookupResultParameters.Property()
+					.setCode(SnomedFhirConstants.SNOMED_PROPERTY_SUFFICIENTLY_DEFINED.getCode())
+					.setValue(new BooleanType(!snomedConcept.isPrimitive())));
 		}
 		
-		if (lookupRequest.isPropertyRequested(CoreSnomedConceptProperties.EFFECTIVE_TIME)) {
-			properties.add(CoreSnomedConceptProperties.EFFECTIVE_TIME.propertyOf(EffectiveTimes.format(snomedConcept.getEffectiveTime(), DateFormats.SHORT)));
+		if (parameters.isPropertyRequested(SnomedFhirConstants.SNOMED_PROPERTY_EFFECTIVE_TIME.getCode())) {
+			properties.add(new CodeSystemLookupResultParameters.Property()
+					.setCode(SnomedFhirConstants.SNOMED_PROPERTY_EFFECTIVE_TIME.getCode())
+					.setValue(new DateType(EffectiveTimes.format(snomedConcept.getEffectiveTime(), DateFormats.SHORT))));
 		}
 		
 		// Optionally requested properties
-		boolean requestedChild = lookupRequest.containsProperty(CommonConceptProperties.CHILD.getCode());
-		boolean requestedParent = lookupRequest.containsProperty(CommonConceptProperties.PARENT.getCode());
+		boolean requestedChild = parameters.isPropertyRequested(CodeSystemLookupParameters.PROPERTY_CHILD);
+		boolean requestedParent = parameters.isPropertyRequested(CodeSystemLookupParameters.PROPERTY_PARENT);
 		
 			
 		if (requestedChild && snomedConcept.getDescendants() != null) {
 			for (SnomedConcept child : snomedConcept.getDescendants()) {
-				properties.add(CommonConceptProperties.CHILD.propertyOf(child.getId(), SnomedDisplayTermType.PT.getLabel(child)));
+				properties.add(new CodeSystemLookupResultParameters.Property()
+						.setCode(CodeSystemLookupParameters.PROPERTY_CHILD)
+						.setValue(new CodeType(child.getId()))
+						.setDescription(SnomedDisplayTermType.PT.getLabel(child))
+				);
 			}
 		}
 		
 		if (requestedParent && snomedConcept.getAncestors() != null) {
 			for (SnomedConcept parent : snomedConcept.getAncestors()) {
-				properties.add(CommonConceptProperties.PARENT.propertyOf(parent.getId(), SnomedDisplayTermType.PT.getLabel(parent)));
+				properties.add(new CodeSystemLookupResultParameters.Property()
+						.setCode(CodeSystemLookupParameters.PROPERTY_PARENT)
+						.setValue(new CodeType(parent.getId()))
+						.setDescription(SnomedDisplayTermType.PT.getLabel(parent))
+				);
 			}
 		}
 		
 		// Relationship Properties
-		Set<String> relationshipTypeIds = lookupRequest.getPropertyCodes().stream()
+		Set<String> relationshipTypeIds = parameters.getPropertyValues().stream()
 			.map(p -> {
 				if (p.startsWith(SnomedTerminologyComponentConstants.SNOMED_URI_BASE)) {
 					return p.substring(p.lastIndexOf('/') + 1, p.length()); // URI prefixed properties
@@ -148,24 +159,26 @@ public final class SnomedFhirCodeSystemLookupConverter implements FhirCodeSystem
 				.filterByCharacteristicType(Concepts.INFERRED_RELATIONSHIP)
 				.filterBySource(concept.getId())
 				.filterByTypes(relationshipTypeIds)
-				.build(codeSystem.getResourceURI())
+				.build(codeSystem.getUrl())
 				.getRequest()
 				.execute(context)
 				.forEach(r -> {
-					Property.Builder propertyBuilder = Property.builder()
-						.code(r.getTypeId());
+					CodeSystemLookupResultParameters.Property property = new CodeSystemLookupResultParameters.Property()
+						.setCode(r.getTypeId());
 					
 					if (r.hasValue()) {
 						RelationshipValue value = r.getValueAsObject();
 						value.map(
-							i -> propertyBuilder.valueInteger(i),
-							d -> propertyBuilder.valueDecimal(d.doubleValue()),
-							s -> propertyBuilder.valueString(s));
+							i -> property.setValue(new IntegerType(i)),
+							d -> property.setValue(new DecimalType(d.doubleValue())),
+							s -> property.setValue(new StringType(s)));
 					} else {
-						propertyBuilder.valueCode(r.getDestinationId());
+						property.setValue(new CodeType(r.getDestinationId()));
+						// TODO set description to destination concept PT?
 					}
 					
-					properties.add(propertyBuilder.build());
+					
+					properties.add(property);
 				});
 		}
 		

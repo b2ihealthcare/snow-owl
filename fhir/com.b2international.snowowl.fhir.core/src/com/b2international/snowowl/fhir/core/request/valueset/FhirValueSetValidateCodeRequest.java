@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,35 +15,37 @@
  */
 package com.b2international.snowowl.fhir.core.request.valueset;
 
+import org.hl7.fhir.r5.model.ValueSet;
+
+import com.b2international.fhir.r5.operations.ValueSetValidateCodeParameters;
+import com.b2international.fhir.r5.operations.ValueSetValidateCodeResultParameters;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
-import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
-import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 /**
  * @since 8.0
  */
-final class FhirValueSetValidateCodeRequest implements Request<ServiceProvider, ValidateCodeResult> {
+final class FhirValueSetValidateCodeRequest implements Request<ServiceProvider, ValueSetValidateCodeResultParameters> {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 	
-	private final ValidateCodeRequest request;
-
-	public FhirValueSetValidateCodeRequest(ValidateCodeRequest request) {
-		this.request = request;
+	private final ValueSetValidateCodeParameters parameters;
+	
+	public FhirValueSetValidateCodeRequest(ValueSetValidateCodeParameters parameters) {
+		this.parameters = parameters;
 	}
 	
 	@Override
-	public ValidateCodeResult execute(ServiceProvider context) {
-		final ValueSet valueSet = FhirRequests.valueSets().prepareGet(request.getUrl().getUriValue()).buildAsync().execute(context);
+	public ValueSetValidateCodeResultParameters execute(ServiceProvider context) {
+		final ValueSet valueSet = FhirRequests.valueSets().prepareGet(parameters.getUrl().asStringValue()).buildAsync().execute(context);
 		return context.service(RepositoryManager.class)
-				.get(valueSet.getToolingId())
+				.get(valueSet.getUserString(TerminologyResource.Fields.TOOLING_ID))
 				.optionalService(FhirValueSetCodeValidator.class)
 				.orElse(FhirValueSetCodeValidator.NOOP)
-				.validateCode(context, valueSet, request);
+				.validateCode(context, valueSet, parameters);
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,10 @@
  */
 package com.b2international.snowowl.fhir.core.request.valueset;
 
+import org.hl7.fhir.r5.model.ValueSet;
+
+import com.b2international.fhir.r5.operations.ValueSetExpandParameters;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
-import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 
 /**
  * @since 8.0
@@ -28,12 +29,18 @@ public interface FhirValueSetExpander {
 	FhirValueSetExpander NOOP = (context, valueSet, request) -> valueSet;
 	
 	/**
+	 * An URL to use to access/set the after value from an expanded ValueSet resource response. 
+	 */
+	String EXTENSION_AFTER_PROPERTY_URL = "https://b2ihealthcare.com/fhir/StructureDefinition/valueset-expand-after";
+	
+	/**
 	 * Expands a FHIR {@link ValueSet}'s compose definition into a list of member codes and terms (aka concepts) and returns the expanded {@link ValueSet}.
+	 * 
 	 * @param context
 	 * @param valueSet
-	 * @param request
+	 * @param parameters
 	 * @return the expanded {@link ValueSet}, never <code>null</code>.
 	 */
-	ValueSet expand(ServiceProvider context, ValueSet valueSet, ExpandValueSetRequest request);
+	ValueSet expand(ServiceProvider context, ValueSet valueSet, ValueSetExpandParameters parameters);
 	
 }

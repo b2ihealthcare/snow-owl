@@ -53,7 +53,7 @@ public abstract class Resource implements Serializable {
 	/**
 	 * @since 8.0
 	 */
-	public static final class Fields {
+	public static class Fields {
 		public static final String ID = ResourceDocument.Fields.ID;
 		public static final String TITLE = ResourceDocument.Fields.TITLE;
 		public static final String URL = ResourceDocument.Fields.URL;

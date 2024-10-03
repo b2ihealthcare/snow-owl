@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import org.hl7.fhir.r5.model.CodeSystem;
+
 import com.b2international.snowowl.fhir.core.request.FhirResourceGetRequest;
 
 /**

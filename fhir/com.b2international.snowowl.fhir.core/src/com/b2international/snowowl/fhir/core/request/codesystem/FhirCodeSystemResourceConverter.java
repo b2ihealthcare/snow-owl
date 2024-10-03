@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,16 @@ import java.util.List;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.r4.model.codesystems.ConceptProperties;
+import org.hl7.fhir.r5.model.CodeSystem;
+import org.hl7.fhir.r5.model.CodeSystem.PropertyType;
+
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.fhir.r5.operations.CodeSystemLookupParameters;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
-import com.b2international.snowowl.fhir.core.model.codesystem.Filter;
-import com.b2international.snowowl.fhir.core.model.codesystem.IConceptProperty;
-import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
 
 /**
  * @since 8.0
@@ -58,7 +60,7 @@ public interface FhirCodeSystemResourceConverter {
 	 * @param resourceURI 
 	 * @param locales 
 	 */
-	default List<Concept> expandConcepts(ServiceProvider context, ResourceURI resourceURI, List<ExtendedLocale> locales) {
+	default List<CodeSystem.ConceptDefinitionComponent> expandConcepts(ServiceProvider context, ResourceURI resourceURI, List<ExtendedLocale> locales) {
 		return List.of();
 	}
 	
@@ -69,7 +71,7 @@ public interface FhirCodeSystemResourceConverter {
 	 * @param resourceURI 
 	 * @param locales 
 	 */
-	default List<Filter> expandFilters(ServiceProvider context, ResourceURI resourceURI, List<ExtendedLocale> locales) {
+	default List<CodeSystem.CodeSystemFilterComponent> expandFilters(ServiceProvider context, ResourceURI resourceURI, List<ExtendedLocale> locales) {
 		return List.of();
 	}
 	
@@ -83,8 +85,25 @@ public interface FhirCodeSystemResourceConverter {
 	 * @param locales
 	 */
 	@OverridingMethodsMustInvokeSuper
-	default List<IConceptProperty> expandProperties(ServiceProvider context, ResourceURI resourceURI, List<ExtendedLocale> locales) {
-		return List.of(SupportedCodeSystemRequestProperties.values());
+	default List<CodeSystem.PropertyComponent> expandProperties(ServiceProvider context, ResourceURI resourceURI, List<ExtendedLocale> locales) {
+		return CodeSystemLookupParameters.OFFICIAL_R5_PROPERTY_VALUES.stream().map(propertyValue -> {
+			try {
+				PropertyType propertyType = PropertyType.STRING;
+				var conceptProperty = ConceptProperties.fromCode(propertyValue);
+				if (ConceptProperties.PARENT == conceptProperty || ConceptProperties.CHILD == conceptProperty) {
+					propertyType = PropertyType.CODE;
+				}
+				return new CodeSystem.PropertyComponent()
+						.setCode(conceptProperty.toCode())
+						.setUri(String.join("/", conceptProperty.getSystem(), conceptProperty.toCode()))
+						.setDescription(conceptProperty.getDefinition())
+						.setType(propertyType);
+			} catch (FHIRException e) {
+				// ignore
+				return new CodeSystem.PropertyComponent(propertyValue, PropertyType.STRING);
+			}
+			
+		}).toList();
 	}
 	
 }

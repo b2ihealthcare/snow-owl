@@ -16,14 +16,14 @@
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.hl7.fhir.r5.model.CodeSystem;
+
+import com.b2international.fhir.r5.operations.CodeSystemLookupParameters;
+import com.b2international.fhir.r5.operations.CodeSystemLookupResultParameters;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.Concept;
-import com.b2international.snowowl.fhir.core.model.Designation;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.codesystem.Property;
-import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
 
 /**
  * @since 8.0
@@ -38,10 +38,10 @@ public interface FhirCodeSystemLookupConverter {
 	 * it can be done by requested expansion of additional data via Snow Owl's Expand API. This method by default does not request load of any
 	 * additional data.
 	 * 
-	 * @param request
+	 * @param parameters
 	 * @return
 	 */
-	default String configureConceptExpand(LookupRequest request) {
+	default String configureConceptExpand(CodeSystemLookupParameters parameters) {
 		return null;
 	}
 
@@ -52,13 +52,16 @@ public interface FhirCodeSystemLookupConverter {
 	 * @param context
 	 * @param codeSystem
 	 * @param concept
-	 * @param request
+	 * @param parameters
 	 * @param acceptLanguage
 	 * @return
 	 */
-	default List<Designation> expandDesignations(ServiceProvider context, CodeSystem codeSystem, Concept concept, LookupRequest request, String acceptLanguage) {
-		if (request.isPropertyRequested(SupportedCodeSystemRequestProperties.DESIGNATION)) {
-			return Designation.fromDescriptions(concept.getDescriptions());
+	default List<CodeSystemLookupResultParameters.Designation> expandDesignations(ServiceProvider context, CodeSystem codeSystem, Concept concept, CodeSystemLookupParameters parameters, String acceptLanguage) {
+		if (parameters.isPropertyRequested("designation")) {
+			return concept.getDescriptions()
+				.stream()
+				.map(description -> new CodeSystemLookupResultParameters.Designation().setValue(description.getTerm()).setLanguage(description.getLanguage()))
+				.collect(Collectors.toList());
 		} else {
 			return null;
 		}
@@ -71,10 +74,10 @@ public interface FhirCodeSystemLookupConverter {
 	 * @param context
 	 * @param codeSystem
 	 * @param concept
-	 * @param request
+	 * @param parameters
 	 * @return
 	 */
-	default List<Property> expandProperties(ServiceProvider context, CodeSystem codeSystem, Concept concept, LookupRequest request) {
+	default List<CodeSystemLookupResultParameters.Property> expandProperties(ServiceProvider context, CodeSystem codeSystem, Concept concept, CodeSystemLookupParameters parameters) {
 		return null;
 	}
 

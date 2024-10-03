@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
  */
 package com.b2international.snowowl.fhir.core.request.conceptmap;
 
+import org.hl7.fhir.r5.model.ConceptMap;
+
+import com.b2international.fhir.r5.operations.ConceptMapTranslateParameters;
+import com.b2international.fhir.r5.operations.ConceptMapTranslateResultParameters;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
-import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateRequest;
-import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateResult;
 
 /**
  * @since 8.0
@@ -26,14 +27,14 @@ import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateResult;
 @FunctionalInterface
 public interface FhirConceptMapTranslator {
 
-	FhirConceptMapTranslator NOOP = (context, conceptMap, request) -> TranslateResult.builder().message("N/A").build(); 
+	FhirConceptMapTranslator NOOP = (context, conceptMap, request) -> new ConceptMapTranslateResultParameters().setResult(false).setMessage("N/A"); 
 	
 	/**
 	 * @param context
 	 * @param conceptMap
-	 * @param request
+	 * @param parameters
 	 * @return
 	 */
-	TranslateResult translate(ServiceProvider context, ConceptMap conceptMap, TranslateRequest request);
+	ConceptMapTranslateResultParameters translate(ServiceProvider context, ConceptMap conceptMap, ConceptMapTranslateParameters parameters);
 	
 }

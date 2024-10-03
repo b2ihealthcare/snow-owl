@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,10 @@
  */
 package com.b2international.snowowl.fhir.core.request.valueset;
 
+import org.hl7.fhir.r5.model.ValueSet;
+
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.fhir.core.model.valueset.Compose;
 
 /**
  * @since 8.0
@@ -26,7 +27,7 @@ public interface FhirValueSetResourceConverter {
 
 	FhirValueSetResourceConverter DEFAULT = new FhirValueSetResourceConverter() {};
 	
-	default Compose expandCompose(ServiceProvider context, ResourceURI resourceUri) {
+	default ValueSet.ValueSetComposeComponent expandCompose(ServiceProvider context, ResourceURI resourceUri) {
 		return null;
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
  */
 package com.b2international.snowowl.fhir.core.request.valueset;
 
+import org.hl7.fhir.r5.model.ValueSet;
+
+import com.b2international.fhir.r5.operations.ValueSetValidateCodeParameters;
+import com.b2international.fhir.r5.operations.ValueSetValidateCodeResultParameters;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
-import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
-import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 
 /**
  * @since 8.0
@@ -26,15 +27,16 @@ import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 @FunctionalInterface
 public interface FhirValueSetCodeValidator {
 
-	FhirValueSetCodeValidator NOOP = (context, valueSet, request) -> ValidateCodeResult.builder().message("N/A").build();
+	FhirValueSetCodeValidator NOOP = (context, valueSet, request) -> new ValueSetValidateCodeResultParameters().setMessage("N/A");
 	
 	/**
-	 * Validates whether the given Value Set conforms to the given {@link ValidateCodeRequest} or not.
+	 * Validates whether the code described in the given {@link ValueSetValidateCodeParameters} conforms to the {@link ValueSet} or not.
+	 * 
 	 * @param context
 	 * @param valueSet
-	 * @param request
+	 * @param parameters
 	 * @return the code validation result, never <code>null</code>.
 	 */
-	ValidateCodeResult validateCode(ServiceProvider context, ValueSet valueSet, ValidateCodeRequest request);
+	ValueSetValidateCodeResultParameters validateCode(ServiceProvider context, ValueSet valueSet, ValueSetValidateCodeParameters request);
 	
 }

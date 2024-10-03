@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,17 @@ package com.b2international.snowowl.fhir.core.request.valueset;
 
 import java.util.List;
 
+import org.hl7.fhir.r5.model.ValueSet;
+
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
-import com.b2international.snowowl.fhir.core.model.valueset.ValueSet.Builder;
+import com.b2international.snowowl.fhir.core.R5ObjectFields;
 import com.b2international.snowowl.fhir.core.request.FhirResourceSearchRequest;
 
 /**
  * @since 8.0
  */
-final class FhirValueSetSearchRequest extends FhirResourceSearchRequest<ValueSet.Builder, ValueSet> {
+final class FhirValueSetSearchRequest extends FhirResourceSearchRequest<ValueSet> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -37,28 +37,28 @@ final class FhirValueSetSearchRequest extends FhirResourceSearchRequest<ValueSet
 	}
 
 	@Override
-	protected ValueSet.Builder createResourceBuilder() {
-		return ValueSet.builder();
+	protected ValueSet createResource() {
+		return new ValueSet();
 	}
 	
 	@Override
 	protected void configureFieldsToLoad(List<String> fields) {
 		// make sure we are not trying to load unindexed fields when requested
-		fields.remove(ValueSet.Fields.COMPOSE);
-		fields.remove(ValueSet.Fields.EXPANSION);
-		fields.remove(ValueSet.Fields.IMMUTABLE);
+		fields.remove(R5ObjectFields.ValueSet.COMPOSE);
+		fields.remove(R5ObjectFields.ValueSet.EXPANSION);
+		fields.remove(R5ObjectFields.ValueSet.IMMUTABLE);
 	}
 	
 	@Override
-	protected void expandResourceSpecificFields(RepositoryContext context, Builder entry, ResourceFragment resource) {
-		includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, resource::getCopyright, entry::copyright);
+	protected void expandResourceSpecificFields(RepositoryContext context, ValueSet entry, ResourceFragment resource) {
+		includeIfFieldSelected(R5ObjectFields.CodeSystem.COPYRIGHT, resource::getCopyright, entry::setCopyright);
 		
 		FhirValueSetResourceConverter converter = context.service(RepositoryManager.class)
 				.get(resource.getToolingId())
 				.optionalService(FhirValueSetResourceConverter.class)
 				.orElse(FhirValueSetResourceConverter.DEFAULT);
 		
-		includeIfFieldSelected(ValueSet.Fields.COMPOSE, () -> converter.expandCompose(context, resource.getResourceURI()), entry::compose);
+		includeIfFieldSelected(R5ObjectFields.ValueSet.COMPOSE, () -> converter.expandCompose(context, resource.getResourceURI()), entry::setCompose);
 	}
 	
 }

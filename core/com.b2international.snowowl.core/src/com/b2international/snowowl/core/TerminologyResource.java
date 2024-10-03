@@ -94,6 +94,13 @@ public abstract class TerminologyResource extends Resource {
 
 	}
 	
+	public static abstract class Fields extends Resource.Fields {
+		
+		public static final String TOOLING_ID = "toolingId";
+		public static final String RESOURCE_URI = "resourceURI";
+		
+	}
+	
 	/**
 	 * @since 9.0
 	 */

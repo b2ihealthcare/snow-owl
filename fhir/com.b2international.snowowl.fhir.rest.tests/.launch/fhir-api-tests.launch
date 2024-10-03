@@ -62,6 +62,7 @@
         <setEntry value="com.google.guava@default:default"/>
         <setEntry value="com.google.inject@default:default"/>
         <setEntry value="com.ibm.icu@default:default"/>
+        <setEntry value="com.international.fhir.core@default:default"/>
         <setEntry value="com.sun.el.javax.el@default:default"/>
         <setEntry value="de.svenkubiak.jBCrypt@default:default"/>
         <setEntry value="dev.failsafe@default:default"/>
