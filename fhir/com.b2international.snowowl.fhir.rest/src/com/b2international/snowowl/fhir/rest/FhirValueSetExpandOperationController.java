@@ -30,6 +30,7 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
+import com.b2international.snowowl.fhir.core.request.valueset.FhirValueSetExpander;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -394,7 +395,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 				final ValueSet.ValueSetExpansionComponent expansion = valueSet.getExpansion();
 				
 				// update next variable with new after value
-				final String searchAfter = (String) expansion.getUserData("after");
+				final String searchAfter = (String) expansion.getExtensionString(FhirValueSetExpander.EXTENSION_AFTER_PROPERTY_URL);
 				final String next = nextUriBuilder.replaceQueryParam("after", searchAfter)
 						.build()
 						.toString();

@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import org.elasticsearch.common.Strings;
 import org.hl7.fhir.r5.model.Bundle;
 import org.hl7.fhir.r5.model.CodeSystem;
+import org.hl7.fhir.r5.model.StringType;
 import org.hl7.fhir.r5.model.Enumerations.FilterOperator;
 import org.hl7.fhir.r5.model.Enumerations.PublicationStatus;
 import org.hl7.fhir.r5.model.ValueSet;
@@ -247,7 +248,7 @@ final class FhirValueSetExpandRequest implements Request<ServiceProvider, ValueS
 		
 		expansion
 			.setTotal(concepts.getTotal())
-			.setUserData("after", concepts.getSearchAfter());
+			.addExtension(FhirValueSetExpander.EXTENSION_AFTER_PROPERTY_URL, new StringType(concepts.getSearchAfter()));
 		
 		for (Concept concept : concepts) {
 			var contains = new ValueSet.ValueSetExpansionContainsComponent()

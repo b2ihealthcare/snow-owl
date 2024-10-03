@@ -29,6 +29,11 @@ public interface FhirValueSetExpander {
 	FhirValueSetExpander NOOP = (context, valueSet, request) -> valueSet;
 	
 	/**
+	 * An URL to use to access/set the after value from an expanded ValueSet resource response. 
+	 */
+	String EXTENSION_AFTER_PROPERTY_URL = "https://b2ihealthcare.com/fhir/StructureDefinition/valueset-expand-after";
+	
+	/**
 	 * Expands a FHIR {@link ValueSet}'s compose definition into a list of member codes and terms (aka concepts) and returns the expanded {@link ValueSet}.
 	 * 
 	 * @param context
