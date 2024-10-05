@@ -32,6 +32,8 @@
 	<logger level="ERROR" additivity="false" name="org.semanticweb.elk.reasoner.indexing.hierarchy.IndexObjectConverter" />
 	<!-- Suppresses "ELK does not support <axiom type>. Axiom ignored" warnings -->
 	<logger level="ERROR" additivity="false" name="org.semanticweb.elk.reasoner.indexing.hierarchy.ChangeIndexingProcessor" />
+	<!-- Suppresses errors thrown during "Jetty Shutdown" -->
+	<logger level="OFF" additivity="false" name="org.eclipse.jetty.osgi.AbstractContextProvider" />
 
 	<root level="INFO">
 		<appender-ref ref="LOG_FILE" />
