@@ -97,7 +97,7 @@
 									</excludes>
 								</fileset>
 								<fileset>
-									<directory>snow-owl-api-docs/build</directory>
+									<directory>snow-owl-api-docs/dist</directory>
 								</fileset>
 							</filesets>
 						</configuration>
@@ -205,7 +205,7 @@
 							<resources>
 								<resource>
 									<directory>
-										${basedir}/snow-owl-api-docs/build</directory>
+										${basedir}/snow-owl-api-docs/dist</directory>
 								</resource>
 							</resources>
 						</configuration>
