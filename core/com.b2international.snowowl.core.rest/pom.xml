@@ -12,8 +12,8 @@
 	<packaging>eclipse-plugin</packaging>
 
 	<properties>
-		<spring.version>6.1.12</spring.version>
-		<spring.security.version>6.2.5</spring.security.version>
+		<spring.version>6.1.13</spring.version>
+		<spring.security.version>6.3.3</spring.security.version>
 		<springdoc.version>2.6.0</springdoc.version>
 		<!-- Make sure this version matches the one present in the target-platform for swagger-annotations and models -->
 		<swagger.core.version>2.2.22</swagger.core.version>
