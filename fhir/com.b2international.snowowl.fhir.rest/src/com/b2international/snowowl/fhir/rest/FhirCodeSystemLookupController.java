@@ -72,12 +72,12 @@ public class FhirCodeSystemLookupController extends AbstractFhirController {
 	@ApiResponse(responseCode = "400", description = "Bad request")
 	@ApiResponse(responseCode = "404", description = "Code system not found")
 	@GetMapping(value = "/$lookup", produces = {
-		APPLICATION_FHIR_JSON_VALUE,
-		APPLICATION_FHIR_XML_VALUE,
-		TEXT_JSON_VALUE,
-		TEXT_XML_VALUE,
-		APPLICATION_JSON_VALUE,
-		APPLICATION_XML_VALUE
+		FhirMediaType.APPLICATION_FHIR_JSON_VALUE,
+		FhirMediaType.APPLICATION_FHIR_XML_VALUE,
+		FhirMediaType.TEXT_JSON_VALUE,
+		FhirMediaType.TEXT_XML_VALUE,
+		FhirMediaType.APPLICATION_JSON_VALUE,
+		FhirMediaType.APPLICATION_XML_VALUE
 	})
 	public Promise<ResponseEntity<byte[]>> lookup(
 		
@@ -110,12 +110,12 @@ public class FhirCodeSystemLookupController extends AbstractFhirController {
 		final String accept,
 
 		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
-			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
-			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			FhirMediaType.APPLICATION_FHIR_JSON_VALUE,
+			FhirMediaType.APPLICATION_FHIR_XML_VALUE,
+			FhirMediaType.TEXT_JSON_VALUE,
+			FhirMediaType.TEXT_XML_VALUE,
+			FhirMediaType.APPLICATION_JSON_VALUE,
+			FhirMediaType.APPLICATION_XML_VALUE
 		})))
 		@RequestParam(value = "_format", required = false)
 		final String _format,
@@ -166,27 +166,27 @@ public class FhirCodeSystemLookupController extends AbstractFhirController {
 	@PostMapping(
 		value = "/$lookup", 
 		consumes = {
-			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
-			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			FhirMediaType.APPLICATION_FHIR_JSON_VALUE,
+			FhirMediaType.APPLICATION_FHIR_XML_VALUE,
+			FhirMediaType.TEXT_JSON_VALUE,
+			FhirMediaType.TEXT_XML_VALUE,
+			FhirMediaType.APPLICATION_JSON_VALUE,
+			FhirMediaType.APPLICATION_XML_VALUE
 		},
 		produces = {
-			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
-			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			FhirMediaType.APPLICATION_FHIR_JSON_VALUE,
+			FhirMediaType.APPLICATION_FHIR_XML_VALUE,
+			FhirMediaType.TEXT_JSON_VALUE,
+			FhirMediaType.TEXT_XML_VALUE,
+			FhirMediaType.APPLICATION_JSON_VALUE,
+			FhirMediaType.APPLICATION_XML_VALUE
 		}
 	)
 	public Promise<ResponseEntity<byte[]>> lookup(
 			
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The operation's input parameters", content = { 
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
+			@Content(mediaType = FhirMediaType.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = FhirMediaType.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
 		})
 		final InputStream requestBody,
 		
@@ -199,12 +199,12 @@ public class FhirCodeSystemLookupController extends AbstractFhirController {
 		final String accept,
 
 		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
-			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
-			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			FhirMediaType.APPLICATION_FHIR_JSON_VALUE,
+			FhirMediaType.APPLICATION_FHIR_XML_VALUE,
+			FhirMediaType.TEXT_JSON_VALUE,
+			FhirMediaType.TEXT_XML_VALUE,
+			FhirMediaType.APPLICATION_JSON_VALUE,
+			FhirMediaType.APPLICATION_XML_VALUE
 		})))
 		@RequestParam(value = "_format", required = false)
 		final String _format,
