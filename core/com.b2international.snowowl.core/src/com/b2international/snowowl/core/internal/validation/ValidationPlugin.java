@@ -31,6 +31,7 @@ import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
+import com.b2international.snowowl.core.branch.ValidationCleanupService;
 import com.b2international.snowowl.core.config.IndexSettings;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
@@ -112,6 +113,7 @@ public final class ValidationPlugin extends Plugin {
 			env.services().registerService(ValidationConfiguration.class, validationConfig);
 			env.services().registerService(ValidationThreadPool.class, new ValidationThreadPool(workerPoolSize, maxConcurrentExpensiveJobs, maxConcurrentNormalJobs));
 			env.services().registerService(ValidationIssueDetailExtensionProvider.class, new ValidationIssueDetailExtensionProvider(env.service(ClassPathScanner.class)));
+			env.services().registerService(ValidationCleanupService.class, new ValidationCleanupService());
 			
 			final List<File> listOfFiles = validationDirectories.stream().flatMap(path -> Arrays.asList(path.toFile().listFiles()).stream()).toList();
 			final Set<File> validationRuleFiles = Sets.newHashSet();
