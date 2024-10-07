@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
+import static com.b2international.snowowl.fhir.rest.FhirMediaType.*;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_PROFILE;
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_X_INTERACTION;

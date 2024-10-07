@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.rest;
 
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.*;
+import static com.b2international.snowowl.fhir.rest.FhirMediaType.*;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -106,8 +107,8 @@ public class FhirConceptMapController extends AbstractFhirController {
 	public ResponseEntity<Void> create(
 			
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The concept map resource", content = { 
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
+			@Content(mediaType = APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
 		})
 		final InputStream requestBody,
 		
@@ -198,8 +199,8 @@ public class FhirConceptMapController extends AbstractFhirController {
 		final String id,
 		
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The concept map resource", content = { 
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
+			@Content(mediaType = APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
 		})
 		final InputStream requestBody,
 

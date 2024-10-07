@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
+import static com.b2international.snowowl.fhir.rest.FhirMediaType.*;
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.*;
 
 import java.io.InputStream;
@@ -106,8 +107,8 @@ public class FhirValueSetController extends AbstractFhirController {
 	public ResponseEntity<Void> create(
 			
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The value set resource", content = { 
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
+			@Content(mediaType = APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
 		})
 		final InputStream requestBody,
 		
@@ -198,8 +199,8 @@ public class FhirValueSetController extends AbstractFhirController {
 		final String id,
 		
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The value set resource", content = { 
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
+			@Content(mediaType = APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
 		})
 		final InputStream requestBody,
 
