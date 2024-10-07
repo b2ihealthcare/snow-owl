@@ -231,6 +231,7 @@ for (String typeId : allowedRanges.keySet()) {
 	//Find relationships that have destinations out of the allowed range
 	ExpressionBuilder relationshipQueryBuilder = Expressions.bool()
 		.filter(SnomedRelationshipIndexEntry.Expressions.active())
+		.filter(SnomedRelationshipIndexEntry.Expressions.modules(moduleIds))
 		.filter(SnomedRelationshipIndexEntry.Expressions.typeId(typeId))
 		.filter(SnomedRelationshipIndexEntry.Expressions.destinationIds(incorrectDestinationIds));
 	
@@ -254,6 +255,7 @@ for (String typeId : allowedRanges.keySet()) {
 	//Find OWL axiom members with relationships that have destinations out of the allowed range
 	final ExpressionBuilder owlMemberExpressionBuilder = Expressions.bool()
 		.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
+		.filter(SnomedRefSetMemberIndexEntry.Expressions.modules(moduleIds))
 		.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes([SnomedRefSetType.OWL_AXIOM]))
 		.filter(Expressions.bool()
 			.should(nestedMatch("classAxiomRelationships", Expressions.bool()
