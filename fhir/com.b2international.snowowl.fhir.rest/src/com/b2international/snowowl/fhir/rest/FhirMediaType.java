@@ -85,8 +85,29 @@ public final class FhirMediaType {
 	// Last ditch effort: return JSON when "*/*" media type is accepted by the client
 	private static final String ALL_VALUE = MediaType.ALL_VALUE;
 	
-	// All currently supported media type, versioned and unversioned forms
-	private static final List<MediaType> SUPPORTED_MEDIA_TYPES = List.of(
+	/**
+	 * All currently supported media type values (versioned and unversioned forms)
+	 */
+	public static final String[] SUPPORTED_MEDIA_TYPE_VALUES = new String[] {
+		APPLICATION_FHIR_JSON_5_0_VALUE,
+		APPLICATION_FHIR_JSON_4_3_VALUE,
+		APPLICATION_FHIR_JSON_4_0_VALUE,
+		APPLICATION_FHIR_JSON_VALUE,
+		APPLICATION_JSON_VALUE,
+		TEXT_JSON_VALUE,
+		
+		APPLICATION_FHIR_XML_5_0_VALUE,
+		APPLICATION_FHIR_XML_4_3_VALUE,
+		APPLICATION_FHIR_XML_4_0_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		APPLICATION_XML_VALUE,
+		TEXT_XML_VALUE
+	};
+	
+	/**
+	 * All currently supported media types (versioned and unversioned forms)
+	 */
+	public static final List<MediaType> SUPPORTED_MEDIA_TYPES = List.of(
 		APPLICATION_FHIR_JSON_5_0,
 		APPLICATION_FHIR_XML_5_0,
 		
@@ -103,12 +124,20 @@ public final class FhirMediaType {
 		MediaType.TEXT_XML,
 		
 		MediaType.APPLICATION_JSON,
-		MediaType.APPLICATION_XML,
-		
-		MediaType.ALL
+		MediaType.APPLICATION_XML
 	);
 	
-	// The FHIR Version Snow Owl by default uses (should match the model version used in snowowl.fhir.core)
+	/**
+	 * The supported list of FHIR versions.
+	 */
+	public static final List<FHIRVersion> SUPPORTED_FHIR_VERSIONS = List.of(
+		FHIRVersion._4_0,
+		FHIRVersion._4_3,
+		FHIRVersion._5_0
+	);
+	
+	// The FHIR Version Snow Owl by default uses (should match the model version implementation used in snowowl.fhir.core)
+	public static final FHIRVersion DEFAULT_FHIR_VERSION = FHIRVersion._5_0;
 	protected static final MediaType CURRENT_JSON_MEDIA_TYPE = APPLICATION_FHIR_JSON_5_0;
 	protected static final MediaType CURRENT_XML_MEDIA_TYPE = APPLICATION_FHIR_XML_5_0;
 	
@@ -118,12 +147,12 @@ public final class FhirMediaType {
 	
 	private FhirMediaType(MediaType mediaType) {
 		this.mediaType = Objects.requireNonNull(mediaType);
-		if (mediaType.getType().contains(FORMAT_JSON)) {
+		if (mediaType.getSubtype().contains(FORMAT_JSON)) {
 			this.fhirFormat = Manager.FhirFormat.JSON;
-		} else if (mediaType.getType().contains(FORMAT_XML)) {
+		} else if (mediaType.getSubtype().contains(FORMAT_XML)) {
 			this.fhirFormat = Manager.FhirFormat.XML;
 		} else {
-			throw new IllegalStateException();
+			throw new IllegalStateException("Unsupported FHIR mime-type: " + mediaType);
 		}
 		
 		final String fhirVersionValue = mediaType.getParameter(MIME_TYPE_FHIR_VERSION_PARAMETER);
@@ -247,7 +276,6 @@ public final class FhirMediaType {
 			return getFormat(_format);
 		} else if (!StringUtils.isEmpty(accept)) {
 			List<MediaType> mediaTypeCandidates = getMediaTypeCandidates(accept);
-			
 			if (!mediaTypeCandidates.isEmpty()) {
 				return getFormat(mediaTypeCandidates.get(0).toString());
 			} else {
@@ -259,6 +287,11 @@ public final class FhirMediaType {
 	}
 	
 	private static List<MediaType> getMediaTypeCandidates(final String accept) {
+		// */* should delegate to current JSON format
+		if (MediaType.ALL_VALUE.equals(accept)) {
+			return List.of(CURRENT_JSON_MEDIA_TYPE);
+		}
+		
 		final List<MediaType> mediaTypeCandidates = MediaType.parseMediaTypes(accept);
 		
 		if (!mediaTypeCandidates.isEmpty()) {
