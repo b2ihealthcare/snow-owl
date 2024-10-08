@@ -33,6 +33,7 @@ import org.springframework.web.server.NotAcceptableStatusException;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.NotImplementedException;
+import com.b2international.fhir.formats.XmlParser;
 import com.google.common.collect.Maps;
 
 /**
@@ -47,14 +48,14 @@ public final class FhirMediaType {
 	
 	// Versioned FHIR-specific media types should be supplied in "content-type" and "accept" headers
 	private static final String MIME_TYPE_FHIR_VERSION_PARAMETER = "fhirVersion";
-	protected static final String APPLICATION_FHIR_JSON_4_0_VALUE = "application/fhir+json; fhirVersion=4.0";
-	protected static final String APPLICATION_FHIR_XML_4_0_VALUE = "application/fhir+xml; fhirVersion=4.0";
+	protected static final String APPLICATION_FHIR_JSON_4_0_VALUE = "application/fhir+json;fhirVersion=4.0";
+	protected static final String APPLICATION_FHIR_XML_4_0_VALUE = "application/fhir+xml;fhirVersion=4.0";
 	
-	protected static final String APPLICATION_FHIR_JSON_4_3_VALUE = "application/fhir+json; fhirVersion=4.3";
-	protected static final String APPLICATION_FHIR_XML_4_3_VALUE = "application/fhir+xml; fhirVersion=4.3";
+	protected static final String APPLICATION_FHIR_JSON_4_3_VALUE = "application/fhir+json;fhirVersion=4.3";
+	protected static final String APPLICATION_FHIR_XML_4_3_VALUE = "application/fhir+xml;fhirVersion=4.3";
 	
-	protected static final String APPLICATION_FHIR_JSON_5_0_VALUE = "application/fhir+json; fhirVersion=5.0";
-	protected static final String APPLICATION_FHIR_XML_5_0_VALUE = "application/fhir+xml; fhirVersion=5.0";
+	protected static final String APPLICATION_FHIR_JSON_5_0_VALUE = "application/fhir+json;fhirVersion=5.0";
+	protected static final String APPLICATION_FHIR_XML_5_0_VALUE = "application/fhir+xml;fhirVersion=5.0";
 
 	// Short values are only admitted as _format parameters
 	protected static final String FORMAT_JSON = "json";
@@ -201,13 +202,13 @@ public final class FhirMediaType {
 	private Resource parseResourceXml(InputStream in) throws FHIRFormatError, IOException {
 		switch (fhirVersion) {
 		case _4_0:
-			org.hl7.fhir.r4.model.Resource r4 = new org.hl7.fhir.r4.formats.XmlParser().parse(in);
+			org.hl7.fhir.r4.model.Resource r4 = XmlParser.parseR4(in);
 			return VersionConvertorFactory_40_50.convertResource(r4);
 		case _4_3:
-			org.hl7.fhir.r4b.model.Resource r4b = new org.hl7.fhir.r4b.formats.XmlParser().parse(in);
+			org.hl7.fhir.r4b.model.Resource r4b = XmlParser.parseR4B(in);
 			return VersionConvertorFactory_43_50.convertResource(r4b);
 		case _5_0:
-			org.hl7.fhir.r5.model.Resource r5 = new org.hl7.fhir.r5.formats.XmlParser().parse(in);
+			org.hl7.fhir.r5.model.Resource r5 = XmlParser.parseR5(in);
 			return r5;
 		default: 
 			throw new NotImplementedException("No XML parser implementation found for version: " + fhirVersion);
@@ -249,14 +250,14 @@ public final class FhirMediaType {
 		switch (fhirVersion) {
 		case _4_0:
 			org.hl7.fhir.r4.model.Resource r4 = VersionConvertorFactory_40_50.convertResource(resource);
-			new org.hl7.fhir.r4.formats.XmlParser().setOutputStyle(pretty ? org.hl7.fhir.r4.formats.IParser.OutputStyle.PRETTY : org.hl7.fhir.r4.formats.IParser.OutputStyle.NORMAL).compose(baos, r4);
+			XmlParser.composeR4(baos, r4, pretty);
 			break;
 		case _4_3:
 			org.hl7.fhir.r4b.model.Resource r4b = VersionConvertorFactory_43_50.convertResource(resource);
-			new org.hl7.fhir.r4b.formats.XmlParser().setOutputStyle(pretty ? org.hl7.fhir.r4b.formats.IParser.OutputStyle.PRETTY : org.hl7.fhir.r4b.formats.IParser.OutputStyle.NORMAL).compose(baos, r4b);
+			XmlParser.composeR4B(baos, r4b, pretty);
 			break;
 		case _5_0:
-			new org.hl7.fhir.r5.formats.XmlParser().setOutputStyle(pretty ? org.hl7.fhir.r5.formats.IParser.OutputStyle.PRETTY : org.hl7.fhir.r5.formats.IParser.OutputStyle.NORMAL).compose(baos, resource);
+			XmlParser.composeR5(baos, resource, pretty);
 			break;
 		default: 
 			throw new NotImplementedException("No XML serializer implementation found for version: " + fhirVersion);
