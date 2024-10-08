@@ -48,14 +48,14 @@ public final class FhirMediaType {
 	
 	// Versioned FHIR-specific media types should be supplied in "content-type" and "accept" headers
 	private static final String MIME_TYPE_FHIR_VERSION_PARAMETER = "fhirVersion";
-	protected static final String APPLICATION_FHIR_JSON_4_0_VALUE = "application/fhir+json;fhirVersion=4.0";
-	protected static final String APPLICATION_FHIR_XML_4_0_VALUE = "application/fhir+xml;fhirVersion=4.0";
+	protected static final String APPLICATION_FHIR_JSON_4_0_0_VALUE = "application/fhir+json;fhirVersion=4.0.1";
+	protected static final String APPLICATION_FHIR_XML_4_0_0_VALUE = "application/fhir+xml;fhirVersion=4.0.1";
 	
-	protected static final String APPLICATION_FHIR_JSON_4_3_VALUE = "application/fhir+json;fhirVersion=4.3";
-	protected static final String APPLICATION_FHIR_XML_4_3_VALUE = "application/fhir+xml;fhirVersion=4.3";
+	protected static final String APPLICATION_FHIR_JSON_4_3_0_VALUE = "application/fhir+json;fhirVersion=4.3.0";
+	protected static final String APPLICATION_FHIR_XML_4_3_0_VALUE = "application/fhir+xml;fhirVersion=4.3.0";
 	
-	protected static final String APPLICATION_FHIR_JSON_5_0_VALUE = "application/fhir+json;fhirVersion=5.0";
-	protected static final String APPLICATION_FHIR_XML_5_0_VALUE = "application/fhir+xml;fhirVersion=5.0";
+	protected static final String APPLICATION_FHIR_JSON_5_0_0_VALUE = "application/fhir+json;fhirVersion=5.0.0";
+	protected static final String APPLICATION_FHIR_XML_5_0_0_VALUE = "application/fhir+xml;fhirVersion=5.0.0";
 
 	// Short values are only admitted as _format parameters
 	protected static final String FORMAT_JSON = "json";
@@ -74,14 +74,14 @@ public final class FhirMediaType {
 	private static final MediaType APPLICATION_FHIR_JSON = MediaType.parseMediaType(APPLICATION_FHIR_JSON_VALUE);
 	private static final MediaType APPLICATION_FHIR_XML = MediaType.parseMediaType(APPLICATION_FHIR_XML_VALUE);
 	
-	private static final MediaType APPLICATION_FHIR_JSON_4_0 = MediaType.parseMediaType(APPLICATION_FHIR_JSON_4_0_VALUE);
-	private static final MediaType APPLICATION_FHIR_XML_4_0 = MediaType.parseMediaType(APPLICATION_FHIR_XML_4_0_VALUE);
+	private static final MediaType APPLICATION_FHIR_JSON_4_0_0 = MediaType.parseMediaType(APPLICATION_FHIR_JSON_4_0_0_VALUE);
+	private static final MediaType APPLICATION_FHIR_XML_4_0_0 = MediaType.parseMediaType(APPLICATION_FHIR_XML_4_0_0_VALUE);
 	
-	private static final MediaType APPLICATION_FHIR_JSON_4_3 = MediaType.parseMediaType(APPLICATION_FHIR_JSON_4_3_VALUE);
-	private static final MediaType APPLICATION_FHIR_XML_4_3 = MediaType.parseMediaType(APPLICATION_FHIR_XML_4_3_VALUE);
+	private static final MediaType APPLICATION_FHIR_JSON_4_3_0 = MediaType.parseMediaType(APPLICATION_FHIR_JSON_4_3_0_VALUE);
+	private static final MediaType APPLICATION_FHIR_XML_4_3_0 = MediaType.parseMediaType(APPLICATION_FHIR_XML_4_3_0_VALUE);
 	
-	private static final MediaType APPLICATION_FHIR_JSON_5_0 = MediaType.parseMediaType(APPLICATION_FHIR_JSON_5_0_VALUE);
-	private static final MediaType APPLICATION_FHIR_XML_5_0 = MediaType.parseMediaType(APPLICATION_FHIR_XML_5_0_VALUE);
+	private static final MediaType APPLICATION_FHIR_JSON_5_0_0 = MediaType.parseMediaType(APPLICATION_FHIR_JSON_5_0_0_VALUE);
+	private static final MediaType APPLICATION_FHIR_XML_5_0_0 = MediaType.parseMediaType(APPLICATION_FHIR_XML_5_0_0_VALUE);
 
 	// Last ditch effort: return JSON when "*/*" media type is accepted by the client
 	private static final String ALL_VALUE = MediaType.ALL_VALUE;
@@ -90,16 +90,16 @@ public final class FhirMediaType {
 	 * All currently supported media type values (versioned and unversioned forms)
 	 */
 	public static final String[] SUPPORTED_MEDIA_TYPE_VALUES = new String[] {
-		APPLICATION_FHIR_JSON_5_0_VALUE,
-		APPLICATION_FHIR_JSON_4_3_VALUE,
-		APPLICATION_FHIR_JSON_4_0_VALUE,
+		APPLICATION_FHIR_JSON_5_0_0_VALUE,
+		APPLICATION_FHIR_JSON_4_3_0_VALUE,
+		APPLICATION_FHIR_JSON_4_0_0_VALUE,
 		APPLICATION_FHIR_JSON_VALUE,
 		APPLICATION_JSON_VALUE,
 		TEXT_JSON_VALUE,
 		
-		APPLICATION_FHIR_XML_5_0_VALUE,
-		APPLICATION_FHIR_XML_4_3_VALUE,
-		APPLICATION_FHIR_XML_4_0_VALUE,
+		APPLICATION_FHIR_XML_5_0_0_VALUE,
+		APPLICATION_FHIR_XML_4_3_0_VALUE,
+		APPLICATION_FHIR_XML_4_0_0_VALUE,
 		APPLICATION_FHIR_XML_VALUE,
 		APPLICATION_XML_VALUE,
 		TEXT_XML_VALUE
@@ -109,14 +109,14 @@ public final class FhirMediaType {
 	 * All currently supported media types (versioned and unversioned forms)
 	 */
 	public static final List<MediaType> SUPPORTED_MEDIA_TYPES = List.of(
-		APPLICATION_FHIR_JSON_5_0,
-		APPLICATION_FHIR_XML_5_0,
+		APPLICATION_FHIR_JSON_5_0_0,
+		APPLICATION_FHIR_XML_5_0_0,
 		
-		APPLICATION_FHIR_JSON_4_3,
-		APPLICATION_FHIR_XML_4_3,
+		APPLICATION_FHIR_JSON_4_3_0,
+		APPLICATION_FHIR_XML_4_3_0,
 		
-		APPLICATION_FHIR_JSON_4_0,
-		APPLICATION_FHIR_XML_4_0,
+		APPLICATION_FHIR_JSON_4_0_0,
+		APPLICATION_FHIR_XML_4_0_0,
 		
 		APPLICATION_FHIR_JSON,
 		APPLICATION_FHIR_XML,
@@ -132,15 +132,15 @@ public final class FhirMediaType {
 	 * The supported list of FHIR versions.
 	 */
 	public static final List<FHIRVersion> SUPPORTED_FHIR_VERSIONS = List.of(
-		FHIRVersion._4_0,
-		FHIRVersion._4_3,
-		FHIRVersion._5_0
+		FHIRVersion._4_0_1,
+		FHIRVersion._4_3_0,
+		FHIRVersion._5_0_0
 	);
 	
 	// The FHIR Version Snow Owl by default uses (should match the model version implementation used in snowowl.fhir.core)
-	public static final FHIRVersion DEFAULT_FHIR_VERSION = FHIRVersion._5_0;
-	protected static final MediaType CURRENT_JSON_MEDIA_TYPE = APPLICATION_FHIR_JSON_5_0;
-	protected static final MediaType CURRENT_XML_MEDIA_TYPE = APPLICATION_FHIR_XML_5_0;
+	public static final FHIRVersion DEFAULT_FHIR_VERSION = FHIRVersion._5_0_0;
+	protected static final MediaType CURRENT_JSON_MEDIA_TYPE = APPLICATION_FHIR_JSON_5_0_0;
+	protected static final MediaType CURRENT_XML_MEDIA_TYPE = APPLICATION_FHIR_XML_5_0_0;
 	
 	private final MediaType mediaType;
 	private final FhirFormat fhirFormat;
@@ -185,13 +185,13 @@ public final class FhirMediaType {
 	
 	private Resource parseResourceJson(InputStream in) throws FHIRFormatError, IOException {
 		switch (fhirVersion) {
-		case _4_0:
+		case _4_0_0:
 			org.hl7.fhir.r4.model.Resource r4 = new org.hl7.fhir.r4.formats.JsonParser().parse(in);
 			return VersionConvertorFactory_40_50.convertResource(r4);
-		case _4_3:
+		case _4_3_0:
 			org.hl7.fhir.r4b.model.Resource r4b = new org.hl7.fhir.r4b.formats.JsonParser().parse(in);
 			return VersionConvertorFactory_43_50.convertResource(r4b);
-		case _5_0:
+		case _5_0_0:
 			org.hl7.fhir.r5.model.Resource r5 = new org.hl7.fhir.r5.formats.JsonParser().parse(in);
 			return r5;
 		default: 
@@ -201,13 +201,13 @@ public final class FhirMediaType {
 	
 	private Resource parseResourceXml(InputStream in) throws FHIRFormatError, IOException {
 		switch (fhirVersion) {
-		case _4_0:
+		case _4_0_0:
 			org.hl7.fhir.r4.model.Resource r4 = XmlParser.parseR4(in);
 			return VersionConvertorFactory_40_50.convertResource(r4);
-		case _4_3:
+		case _4_3_0:
 			org.hl7.fhir.r4b.model.Resource r4b = XmlParser.parseR4B(in);
 			return VersionConvertorFactory_43_50.convertResource(r4b);
-		case _5_0:
+		case _5_0_0:
 			org.hl7.fhir.r5.model.Resource r5 = XmlParser.parseR5(in);
 			return r5;
 		default: 
@@ -230,15 +230,15 @@ public final class FhirMediaType {
 	
 	private void writeResourceJson(ByteArrayOutputStream baos, Resource resource, boolean pretty) throws IOException {
 		switch (fhirVersion) {
-		case _4_0:
+		case _4_0_0:
 			org.hl7.fhir.r4.model.Resource r4 = VersionConvertorFactory_40_50.convertResource(resource);
 			new org.hl7.fhir.r4.formats.JsonParser().setOutputStyle(pretty ? org.hl7.fhir.r4.formats.IParser.OutputStyle.PRETTY : org.hl7.fhir.r4.formats.IParser.OutputStyle.NORMAL).compose(baos, r4);
 			break;
-		case _4_3:
+		case _4_3_0:
 			org.hl7.fhir.r4b.model.Resource r4b = VersionConvertorFactory_43_50.convertResource(resource);
 			new org.hl7.fhir.r4b.formats.JsonParser().setOutputStyle(pretty ? org.hl7.fhir.r4b.formats.IParser.OutputStyle.PRETTY : org.hl7.fhir.r4b.formats.IParser.OutputStyle.NORMAL).compose(baos, r4b);
 			break;
-		case _5_0:
+		case _5_0_0:
 			new org.hl7.fhir.r5.formats.JsonParser().setOutputStyle(pretty ? org.hl7.fhir.r5.formats.IParser.OutputStyle.PRETTY : org.hl7.fhir.r5.formats.IParser.OutputStyle.NORMAL).compose(baos, resource);
 			break;
 		default: 
@@ -248,15 +248,15 @@ public final class FhirMediaType {
 	
 	private void writeResourceXml(ByteArrayOutputStream baos, Resource resource, boolean pretty) throws IOException {
 		switch (fhirVersion) {
-		case _4_0:
+		case _4_0_0:
 			org.hl7.fhir.r4.model.Resource r4 = VersionConvertorFactory_40_50.convertResource(resource);
 			XmlParser.composeR4(baos, r4, pretty);
 			break;
-		case _4_3:
+		case _4_3_0:
 			org.hl7.fhir.r4b.model.Resource r4b = VersionConvertorFactory_43_50.convertResource(resource);
 			XmlParser.composeR4B(baos, r4b, pretty);
 			break;
-		case _5_0:
+		case _5_0_0:
 			XmlParser.composeR5(baos, resource, pretty);
 			break;
 		default: 
@@ -323,14 +323,14 @@ public final class FhirMediaType {
 			case ALL_VALUE:
 				return CURRENT_JSON_MEDIA_TYPE;
 				
-			case APPLICATION_FHIR_JSON_4_0_VALUE:
-				return APPLICATION_FHIR_JSON_4_0;
+			case APPLICATION_FHIR_JSON_4_0_0_VALUE:
+				return APPLICATION_FHIR_JSON_4_0_0;
 				
-			case APPLICATION_FHIR_JSON_4_3_VALUE:
-				return APPLICATION_FHIR_JSON_4_3;
+			case APPLICATION_FHIR_JSON_4_3_0_VALUE:
+				return APPLICATION_FHIR_JSON_4_3_0;
 			
-			case APPLICATION_FHIR_JSON_5_0_VALUE:
-				return APPLICATION_FHIR_JSON_5_0;
+			case APPLICATION_FHIR_JSON_5_0_0_VALUE:
+				return APPLICATION_FHIR_JSON_5_0_0;
 				
 			case FORMAT_XML: //$FALL-THROUGH$
 			case TEXT_XML_VALUE: //$FALL-THROUGH$
@@ -338,14 +338,14 @@ public final class FhirMediaType {
 			case APPLICATION_XML_VALUE:
 				return CURRENT_XML_MEDIA_TYPE;
 				
-			case APPLICATION_FHIR_XML_4_0_VALUE: 
-				return APPLICATION_FHIR_XML_4_0;
+			case APPLICATION_FHIR_XML_4_0_0_VALUE: 
+				return APPLICATION_FHIR_XML_4_0_0;
 				
-			case APPLICATION_FHIR_XML_4_3_VALUE:
-				return APPLICATION_FHIR_XML_4_3;
+			case APPLICATION_FHIR_XML_4_3_0_VALUE:
+				return APPLICATION_FHIR_XML_4_3_0;
 				
-			case APPLICATION_FHIR_XML_5_0_VALUE:
-				return APPLICATION_FHIR_XML_5_0;
+			case APPLICATION_FHIR_XML_5_0_0_VALUE:
+				return APPLICATION_FHIR_XML_5_0_0;
 				
 			default:
 				throw new NotAcceptableStatusException(SUPPORTED_MEDIA_TYPES);
