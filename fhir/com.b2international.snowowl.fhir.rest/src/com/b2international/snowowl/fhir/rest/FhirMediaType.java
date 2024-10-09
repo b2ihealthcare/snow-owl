@@ -33,7 +33,10 @@ import org.springframework.web.server.NotAcceptableStatusException;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.NotImplementedException;
+import com.b2international.fhir.conv.OperationConvertor_40_50;
+import com.b2international.fhir.conv.OperationConvertor_43_50;
 import com.b2international.fhir.formats.XmlParser;
+import com.b2international.fhir.r5.operations.BaseParameters;
 import com.google.common.collect.Maps;
 
 /**
@@ -43,48 +46,48 @@ public final class FhirMediaType {
 
 	// FHIR-specific media types should be supplied in "content-type" and "accept" headers
 	// This always resolves to the available latest FHIR version in the server 
-	protected static final String APPLICATION_FHIR_JSON_VALUE = "application/fhir+json";
-	protected static final String APPLICATION_FHIR_XML_VALUE = "application/fhir+xml";
+	public static final String APPLICATION_FHIR_JSON_VALUE = "application/fhir+json";
+	public static final String APPLICATION_FHIR_XML_VALUE = "application/fhir+xml";
 	
 	// Versioned FHIR-specific media types should be supplied in "content-type" and "accept" headers
-	private static final String MIME_TYPE_FHIR_VERSION_PARAMETER = "fhirVersion";
-	protected static final String APPLICATION_FHIR_JSON_4_0_1_VALUE = "application/fhir+json;fhirVersion=4.0.1";
-	protected static final String APPLICATION_FHIR_XML_4_0_1_VALUE = "application/fhir+xml;fhirVersion=4.0.1";
+	public static final String MIME_TYPE_FHIR_VERSION_PARAMETER = "fhirVersion";
+	public static final String APPLICATION_FHIR_JSON_4_0_1_VALUE = "application/fhir+json;fhirVersion=4.0.1";
+	public static final String APPLICATION_FHIR_XML_4_0_1_VALUE = "application/fhir+xml;fhirVersion=4.0.1";
 	
-	protected static final String APPLICATION_FHIR_JSON_4_3_0_VALUE = "application/fhir+json;fhirVersion=4.3.0";
-	protected static final String APPLICATION_FHIR_XML_4_3_0_VALUE = "application/fhir+xml;fhirVersion=4.3.0";
+	public static final String APPLICATION_FHIR_JSON_4_3_0_VALUE = "application/fhir+json;fhirVersion=4.3.0";
+	public static final String APPLICATION_FHIR_XML_4_3_0_VALUE = "application/fhir+xml;fhirVersion=4.3.0";
 	
-	protected static final String APPLICATION_FHIR_JSON_5_0_0_VALUE = "application/fhir+json;fhirVersion=5.0.0";
-	protected static final String APPLICATION_FHIR_XML_5_0_0_VALUE = "application/fhir+xml;fhirVersion=5.0.0";
+	public static final String APPLICATION_FHIR_JSON_5_0_0_VALUE = "application/fhir+json;fhirVersion=5.0.0";
+	public static final String APPLICATION_FHIR_XML_5_0_0_VALUE = "application/fhir+xml;fhirVersion=5.0.0";
 
 	// Short values are only admitted as _format parameters
-	protected static final String FORMAT_JSON = "json";
-	protected static final String FORMAT_XML = "xml";
+	public static final String FORMAT_JSON = "json";
+	public static final String FORMAT_XML = "xml";
 
 	// More general media types are allowed both as a _format parameter as well as an "accept" header
-	protected static final String TEXT_JSON_VALUE = "text/json";
-	protected static final String TEXT_XML_VALUE = MediaType.TEXT_XML_VALUE;
+	public static final String TEXT_JSON_VALUE = "text/json";
+	public static final String TEXT_XML_VALUE = MediaType.TEXT_XML_VALUE;
 	
-	protected static final String APPLICATION_JSON_VALUE = MediaType.APPLICATION_JSON_VALUE;
-	protected static final String APPLICATION_XML_VALUE = MediaType.APPLICATION_XML_VALUE;
+	public static final String APPLICATION_JSON_VALUE = MediaType.APPLICATION_JSON_VALUE;
+	public static final String APPLICATION_XML_VALUE = MediaType.APPLICATION_XML_VALUE;
 
 	// Keep parsed forms of our custom media types around as well
-	private static final MediaType TEXT_JSON = MediaType.parseMediaType(TEXT_JSON_VALUE);
+	public static final MediaType TEXT_JSON = MediaType.parseMediaType(TEXT_JSON_VALUE);
 	
-	private static final MediaType APPLICATION_FHIR_JSON = MediaType.parseMediaType(APPLICATION_FHIR_JSON_VALUE);
-	private static final MediaType APPLICATION_FHIR_XML = MediaType.parseMediaType(APPLICATION_FHIR_XML_VALUE);
+	public static final MediaType APPLICATION_FHIR_JSON = MediaType.parseMediaType(APPLICATION_FHIR_JSON_VALUE);
+	public static final MediaType APPLICATION_FHIR_XML = MediaType.parseMediaType(APPLICATION_FHIR_XML_VALUE);
 	
-	private static final MediaType APPLICATION_FHIR_JSON_4_0_1 = MediaType.parseMediaType(APPLICATION_FHIR_JSON_4_0_1_VALUE);
-	private static final MediaType APPLICATION_FHIR_XML_4_0_1 = MediaType.parseMediaType(APPLICATION_FHIR_XML_4_0_1_VALUE);
+	public static final MediaType APPLICATION_FHIR_JSON_4_0_1 = MediaType.parseMediaType(APPLICATION_FHIR_JSON_4_0_1_VALUE);
+	public static final MediaType APPLICATION_FHIR_XML_4_0_1 = MediaType.parseMediaType(APPLICATION_FHIR_XML_4_0_1_VALUE);
 	
-	private static final MediaType APPLICATION_FHIR_JSON_4_3_0 = MediaType.parseMediaType(APPLICATION_FHIR_JSON_4_3_0_VALUE);
-	private static final MediaType APPLICATION_FHIR_XML_4_3_0 = MediaType.parseMediaType(APPLICATION_FHIR_XML_4_3_0_VALUE);
+	public static final MediaType APPLICATION_FHIR_JSON_4_3_0 = MediaType.parseMediaType(APPLICATION_FHIR_JSON_4_3_0_VALUE);
+	public static final MediaType APPLICATION_FHIR_XML_4_3_0 = MediaType.parseMediaType(APPLICATION_FHIR_XML_4_3_0_VALUE);
 	
-	private static final MediaType APPLICATION_FHIR_JSON_5_0_0 = MediaType.parseMediaType(APPLICATION_FHIR_JSON_5_0_0_VALUE);
-	private static final MediaType APPLICATION_FHIR_XML_5_0_0 = MediaType.parseMediaType(APPLICATION_FHIR_XML_5_0_0_VALUE);
+	public static final MediaType APPLICATION_FHIR_JSON_5_0_0 = MediaType.parseMediaType(APPLICATION_FHIR_JSON_5_0_0_VALUE);
+	public static final MediaType APPLICATION_FHIR_XML_5_0_0 = MediaType.parseMediaType(APPLICATION_FHIR_XML_5_0_0_VALUE);
 
 	// Last ditch effort: return JSON when "*/*" media type is accepted by the client
-	private static final String ALL_VALUE = MediaType.ALL_VALUE;
+	public static final String ALL_VALUE = MediaType.ALL_VALUE;
 	
 	/**
 	 * All currently supported media type values (versioned and unversioned forms)
@@ -258,6 +261,55 @@ public final class FhirMediaType {
 			break;
 		case _5_0_0:
 			XmlParser.composeR5(baos, resource, pretty);
+			break;
+		default: 
+			throw new NotImplementedException("No XML serializer implementation found for version: " + fhirVersion);
+		}
+	}
+	
+	public void writeParameters(ByteArrayOutputStream baos, BaseParameters parameters, boolean pretty) throws IOException {
+		switch (fhirFormat) {
+		case JSON:
+			writeParametersJson(baos, parameters, pretty);
+			break;
+		case XML:
+			writeParametersXml(baos, parameters, pretty);
+			break;
+		default: 
+			throw new NotImplementedException("No serializer implementation found for format: " + fhirFormat);
+		}
+	}
+	
+	private void writeParametersJson(ByteArrayOutputStream baos, BaseParameters parameters, boolean pretty) throws IOException {
+		switch (fhirVersion) {
+		case _4_0_1:
+			org.hl7.fhir.r4.model.Resource r4 = OperationConvertor_40_50.convert(parameters).getParameters();
+			new org.hl7.fhir.r4.formats.JsonParser().setOutputStyle(pretty ? org.hl7.fhir.r4.formats.IParser.OutputStyle.PRETTY : org.hl7.fhir.r4.formats.IParser.OutputStyle.NORMAL).compose(baos, r4);
+			break;
+		case _4_3_0:
+			org.hl7.fhir.r4b.model.Resource r4b = OperationConvertor_43_50.convert(parameters).getParameters();
+			new org.hl7.fhir.r4b.formats.JsonParser().setOutputStyle(pretty ? org.hl7.fhir.r4b.formats.IParser.OutputStyle.PRETTY : org.hl7.fhir.r4b.formats.IParser.OutputStyle.NORMAL).compose(baos, r4b);
+			break;
+		case _5_0_0:
+			new org.hl7.fhir.r5.formats.JsonParser().setOutputStyle(pretty ? org.hl7.fhir.r5.formats.IParser.OutputStyle.PRETTY : org.hl7.fhir.r5.formats.IParser.OutputStyle.NORMAL).compose(baos, parameters.getParameters());
+			break;
+		default: 
+			throw new NotImplementedException("No JSON serializer implementation found for version: " + fhirVersion);
+		}
+	}
+	
+	private void writeParametersXml(ByteArrayOutputStream baos, BaseParameters parameters, boolean pretty) throws IOException {
+		switch (fhirVersion) {
+		case _4_0_1:
+			org.hl7.fhir.r4.model.Resource r4 = OperationConvertor_40_50.convert(parameters).getParameters();
+			XmlParser.composeR4(baos, r4, pretty);
+			break;
+		case _4_3_0:
+			org.hl7.fhir.r4b.model.Resource r4b = OperationConvertor_43_50.convert(parameters).getParameters();
+			XmlParser.composeR4B(baos, r4b, pretty);
+			break;
+		case _5_0_0:
+			XmlParser.composeR5(baos, parameters.getParameters(), pretty);
 			break;
 		default: 
 			throw new NotImplementedException("No XML serializer implementation found for version: " + fhirVersion);

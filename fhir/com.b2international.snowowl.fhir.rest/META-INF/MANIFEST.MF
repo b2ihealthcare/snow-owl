@@ -6,7 +6,10 @@ Bundle-Version: 9.3.1.qualifier
 Bundle-Vendor: B2i Healthcare
 Fragment-Host: com.b2international.snowowl.core.rest
 Import-Package: com.b2international.fhir;version="0.1.0",
+ com.b2international.fhir.conv;version="0.1.0",
  com.b2international.fhir.formats;version="0.1.0",
+ com.b2international.fhir.r4.operations;version="0.1.0",
+ com.b2international.fhir.r4b.operations;version="0.1.0",
  com.b2international.fhir.r5.operations;version="0.1.0",
  org.hl7.fhir.convertors.conv40_50;version="6.3.25",
  org.hl7.fhir.convertors.conv43_50;version="6.3.25",

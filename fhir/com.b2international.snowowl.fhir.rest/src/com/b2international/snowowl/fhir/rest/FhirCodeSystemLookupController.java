@@ -269,7 +269,7 @@ public class FhirCodeSystemLookupController extends AbstractFhirController {
 			.buildAsync()
 			.execute(getBus())
 			.then(result -> {
-				return toResponseEntity(result.getParameters(), accept, _format, _pretty);
+				return toResponseEntity(result, accept, _format, _pretty);
 			});
 	}
 }

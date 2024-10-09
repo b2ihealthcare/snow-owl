@@ -38,6 +38,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.commons.exceptions.*;
+import com.b2international.fhir.r5.operations.BaseParameters;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
@@ -96,6 +97,30 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	}
 	
 	protected final ResponseEntity<byte[]> toResponseEntity(
+			final BaseParameters parameters,
+			final String accept, 
+			final String _format,
+			final Boolean _pretty) {
+		
+		final FhirMediaType mediaType = FhirMediaType.parse(accept, _format);
+		
+		final boolean prettyPrinting = (_pretty != null) && _pretty;
+		
+		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		try {
+			
+			mediaType.writeParameters(baos, parameters, prettyPrinting);
+		} catch (IOException e) {
+			throw new BadRequestException(String.format("Failed to serialize FHIR operation parameters to a response body.",
+				parameters.getClass().getSimpleName()));
+		}
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.contentType(mediaType.getMediaType())
+			.body(baos.toByteArray());		
+	}
+	
+	protected final ResponseEntity<byte[]> toResponseEntity(
 			final Resource resource, 
 			final String accept, 
 			final String _format,
@@ -110,17 +135,16 @@ public abstract class AbstractFhirController extends AbstractRestService {
 		final String _format,
 		final Boolean _pretty
 	) {
-		final byte[] body = writeToBytes(resource, accept, _format, _pretty);
 		final FhirMediaType mediaType = FhirMediaType.parse(accept, _format);
+		final byte[] body = writeToBytes(resource, mediaType, _pretty);
 
 		return ResponseEntity.status(httpStatus)
 			.contentType(mediaType.getMediaType())
 			.body(body);
 	}
 
-	private byte[] writeToBytes(final Resource resource, final String accept, final String _format, final Boolean _pretty) {
+	private byte[] writeToBytes(final Resource resource, final FhirMediaType mediaType, final Boolean _pretty) {
 		final boolean prettyPrinting = (_pretty != null) && _pretty;
-		final FhirMediaType mediaType = FhirMediaType.parse(accept, _format);
 				
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
@@ -195,7 +219,7 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	@ResponseStatus(HttpStatus.UNAUTHORIZED)
 	public @ResponseBody ResponseEntity<byte[]> handle(final UnauthorizedException ex) {
 		FhirException fhirException = new FhirException(ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGAUTHREQUIRED);
-		byte[] body = writeToBytes(fhirException.toOperationOutcome(), null, null, true);
+		byte[] body = writeToBytes(fhirException.toOperationOutcome(), FhirMediaType.parse(FhirMediaType.APPLICATION_FHIR_JSON_VALUE, null), true);
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("WWW-Authenticate", "Basic");
 		headers.add("WWW-Authenticate", "Bearer");
