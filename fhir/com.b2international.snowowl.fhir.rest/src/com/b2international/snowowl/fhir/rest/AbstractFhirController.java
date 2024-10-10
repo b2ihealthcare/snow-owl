@@ -35,6 +35,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.commons.exceptions.*;
@@ -130,6 +131,19 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	
 	protected final ResponseEntity<byte[]> toResponseEntity(
 		final HttpStatus httpStatus,
+		final Resource resource,
+		final WebRequest request
+	) {
+		// Extract the original request's Accept header and query parameters to determine the response format
+		final String accept = request.getHeader(HttpHeaders.ACCEPT);
+		final String _format = request.getParameter("_format");
+		final boolean _pretty = Boolean.parseBoolean(request.getParameter("_pretty"));
+	
+		return toResponseEntity(httpStatus, resource, accept, _format, _pretty);
+	}
+	
+	protected final ResponseEntity<byte[]> toResponseEntity(
+		final HttpStatus httpStatus,
 		final Resource resource, 
 		final String accept, 
 		final String _format,
@@ -189,52 +203,54 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-	public @ResponseBody ResponseEntity<byte[]> handle(final Exception ex) {
+	public @ResponseBody ResponseEntity<byte[]> handle(final Exception ex, final WebRequest request) {
 		if ("broken pipe".equals(Strings.nullToEmpty(Throwables.getRootCause(ex).getMessage()).toLowerCase())) {
 	        return null; // socket is closed, cannot return any response    
 	    } else {
 	    	LOG.error("Exception during processing of a request", ex);
 	    	FhirException fhirException = new FhirException(GENERIC_USER_MESSAGE + " Exception: " + ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGBADSYNTAX);
-	    	return toResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, fhirException.toOperationOutcome(), null, null, true);
+	    	return toResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, fhirException.toOperationOutcome(), request);
 	    }
 	}
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public @ResponseBody ResponseEntity<byte[]> handle(final SyntaxException ex) {
+	public @ResponseBody ResponseEntity<byte[]> handle(final SyntaxException ex, final WebRequest request) {
     	FhirException fhirException = new FhirException(ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGBADSYNTAX);
     	fhirException.withAdditionalInfo(ex.getAdditionalInfo());
-    	return toResponseEntity(HttpStatus.BAD_REQUEST, fhirException.toOperationOutcome(), null, null, true);
+    	return toResponseEntity(HttpStatus.BAD_REQUEST, fhirException.toOperationOutcome(), request);
 	}
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public @ResponseBody ResponseEntity<byte[]> handle(final ValidationException ex) {
+	public @ResponseBody ResponseEntity<byte[]> handle(final ValidationException ex, final WebRequest request) {
 		FhirException error = new FhirException("Validation error", org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGBADSYNTAX);
 		error.withAdditionalInfo(ex.getAdditionalInfo());
-		return toResponseEntity(HttpStatus.BAD_REQUEST, error.toOperationOutcome(), null, null, true);
+		return toResponseEntity(HttpStatus.BAD_REQUEST, error.toOperationOutcome(), request);
 	}
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.UNAUTHORIZED)
-	public @ResponseBody ResponseEntity<byte[]> handle(final UnauthorizedException ex) {
+	public @ResponseBody ResponseEntity<byte[]> handle(final UnauthorizedException ex, final WebRequest request) {
 		FhirException fhirException = new FhirException(ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGAUTHREQUIRED);
-		byte[] body = writeToBytes(fhirException.toOperationOutcome(), FhirMediaType.parse(FhirMediaType.APPLICATION_FHIR_JSON_VALUE, null), true);
-		HttpHeaders headers = new HttpHeaders();
-		headers.add("WWW-Authenticate", "Basic");
-		headers.add("WWW-Authenticate", "Bearer");
-		return new ResponseEntity<>(body, headers, HttpStatus.UNAUTHORIZED);
+		ResponseEntity<byte[]> responseEntityWithoutAuth = toResponseEntity(HttpStatus.UNAUTHORIZED, fhirException.toOperationOutcome(), request);
+		
+		return ResponseEntity.status(responseEntityWithoutAuth.getStatusCode())
+			.headers(responseEntityWithoutAuth.getHeaders())
+			.header("WWW-Authenticate", "Basic")
+			.header("WWW-Authenticate", "Bearer")
+			.body(responseEntityWithoutAuth.getBody());
 	}
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public @ResponseBody ResponseEntity<byte[]> handle(final BadRequestException ex) {
-		return toResponseEntity(HttpStatus.BAD_REQUEST, ex.toOperationOutcome(), null, null, true);
+	public @ResponseBody ResponseEntity<byte[]> handle(final BadRequestException ex, final WebRequest request) {
+		return toResponseEntity(HttpStatus.BAD_REQUEST, ex.toOperationOutcome(), request);
 	}
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.FORBIDDEN)
-	public @ResponseBody ResponseEntity<byte[]> handle(final ForbiddenException ex) {
+	public @ResponseBody ResponseEntity<byte[]> handle(final ForbiddenException ex, final WebRequest request) {
 		return toResponseEntity(HttpStatus.FORBIDDEN, new OperationOutcome()
 			.addIssue(new OperationOutcome.OperationOutcomeIssueComponent()
 				.setSeverity(IssueSeverity.ERROR)
@@ -250,10 +266,10 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public @ResponseBody ResponseEntity<byte[]> handle(HttpMessageNotReadableException ex) {
+	public @ResponseBody ResponseEntity<byte[]> handle(HttpMessageNotReadableException ex, final WebRequest request) {
 		LOG.trace("Exception during processing of a JSON document", ex);
 		FhirException fhirException = new FhirException(GENERIC_USER_MESSAGE + " Exception: " + ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGCANTPARSECONTENT);
-		return toResponseEntity(HttpStatus.BAD_REQUEST, fhirException.toOperationOutcome(), null, null, true);
+		return toResponseEntity(HttpStatus.BAD_REQUEST, fhirException.toOperationOutcome(), request);
 	}
 
 	/**
@@ -265,7 +281,7 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.NOT_FOUND)
-	public @ResponseBody ResponseEntity<byte[]> handle(final NotFoundException ex) {
+	public @ResponseBody ResponseEntity<byte[]> handle(final NotFoundException ex, final WebRequest request) {
 		return toResponseEntity(HttpStatus.NOT_FOUND, new OperationOutcome()
 				.addIssue(
 					new OperationOutcome.OperationOutcomeIssueComponent()
@@ -285,9 +301,9 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
-	public @ResponseBody ResponseEntity<byte[]> handle(NotImplementedException ex) {
+	public @ResponseBody ResponseEntity<byte[]> handle(NotImplementedException ex, final WebRequest request) {
 		FhirException fhirException = new FhirException(ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGUNKNOWNOPERATION);
-		return toResponseEntity(HttpStatus.NOT_IMPLEMENTED, fhirException.toOperationOutcome(), null, null, true);
+		return toResponseEntity(HttpStatus.NOT_IMPLEMENTED, fhirException.toOperationOutcome(), request);
 	}
 
 	/**
@@ -298,9 +314,9 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.CONFLICT)
-	public @ResponseBody ResponseEntity<byte[]> handle(final ConflictException ex) {
+	public @ResponseBody ResponseEntity<byte[]> handle(final ConflictException ex, final WebRequest request) {
 		FhirException fhirException = new FhirException(ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGLOCALFAIL);
-		return toResponseEntity(HttpStatus.CONFLICT, fhirException.toOperationOutcome(), null, null, true);
+		return toResponseEntity(HttpStatus.CONFLICT, fhirException.toOperationOutcome(), request);
 	}
 	
 }
