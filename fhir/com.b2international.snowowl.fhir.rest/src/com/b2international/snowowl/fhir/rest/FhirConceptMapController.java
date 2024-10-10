@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.rest;
 
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.*;
+import static com.b2international.snowowl.fhir.rest.FhirMediaType.*;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -96,18 +97,25 @@ public class FhirConceptMapController extends AbstractFhirController {
 	@ApiResponse(responseCode = "201", description = "Resource created")
 	@ApiResponse(responseCode = "400", description = "Bad Request")
 	@PostMapping(consumes =	{
+		APPLICATION_FHIR_JSON_5_0_0_VALUE,
+		APPLICATION_FHIR_JSON_4_3_0_VALUE,
+		APPLICATION_FHIR_JSON_4_0_1_VALUE,
 		APPLICATION_FHIR_JSON_VALUE,
-		APPLICATION_FHIR_XML_VALUE,
-		TEXT_JSON_VALUE,
-		TEXT_XML_VALUE,
 		APPLICATION_JSON_VALUE,
-		APPLICATION_XML_VALUE
+		TEXT_JSON_VALUE,
+		
+		APPLICATION_FHIR_XML_5_0_0_VALUE,
+		APPLICATION_FHIR_XML_4_3_0_VALUE,
+		APPLICATION_FHIR_XML_4_0_1_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		APPLICATION_XML_VALUE,
+		TEXT_XML_VALUE
 	})
 	public ResponseEntity<Void> create(
 			
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The concept map resource", content = { 
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
+			@Content(mediaType = APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
 		})
 		final InputStream requestBody,
 		
@@ -183,12 +191,19 @@ public class FhirConceptMapController extends AbstractFhirController {
 	@ApiResponse(responseCode = "201", description = "Resource created")
 	@ApiResponse(responseCode = "400", description = "Bad Request")
 	@PutMapping(value = "/{id:**}", consumes = {
+		APPLICATION_FHIR_JSON_5_0_0_VALUE,
+		APPLICATION_FHIR_JSON_4_3_0_VALUE,
+		APPLICATION_FHIR_JSON_4_0_1_VALUE,
 		APPLICATION_FHIR_JSON_VALUE,
-		APPLICATION_FHIR_XML_VALUE,
-		TEXT_JSON_VALUE,
-		TEXT_XML_VALUE,
 		APPLICATION_JSON_VALUE,
-		APPLICATION_XML_VALUE
+		TEXT_JSON_VALUE,
+		
+		APPLICATION_FHIR_XML_5_0_0_VALUE,
+		APPLICATION_FHIR_XML_4_3_0_VALUE,
+		APPLICATION_FHIR_XML_4_0_1_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		APPLICATION_XML_VALUE,
+		TEXT_XML_VALUE
 	})
 	public ResponseEntity<Void> update(
 			
@@ -198,8 +213,8 @@ public class FhirConceptMapController extends AbstractFhirController {
 		final String id,
 		
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The concept map resource", content = { 
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
+			@Content(mediaType = APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
 		})
 		final InputStream requestBody,
 
@@ -312,12 +327,19 @@ public class FhirConceptMapController extends AbstractFhirController {
 	@ApiResponse(responseCode = "200", description = "OK")
 	@ApiResponse(responseCode = "400", description = "Bad Request")
 	@GetMapping(produces = {
+		APPLICATION_FHIR_JSON_5_0_0_VALUE,
+		APPLICATION_FHIR_JSON_4_3_0_VALUE,
+		APPLICATION_FHIR_JSON_4_0_1_VALUE,
 		APPLICATION_FHIR_JSON_VALUE,
-		APPLICATION_FHIR_XML_VALUE,
-		TEXT_JSON_VALUE,
-		TEXT_XML_VALUE,
 		APPLICATION_JSON_VALUE,
-		APPLICATION_XML_VALUE
+		TEXT_JSON_VALUE,
+		
+		APPLICATION_FHIR_XML_5_0_0_VALUE,
+		APPLICATION_FHIR_XML_4_3_0_VALUE,
+		APPLICATION_FHIR_XML_4_0_1_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		APPLICATION_XML_VALUE,
+		TEXT_XML_VALUE
 	})
 	public Promise<ResponseEntity<byte[]>> getConceptMaps(
 			
@@ -329,12 +351,19 @@ public class FhirConceptMapController extends AbstractFhirController {
 		final String accept,
 
 		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_5_0_0_VALUE,
+			APPLICATION_FHIR_JSON_4_3_0_VALUE,
+			APPLICATION_FHIR_JSON_4_0_1_VALUE,
 			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
 			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			TEXT_JSON_VALUE,
+			
+			APPLICATION_FHIR_XML_5_0_0_VALUE,
+			APPLICATION_FHIR_XML_4_3_0_VALUE,
+			APPLICATION_FHIR_XML_4_0_1_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			APPLICATION_XML_VALUE,
+			TEXT_XML_VALUE
 		})))
 		@RequestParam(value = "_format", required = false)
 		final String _format,
@@ -405,12 +434,19 @@ public class FhirConceptMapController extends AbstractFhirController {
 	@ApiResponse(responseCode = "400", description = "Bad request")
 	@ApiResponse(responseCode = "404", description = "Concept map not found")
 	@GetMapping(value = "/{id:**}", produces = {
+		APPLICATION_FHIR_JSON_5_0_0_VALUE,
+		APPLICATION_FHIR_JSON_4_3_0_VALUE,
+		APPLICATION_FHIR_JSON_4_0_1_VALUE,
 		APPLICATION_FHIR_JSON_VALUE,
-		APPLICATION_FHIR_XML_VALUE,
-		TEXT_JSON_VALUE,
-		TEXT_XML_VALUE,
 		APPLICATION_JSON_VALUE,
-		APPLICATION_XML_VALUE
+		TEXT_JSON_VALUE,
+		
+		APPLICATION_FHIR_XML_5_0_0_VALUE,
+		APPLICATION_FHIR_XML_4_3_0_VALUE,
+		APPLICATION_FHIR_XML_4_0_1_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		APPLICATION_XML_VALUE,
+		TEXT_XML_VALUE
 	})
 	public Promise<ResponseEntity<byte[]>> getConceptMap(
 			
@@ -427,12 +463,19 @@ public class FhirConceptMapController extends AbstractFhirController {
 		final String accept,
 
 		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_5_0_0_VALUE,
+			APPLICATION_FHIR_JSON_4_3_0_VALUE,
+			APPLICATION_FHIR_JSON_4_0_1_VALUE,
 			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
 			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			TEXT_JSON_VALUE,
+			
+			APPLICATION_FHIR_XML_5_0_0_VALUE,
+			APPLICATION_FHIR_XML_4_3_0_VALUE,
+			APPLICATION_FHIR_XML_4_0_1_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			APPLICATION_XML_VALUE,
+			TEXT_XML_VALUE
 		})))
 		@RequestParam(value = "_format", required = false)
 		final String _format,

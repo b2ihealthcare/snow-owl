@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
+import static com.b2international.snowowl.fhir.rest.FhirMediaType.*;
+
 import java.io.InputStream;
 import java.util.Optional;
 
@@ -22,6 +24,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.b2international.fhir.operations.OperationParametersFactory;
 import com.b2international.fhir.r5.operations.ConceptMapTranslateParameters;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
@@ -70,12 +73,19 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 	@ApiResponse(responseCode = "400", description = "Bad request")
 	@ApiResponse(responseCode = "404", description = "Concept map not found")
 	@GetMapping(value = "/$translate", produces = {
+		APPLICATION_FHIR_JSON_5_0_0_VALUE,
+		APPLICATION_FHIR_JSON_4_3_0_VALUE,
+		APPLICATION_FHIR_JSON_4_0_1_VALUE,
 		APPLICATION_FHIR_JSON_VALUE,
-		APPLICATION_FHIR_XML_VALUE,
-		TEXT_JSON_VALUE,
-		TEXT_XML_VALUE,
 		APPLICATION_JSON_VALUE,
-		APPLICATION_XML_VALUE
+		TEXT_JSON_VALUE,
+		
+		APPLICATION_FHIR_XML_5_0_0_VALUE,
+		APPLICATION_FHIR_XML_4_3_0_VALUE,
+		APPLICATION_FHIR_XML_4_0_1_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		APPLICATION_XML_VALUE,
+		TEXT_XML_VALUE
 	})
 	public Promise<ResponseEntity<byte[]>> translateType(
 			
@@ -112,12 +122,19 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 		final String accept,
 
 		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_5_0_0_VALUE,
+			APPLICATION_FHIR_JSON_4_3_0_VALUE,
+			APPLICATION_FHIR_JSON_4_0_1_VALUE,
 			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
 			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			TEXT_JSON_VALUE,
+			
+			APPLICATION_FHIR_XML_5_0_0_VALUE,
+			APPLICATION_FHIR_XML_4_3_0_VALUE,
+			APPLICATION_FHIR_XML_4_0_1_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			APPLICATION_XML_VALUE,
+			TEXT_XML_VALUE
 		})))
 		@RequestParam(value = "_format", required = false)
 		final String _format,
@@ -164,27 +181,41 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 	@PostMapping(
 		value = "/$translate", 
 		consumes = {
+			APPLICATION_FHIR_JSON_5_0_0_VALUE,
+			APPLICATION_FHIR_JSON_4_3_0_VALUE,
+			APPLICATION_FHIR_JSON_4_0_1_VALUE,
 			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
 			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			TEXT_JSON_VALUE,
+			
+			APPLICATION_FHIR_XML_5_0_0_VALUE,
+			APPLICATION_FHIR_XML_4_3_0_VALUE,
+			APPLICATION_FHIR_XML_4_0_1_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			APPLICATION_XML_VALUE,
+			TEXT_XML_VALUE
 		},
 		produces = {
+			APPLICATION_FHIR_JSON_5_0_0_VALUE,
+			APPLICATION_FHIR_JSON_4_3_0_VALUE,
+			APPLICATION_FHIR_JSON_4_0_1_VALUE,
 			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
 			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			TEXT_JSON_VALUE,
+			
+			APPLICATION_FHIR_XML_5_0_0_VALUE,
+			APPLICATION_FHIR_XML_4_3_0_VALUE,
+			APPLICATION_FHIR_XML_4_0_1_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			APPLICATION_XML_VALUE,
+			TEXT_XML_VALUE
 		}
 	)
 	public Promise<ResponseEntity<byte[]>> translate(
 			
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The operation's input parameters", content = { 
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
+			@Content(mediaType = APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
 		})
 		final InputStream requestBody,
 		
@@ -197,12 +228,19 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 		final String accept,
 
 		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_5_0_0_VALUE,
+			APPLICATION_FHIR_JSON_4_3_0_VALUE,
+			APPLICATION_FHIR_JSON_4_0_1_VALUE,
 			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
 			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			TEXT_JSON_VALUE,
+			
+			APPLICATION_FHIR_XML_5_0_0_VALUE,
+			APPLICATION_FHIR_XML_4_3_0_VALUE,
+			APPLICATION_FHIR_XML_4_0_1_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			APPLICATION_XML_VALUE,
+			TEXT_XML_VALUE
 		})))
 		@RequestParam(value = "_format", required = false)
 		final String _format,
@@ -213,10 +251,9 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 				
 	) {
 		
-		final var parameters = toFhirParameters(requestBody, contentType);
-		final var request = new ConceptMapTranslateParameters(parameters);
+		final ConceptMapTranslateParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.ConceptMapTranslateParametersFactory.INSTANCE);
 		
-		return translate(request, accept, _format, _pretty);
+		return translate(parameters, accept, _format, _pretty);
 	}
 
 	/**
@@ -243,12 +280,19 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 	@ApiResponse(responseCode = "400", description = "Bad request")
 	@ApiResponse(responseCode = "404", description = "Concept map not found")
 	@GetMapping(value = "/{id:**}/$translate", produces = {
+		APPLICATION_FHIR_JSON_5_0_0_VALUE,
+		APPLICATION_FHIR_JSON_4_3_0_VALUE,
+		APPLICATION_FHIR_JSON_4_0_1_VALUE,
 		APPLICATION_FHIR_JSON_VALUE,
-		APPLICATION_FHIR_XML_VALUE,
-		TEXT_JSON_VALUE,
-		TEXT_XML_VALUE,
 		APPLICATION_JSON_VALUE,
-		APPLICATION_XML_VALUE
+		TEXT_JSON_VALUE,
+		
+		APPLICATION_FHIR_XML_5_0_0_VALUE,
+		APPLICATION_FHIR_XML_4_3_0_VALUE,
+		APPLICATION_FHIR_XML_4_0_1_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		APPLICATION_XML_VALUE,
+		TEXT_XML_VALUE
 	})
 	public Promise<ResponseEntity<byte[]>> translateInstance(
 			
@@ -289,12 +333,19 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 		final String accept,
 
 		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_5_0_0_VALUE,
+			APPLICATION_FHIR_JSON_4_3_0_VALUE,
+			APPLICATION_FHIR_JSON_4_0_1_VALUE,
 			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
 			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			TEXT_JSON_VALUE,
+			
+			APPLICATION_FHIR_XML_5_0_0_VALUE,
+			APPLICATION_FHIR_XML_4_3_0_VALUE,
+			APPLICATION_FHIR_XML_4_0_1_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			APPLICATION_XML_VALUE,
+			TEXT_XML_VALUE
 		})))
 		@RequestParam(value = "_format", required = false)
 		final String _format,
@@ -344,20 +395,34 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 	@PostMapping(
 		value = "/{conceptMapId:**}/$translate", 
 		consumes = {
+			APPLICATION_FHIR_JSON_5_0_0_VALUE,
+			APPLICATION_FHIR_JSON_4_3_0_VALUE,
+			APPLICATION_FHIR_JSON_4_0_1_VALUE,
 			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
 			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			TEXT_JSON_VALUE,
+			
+			APPLICATION_FHIR_XML_5_0_0_VALUE,
+			APPLICATION_FHIR_XML_4_3_0_VALUE,
+			APPLICATION_FHIR_XML_4_0_1_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			APPLICATION_XML_VALUE,
+			TEXT_XML_VALUE
 		},
 		produces = {
+			APPLICATION_FHIR_JSON_5_0_0_VALUE,
+			APPLICATION_FHIR_JSON_4_3_0_VALUE,
+			APPLICATION_FHIR_JSON_4_0_1_VALUE,
 			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
 			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			TEXT_JSON_VALUE,
+			
+			APPLICATION_FHIR_XML_5_0_0_VALUE,
+			APPLICATION_FHIR_XML_4_3_0_VALUE,
+			APPLICATION_FHIR_XML_4_0_1_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			APPLICATION_XML_VALUE,
+			TEXT_XML_VALUE
 		}
 	)
 	public Promise<ResponseEntity<byte[]>> translate(
@@ -367,8 +432,8 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 		String conceptMapId,
 		
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The operation's input parameters", content = { 
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
+			@Content(mediaType = APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
 		})
 		final InputStream requestBody,
 		
@@ -381,12 +446,19 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 		final String accept,
 
 		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_5_0_0_VALUE,
+			APPLICATION_FHIR_JSON_4_3_0_VALUE,
+			APPLICATION_FHIR_JSON_4_0_1_VALUE,
 			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
 			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			TEXT_JSON_VALUE,
+			
+			APPLICATION_FHIR_XML_5_0_0_VALUE,
+			APPLICATION_FHIR_XML_4_3_0_VALUE,
+			APPLICATION_FHIR_XML_4_0_1_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			APPLICATION_XML_VALUE,
+			TEXT_XML_VALUE
 		})))
 		@RequestParam(value = "_format", required = false)
 		final String _format,
@@ -397,13 +469,12 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 		
 	) {
 
-		final var parameters = toFhirParameters(requestBody, contentType);
-		final var request = new ConceptMapTranslateParameters(parameters);
+		final ConceptMapTranslateParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.ConceptMapTranslateParametersFactory.INSTANCE);
 		
 		// Before execution set the URI to match the path variable
-		request.setUrl(conceptMapId);
+		parameters.setUrl(conceptMapId);
 		
-		return translate(request, accept, _format, _pretty);
+		return translate(parameters, accept, _format, _pretty);
 	}
 
 	private Promise<ResponseEntity<byte[]>> translate(
@@ -417,7 +488,7 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 			.buildAsync()
 			.execute(getBus())
 			.then(result -> {
-				return toResponseEntity(result.getParameters(), accept, _format, _pretty);
+				return toResponseEntity(result, accept, _format, _pretty);
 			});
 	}
 }

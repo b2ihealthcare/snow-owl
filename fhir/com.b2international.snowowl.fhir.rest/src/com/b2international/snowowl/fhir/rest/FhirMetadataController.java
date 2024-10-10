@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
+import static com.b2international.snowowl.fhir.rest.FhirMediaType.*;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_PROFILE;
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_X_INTERACTION;
@@ -96,12 +97,19 @@ public class FhirMetadataController extends AbstractFhirController {
 	 */
 	@ApiResponse(responseCode = "200", description = "OK")
 	@GetMapping(value = "/metadata", produces = {
+		APPLICATION_FHIR_JSON_5_0_0_VALUE,
+		APPLICATION_FHIR_JSON_4_3_0_VALUE,
+		APPLICATION_FHIR_JSON_4_0_1_VALUE,
 		APPLICATION_FHIR_JSON_VALUE,
-		APPLICATION_FHIR_XML_VALUE,
-		TEXT_JSON_VALUE,
-		TEXT_XML_VALUE,
 		APPLICATION_JSON_VALUE,
-		APPLICATION_XML_VALUE
+		TEXT_JSON_VALUE,
+		
+		APPLICATION_FHIR_XML_5_0_0_VALUE,
+		APPLICATION_FHIR_XML_4_3_0_VALUE,
+		APPLICATION_FHIR_XML_4_0_1_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		APPLICATION_XML_VALUE,
+		TEXT_XML_VALUE
 	})
 	public ResponseEntity<byte[]> metadata(
 	
@@ -113,12 +121,19 @@ public class FhirMetadataController extends AbstractFhirController {
 		final String accept,
 
 		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_5_0_0_VALUE,
+			APPLICATION_FHIR_JSON_4_3_0_VALUE,
+			APPLICATION_FHIR_JSON_4_0_1_VALUE,
 			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
 			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			TEXT_JSON_VALUE,
+			
+			APPLICATION_FHIR_XML_5_0_0_VALUE,
+			APPLICATION_FHIR_XML_4_3_0_VALUE,
+			APPLICATION_FHIR_XML_4_0_1_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			APPLICATION_XML_VALUE,
+			TEXT_XML_VALUE
 		})))
 		@RequestParam(value = "_format", required = false)
 		final String _format,
@@ -170,12 +185,19 @@ public class FhirMetadataController extends AbstractFhirController {
 	@ApiResponse(responseCode = "200", description = "OK")
 	@ApiResponse(responseCode = "404", description = "Operation definition not found")
 	@GetMapping(value = "/OperationDefinition/{operation}", produces = {
+		APPLICATION_FHIR_JSON_5_0_0_VALUE,
+		APPLICATION_FHIR_JSON_4_3_0_VALUE,
+		APPLICATION_FHIR_JSON_4_0_1_VALUE,
 		APPLICATION_FHIR_JSON_VALUE,
-		APPLICATION_FHIR_XML_VALUE,
-		TEXT_JSON_VALUE,
-		TEXT_XML_VALUE,
 		APPLICATION_JSON_VALUE,
-		APPLICATION_XML_VALUE
+		TEXT_JSON_VALUE,
+		
+		APPLICATION_FHIR_XML_5_0_0_VALUE,
+		APPLICATION_FHIR_XML_4_3_0_VALUE,
+		APPLICATION_FHIR_XML_4_0_1_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		APPLICATION_XML_VALUE,
+		TEXT_XML_VALUE
 	})
 	public ResponseEntity<byte[]> operationDefinition(
 			
@@ -187,12 +209,19 @@ public class FhirMetadataController extends AbstractFhirController {
 		final String accept,
 
 		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_5_0_0_VALUE,
+			APPLICATION_FHIR_JSON_4_3_0_VALUE,
+			APPLICATION_FHIR_JSON_4_0_1_VALUE,
 			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
 			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			TEXT_JSON_VALUE,
+			
+			APPLICATION_FHIR_XML_5_0_0_VALUE,
+			APPLICATION_FHIR_XML_4_3_0_VALUE,
+			APPLICATION_FHIR_XML_4_0_1_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			APPLICATION_XML_VALUE,
+			TEXT_XML_VALUE
 		})))
 		@RequestParam(value = "_format", required = false)
 		final String _format,
@@ -360,14 +389,19 @@ public class FhirMetadataController extends AbstractFhirController {
 				.setDescription(description)
 			)
 			.setFormat(List.of(
-				new CodeType(FORMAT_JSON), 
-				new CodeType(TEXT_JSON_VALUE),
-				new CodeType(APPLICATION_JSON_VALUE),
+				new CodeType(APPLICATION_FHIR_JSON_5_0_0_VALUE),
+				new CodeType(APPLICATION_FHIR_JSON_4_3_0_VALUE),
+				new CodeType(APPLICATION_FHIR_JSON_4_0_1_VALUE),
 				new CodeType(APPLICATION_FHIR_JSON_VALUE),
-				new CodeType(FORMAT_XML),
-				new CodeType(TEXT_XML_VALUE),
+				new CodeType(APPLICATION_JSON_VALUE),
+				new CodeType(TEXT_JSON_VALUE),
+				
+				new CodeType(APPLICATION_FHIR_XML_5_0_0_VALUE),
+				new CodeType(APPLICATION_FHIR_XML_4_3_0_VALUE),
+				new CodeType(APPLICATION_FHIR_XML_4_0_1_VALUE),
+				new CodeType(APPLICATION_FHIR_XML_VALUE),
 				new CodeType(APPLICATION_XML_VALUE),
-				new CodeType(APPLICATION_FHIR_XML_VALUE)
+				new CodeType(TEXT_XML_VALUE)
 			))
 			.setRest(List.of(rest));
 	}

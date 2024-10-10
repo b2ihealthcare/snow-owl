@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
+import static com.b2international.snowowl.fhir.rest.FhirMediaType.*;
+
 import java.io.InputStream;
 
 import org.hl7.fhir.r5.model.Coding;
@@ -23,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.fhir.operations.OperationParametersFactory;
 import com.b2international.fhir.r5.operations.CodeSystemSubsumptionParameters;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
@@ -65,12 +68,19 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 	@ApiResponse(responseCode = "400", description = "Bad request")
 	@ApiResponse(responseCode = "404", description = "CodeSystem not found")
 	@GetMapping(value = "/$subsumes", produces = {
+		APPLICATION_FHIR_JSON_5_0_0_VALUE,
+		APPLICATION_FHIR_JSON_4_3_0_VALUE,
+		APPLICATION_FHIR_JSON_4_0_1_VALUE,
 		APPLICATION_FHIR_JSON_VALUE,
-		APPLICATION_FHIR_XML_VALUE,
-		TEXT_JSON_VALUE,
-		TEXT_XML_VALUE,
 		APPLICATION_JSON_VALUE,
-		APPLICATION_XML_VALUE
+		TEXT_JSON_VALUE,
+		
+		APPLICATION_FHIR_XML_5_0_0_VALUE,
+		APPLICATION_FHIR_XML_4_3_0_VALUE,
+		APPLICATION_FHIR_XML_4_0_1_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		APPLICATION_XML_VALUE,
+		TEXT_XML_VALUE
 	})
 	public Promise<ResponseEntity<byte[]>> subsumes(
 			
@@ -95,12 +105,19 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 		final String accept,
 
 		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_5_0_0_VALUE,
+			APPLICATION_FHIR_JSON_4_3_0_VALUE,
+			APPLICATION_FHIR_JSON_4_0_1_VALUE,
 			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
 			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			TEXT_JSON_VALUE,
+			
+			APPLICATION_FHIR_XML_5_0_0_VALUE,
+			APPLICATION_FHIR_XML_4_3_0_VALUE,
+			APPLICATION_FHIR_XML_4_0_1_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			APPLICATION_XML_VALUE,
+			TEXT_XML_VALUE
 		})))
 		@RequestParam(value = "_format", required = false)
 		final String _format,
@@ -141,12 +158,19 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 	@ApiResponse(responseCode = "400", description = "Bad request")
 	@ApiResponse(responseCode = "404", description = "Code system not found")
 	@GetMapping(value = "/{id:**}/$subsumes", produces = {
+		APPLICATION_FHIR_JSON_5_0_0_VALUE,
+		APPLICATION_FHIR_JSON_4_3_0_VALUE,
+		APPLICATION_FHIR_JSON_4_0_1_VALUE,
 		APPLICATION_FHIR_JSON_VALUE,
-		APPLICATION_FHIR_XML_VALUE,
-		TEXT_JSON_VALUE,
-		TEXT_XML_VALUE,
 		APPLICATION_JSON_VALUE,
-		APPLICATION_XML_VALUE
+		TEXT_JSON_VALUE,
+		
+		APPLICATION_FHIR_XML_5_0_0_VALUE,
+		APPLICATION_FHIR_XML_4_3_0_VALUE,
+		APPLICATION_FHIR_XML_4_0_1_VALUE,
+		APPLICATION_FHIR_XML_VALUE,
+		APPLICATION_XML_VALUE,
+		TEXT_XML_VALUE
 	})
 	public Promise<ResponseEntity<byte[]>> subsumes(
 			
@@ -167,12 +191,19 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 		final String accept,
 
 		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_5_0_0_VALUE,
+			APPLICATION_FHIR_JSON_4_3_0_VALUE,
+			APPLICATION_FHIR_JSON_4_0_1_VALUE,
 			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
 			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			TEXT_JSON_VALUE,
+			
+			APPLICATION_FHIR_XML_5_0_0_VALUE,
+			APPLICATION_FHIR_XML_4_3_0_VALUE,
+			APPLICATION_FHIR_XML_4_0_1_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			APPLICATION_XML_VALUE,
+			TEXT_XML_VALUE
 		})))
 		@RequestParam(value = "_format", required = false)
 		final String _format,
@@ -214,27 +245,41 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 	@PostMapping(
 		value = "/$subsumes", 
 		consumes = {
+			APPLICATION_FHIR_JSON_5_0_0_VALUE,
+			APPLICATION_FHIR_JSON_4_3_0_VALUE,
+			APPLICATION_FHIR_JSON_4_0_1_VALUE,
 			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
 			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			TEXT_JSON_VALUE,
+			
+			APPLICATION_FHIR_XML_5_0_0_VALUE,
+			APPLICATION_FHIR_XML_4_3_0_VALUE,
+			APPLICATION_FHIR_XML_4_0_1_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			APPLICATION_XML_VALUE,
+			TEXT_XML_VALUE
 		},
 		produces = {
+			APPLICATION_FHIR_JSON_5_0_0_VALUE,
+			APPLICATION_FHIR_JSON_4_3_0_VALUE,
+			APPLICATION_FHIR_JSON_4_0_1_VALUE,
 			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
 			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			TEXT_JSON_VALUE,
+			
+			APPLICATION_FHIR_XML_5_0_0_VALUE,
+			APPLICATION_FHIR_XML_4_3_0_VALUE,
+			APPLICATION_FHIR_XML_4_0_1_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			APPLICATION_XML_VALUE,
+			TEXT_XML_VALUE
 		}
 	)
 	public Promise<ResponseEntity<byte[]>> subsumes(
 			
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The operation's input parameters", content = { 
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
+			@Content(mediaType = APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
 		})
 		final InputStream requestBody,
 		
@@ -247,12 +292,19 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 		final String accept,
 
 		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_5_0_0_VALUE,
+			APPLICATION_FHIR_JSON_4_3_0_VALUE,
+			APPLICATION_FHIR_JSON_4_0_1_VALUE,
 			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
 			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			TEXT_JSON_VALUE,
+			
+			APPLICATION_FHIR_XML_5_0_0_VALUE,
+			APPLICATION_FHIR_XML_4_3_0_VALUE,
+			APPLICATION_FHIR_XML_4_0_1_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			APPLICATION_XML_VALUE,
+			TEXT_XML_VALUE
 		})))
 		@RequestParam(value = "_format", required = false)
 		final String _format,
@@ -263,12 +315,11 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 				
 	) {
 		
-		final var fhirParameters = toFhirParameters(requestBody, contentType);
-		final var request = new CodeSystemSubsumptionParameters(fhirParameters);
+		final CodeSystemSubsumptionParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.CodeSystemSubsumptionParametersFactory.INSTANCE);
 		
-		validateSubsumptionRequest(request);
+		validateSubsumptionRequest(parameters);
 		
-		return subsumes(request, accept, _format, _pretty);
+		return subsumes(parameters, accept, _format, _pretty);
 	}
 	
 	/**
@@ -292,20 +343,34 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 	@PostMapping(
 		value = "/{id:**}/$subsumes", 
 		consumes = {
+			APPLICATION_FHIR_JSON_5_0_0_VALUE,
+			APPLICATION_FHIR_JSON_4_3_0_VALUE,
+			APPLICATION_FHIR_JSON_4_0_1_VALUE,
 			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
 			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			TEXT_JSON_VALUE,
+			
+			APPLICATION_FHIR_XML_5_0_0_VALUE,
+			APPLICATION_FHIR_XML_4_3_0_VALUE,
+			APPLICATION_FHIR_XML_4_0_1_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			APPLICATION_XML_VALUE,
+			TEXT_XML_VALUE
 		},
 		produces = {
+			APPLICATION_FHIR_JSON_5_0_0_VALUE,
+			APPLICATION_FHIR_JSON_4_3_0_VALUE,
+			APPLICATION_FHIR_JSON_4_0_1_VALUE,
 			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
 			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			TEXT_JSON_VALUE,
+			
+			APPLICATION_FHIR_XML_5_0_0_VALUE,
+			APPLICATION_FHIR_XML_4_3_0_VALUE,
+			APPLICATION_FHIR_XML_4_0_1_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			APPLICATION_XML_VALUE,
+			TEXT_XML_VALUE
 		}
 	)
 	public Promise<ResponseEntity<byte[]>> subsumes(
@@ -315,8 +380,8 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 		String codeSystemId,
 		
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The operation's input parameters", content = { 
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
-			@Content(mediaType = AbstractFhirController.APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
+			@Content(mediaType = APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
 		})
 		final InputStream requestBody,
 		
@@ -329,12 +394,19 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 		final String accept,
 
 		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_5_0_0_VALUE,
+			APPLICATION_FHIR_JSON_4_3_0_VALUE,
+			APPLICATION_FHIR_JSON_4_0_1_VALUE,
 			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
 			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			TEXT_JSON_VALUE,
+			
+			APPLICATION_FHIR_XML_5_0_0_VALUE,
+			APPLICATION_FHIR_XML_4_3_0_VALUE,
+			APPLICATION_FHIR_XML_4_0_1_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			APPLICATION_XML_VALUE,
+			TEXT_XML_VALUE
 		})))
 		@RequestParam(value = "_format", required = false)
 		final String _format,
@@ -345,10 +417,9 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 		
 	) {
 		
-		final var fhirParameters = toFhirParameters(requestBody, contentType);
-		final var request = new CodeSystemSubsumptionParameters(fhirParameters);
+		final CodeSystemSubsumptionParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.CodeSystemSubsumptionParametersFactory.INSTANCE);
 		
-		validateSubsumptionRequest(codeSystemId, request);
+		validateSubsumptionRequest(codeSystemId, parameters);
 		
 		/*
 		 * TODO: Interpolate codeSystemId into "system" parameter if the subsumption
@@ -357,7 +428,7 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 		 * instance-level operation works with the CodeSystem instance mentioned in the
 		 * identifier.
 		 */
-		return subsumes(request, accept, _format, _pretty);
+		return subsumes(parameters, accept, _format, _pretty);
 	}
 	
 	private Promise<ResponseEntity<byte[]>> subsumes(
@@ -371,7 +442,7 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 			.buildAsync()
 			.execute(getBus())
 			.then(result -> {
-				return toResponseEntity(result.getParameters(), accept, _format, _pretty);
+				return toResponseEntity(result, accept, _format, _pretty);
 			});
 	}
 
