@@ -24,7 +24,6 @@ import org.hl7.fhir.r5.model.Bundle;
 import org.hl7.fhir.r5.model.OperationOutcome;
 import org.hl7.fhir.r5.model.OperationOutcome.IssueSeverity;
 import org.hl7.fhir.r5.model.OperationOutcome.IssueType;
-import org.hl7.fhir.r5.model.Parameters;
 import org.hl7.fhir.r5.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +38,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.commons.exceptions.*;
+import com.b2international.fhir.operations.OperationParametersFactory;
 import com.b2international.fhir.r5.operations.BaseParameters;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
@@ -93,8 +93,14 @@ public abstract class AbstractFhirController extends AbstractRestService {
 		}
 	}
 	
-	protected final Parameters toFhirParameters(final InputStream requestBody, final String contentType) {
-		return toFhirResource(requestBody, contentType, Parameters.class);
+	@SuppressWarnings("unchecked")
+	protected final <T extends BaseParameters> T toFhirParameters(final InputStream requestBody, final String contentType, OperationParametersFactory factory) {
+		try {
+			final FhirMediaType mediaType = FhirMediaType.parse(contentType, null /* format is not supported yet when sending data */);
+			return (T) mediaType.parseParameters(requestBody, factory);
+		} catch (IOException e) {
+			throw new BadRequestException(String.format("Failed to parse request body as a complete Parameters resource: %s", e.getMessage()));
+		}
 	}
 	
 	protected final ResponseEntity<byte[]> toResponseEntity(
@@ -112,7 +118,7 @@ public abstract class AbstractFhirController extends AbstractRestService {
 			
 			mediaType.writeParameters(baos, parameters, prettyPrinting);
 		} catch (IOException e) {
-			throw new BadRequestException(String.format("Failed to serialize FHIR operation parameters to a response body.",
+			throw new BadRequestException(String.format("Failed to serialize FHIR operation parameters ('%s') to a response body.",
 				parameters.getClass().getSimpleName()));
 		}
 

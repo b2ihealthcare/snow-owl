@@ -24,6 +24,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.b2international.fhir.operations.OperationParametersFactory;
 import com.b2international.fhir.r5.operations.CodeSystemValidateCodeParameters;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
@@ -249,9 +250,8 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 		final Boolean _pretty
 			
 	) {
-		final var fhirParameters = toFhirParameters(requestBody, contentType);
-		final var request = new CodeSystemValidateCodeParameters(fhirParameters);
-		return validateCode(request, accept, _format, _pretty);
+		final CodeSystemValidateCodeParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.CodeSystemValidateCodeParametersFactory.INSTANCE);
+		return validateCode(parameters, accept, _format, _pretty);
 	}
 
 	
@@ -469,8 +469,7 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 		
 	) {
 		
-		final var fhirParameters = toFhirParameters(requestBody, contentType);
-		final CodeSystemValidateCodeParameters parameters = new CodeSystemValidateCodeParameters(fhirParameters);
+		final CodeSystemValidateCodeParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.CodeSystemValidateCodeParametersFactory.INSTANCE);
 		
 		// Validate parameters that are not allowed on the instance level
 		if (parameters.getUrl() != null) {

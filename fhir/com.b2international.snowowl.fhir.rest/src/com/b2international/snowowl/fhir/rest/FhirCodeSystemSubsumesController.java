@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.rest;
 
 import static com.b2international.snowowl.fhir.rest.FhirMediaType.*;
+
 import java.io.InputStream;
 
 import org.hl7.fhir.r5.model.Coding;
@@ -24,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.fhir.operations.OperationParametersFactory;
 import com.b2international.fhir.r5.operations.CodeSystemSubsumptionParameters;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
@@ -313,12 +315,11 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 				
 	) {
 		
-		final var fhirParameters = toFhirParameters(requestBody, contentType);
-		final var request = new CodeSystemSubsumptionParameters(fhirParameters);
+		final CodeSystemSubsumptionParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.CodeSystemSubsumptionParametersFactory.INSTANCE);
 		
-		validateSubsumptionRequest(request);
+		validateSubsumptionRequest(parameters);
 		
-		return subsumes(request, accept, _format, _pretty);
+		return subsumes(parameters, accept, _format, _pretty);
 	}
 	
 	/**
@@ -416,10 +417,9 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 		
 	) {
 		
-		final var fhirParameters = toFhirParameters(requestBody, contentType);
-		final var request = new CodeSystemSubsumptionParameters(fhirParameters);
+		final CodeSystemSubsumptionParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.CodeSystemSubsumptionParametersFactory.INSTANCE);
 		
-		validateSubsumptionRequest(codeSystemId, request);
+		validateSubsumptionRequest(codeSystemId, parameters);
 		
 		/*
 		 * TODO: Interpolate codeSystemId into "system" parameter if the subsumption
@@ -428,7 +428,7 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 		 * instance-level operation works with the CodeSystem instance mentioned in the
 		 * identifier.
 		 */
-		return subsumes(request, accept, _format, _pretty);
+		return subsumes(parameters, accept, _format, _pretty);
 	}
 	
 	private Promise<ResponseEntity<byte[]>> subsumes(

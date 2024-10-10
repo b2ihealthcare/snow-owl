@@ -24,6 +24,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.b2international.fhir.operations.OperationParametersFactory;
 import com.b2international.fhir.r5.operations.ConceptMapTranslateParameters;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
@@ -250,10 +251,9 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 				
 	) {
 		
-		final var parameters = toFhirParameters(requestBody, contentType);
-		final var request = new ConceptMapTranslateParameters(parameters);
+		final ConceptMapTranslateParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.ConceptMapTranslateParametersFactory.INSTANCE);
 		
-		return translate(request, accept, _format, _pretty);
+		return translate(parameters, accept, _format, _pretty);
 	}
 
 	/**
@@ -469,13 +469,12 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 		
 	) {
 
-		final var parameters = toFhirParameters(requestBody, contentType);
-		final var request = new ConceptMapTranslateParameters(parameters);
+		final ConceptMapTranslateParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.ConceptMapTranslateParametersFactory.INSTANCE);
 		
 		// Before execution set the URI to match the path variable
-		request.setUrl(conceptMapId);
+		parameters.setUrl(conceptMapId);
 		
-		return translate(request, accept, _format, _pretty);
+		return translate(parameters, accept, _format, _pretty);
 	}
 
 	private Promise<ResponseEntity<byte[]>> translate(

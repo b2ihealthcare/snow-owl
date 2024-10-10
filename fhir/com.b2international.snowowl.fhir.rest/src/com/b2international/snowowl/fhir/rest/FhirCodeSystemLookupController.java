@@ -26,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.http.AcceptLanguageHeader;
+import com.b2international.fhir.operations.OperationParametersFactory;
 import com.b2international.fhir.r5.operations.CodeSystemLookupParameters;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
@@ -252,10 +253,9 @@ public class FhirCodeSystemLookupController extends AbstractFhirController {
 
 	) {
 		
-		final var fhirParameters = toFhirParameters(requestBody, contentType);
-		final var request = new CodeSystemLookupParameters(fhirParameters);
+		final CodeSystemLookupParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.CodeSystemLookupParametersFactory.INSTANCE);
 		
-		return lookup(request, accept, _format, _pretty);
+		return lookup(parameters, accept, _format, _pretty);
 	}
 
 	private Promise<ResponseEntity<byte[]>> lookup(

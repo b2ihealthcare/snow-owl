@@ -24,6 +24,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.b2international.fhir.operations.OperationParametersFactory;
 import com.b2international.fhir.r5.operations.ValueSetValidateCodeParameters;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
@@ -261,11 +262,9 @@ public class FhirValueSetValidateCodeController extends AbstractFhirController {
 		final Boolean _pretty		
 			
 	) {
+		final ValueSetValidateCodeParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.ValueSetValidateCodeParametersFactory.INSTANCE);
 		
-		final var fhirParameters = toFhirParameters(requestBody, contentType);
-		final var request = new ValueSetValidateCodeParameters(fhirParameters);
-		
-		return validateCode(request, accept, _format, _pretty);
+		return validateCode(parameters, accept, _format, _pretty);
 	}
 
 	
@@ -495,13 +494,12 @@ public class FhirValueSetValidateCodeController extends AbstractFhirController {
 		
 	) {
 		
-		final var fhirParameters = toFhirParameters(requestBody, contentType);
-		final var request = new ValueSetValidateCodeParameters(fhirParameters);
+		final ValueSetValidateCodeParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.ValueSetValidateCodeParametersFactory.INSTANCE);
 		
 		// Before execution set the URI to match the path variable
-		request.setUrl(valueSetId);
+		parameters.setUrl(valueSetId);
 		
-		return validateCode(request, accept, _format, _pretty);
+		return validateCode(parameters, accept, _format, _pretty);
 	}
 
 	private Promise<ResponseEntity<byte[]>> validateCode(

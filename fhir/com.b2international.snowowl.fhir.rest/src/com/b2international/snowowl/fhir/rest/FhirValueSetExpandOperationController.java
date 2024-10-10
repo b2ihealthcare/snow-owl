@@ -27,6 +27,7 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.commons.http.AcceptLanguageHeader;
+import com.b2international.fhir.operations.OperationParametersFactory;
 import com.b2international.fhir.r5.operations.ValueSetExpandParameters;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
@@ -267,40 +268,39 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 			
 	) {
 		
-		final var fhirParameters = toFhirParameters(requestBody, contentType);
-		final var request = new ValueSetExpandParameters(fhirParameters);
+		final ValueSetExpandParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.ValueSetExpandParametersFactory.INSTANCE);
 		
-		if (request.getUrl() == null && request.getValueSet() == null) {
+		if (parameters.getUrl() == null && parameters.getValueSet() == null) {
 			throw new BadRequestException("Both URL and ValueSet parameters are null.", "ExpandValueSetRequest");
 		}
 
-		if (request.getUrl() == null) {
+		if (parameters.getUrl() == null) {
 			throw new BadRequestException("Expand request URL is not defined.", "ExpandValueSetRequest");
 		}
 		
-		if (request.getUrl() != null && 
-			request.getValueSet() != null && 
-			request.getValueSet().getUrl() != null &&
-			!request.getUrl().equals(request.getValueSet().getUrl())) {
+		if (parameters.getUrl() != null && 
+			parameters.getValueSet() != null && 
+			parameters.getValueSet().getUrl() != null &&
+			!parameters.getUrl().equals(parameters.getValueSet().getUrl())) {
 			
 			throw new BadRequestException("URL and ValueSet.URL parameters are different.", "ExpandValueSetRequest");
 		}
 		
 		// The "next" parameter will re-use request parameters in query parameter form
 		final UriComponentsBuilder nextUriBuilder = MvcUriComponentsBuilder.fromMethodName(FhirValueSetExpandOperationController.class, "expandType", 
-			request.getUrl() == null ? null : request.getUrl().getValue(), 
-			request.getFilter() == null ? null : request.getFilter().getValue(), 
-			request.getActiveOnly() == null ? null : request.getActiveOnly().getValue(), 
-			request.getDisplayLanguage() == null ? null : request.getDisplayLanguage(), 
-			request.getIncludeDesignations() == null ? null : request.getIncludeDefinition().getValue(), 
-			request.getWithHistorySupplements() == null ? null : request.getWithHistorySupplements().getValue(), 
-			request.getCount() == null ? null : request.getCount().getValue(), 
-			request.getAfter() == null ? null : request.getAfter().getValue(),
+			parameters.getUrl() == null ? null : parameters.getUrl().getValue(), 
+			parameters.getFilter() == null ? null : parameters.getFilter().getValue(), 
+			parameters.getActiveOnly() == null ? null : parameters.getActiveOnly().getValue(), 
+			parameters.getDisplayLanguage() == null ? null : parameters.getDisplayLanguage(), 
+			parameters.getIncludeDesignations() == null ? null : parameters.getIncludeDefinition().getValue(), 
+			parameters.getWithHistorySupplements() == null ? null : parameters.getWithHistorySupplements().getValue(), 
+			parameters.getCount() == null ? null : parameters.getCount().getValue(), 
+			parameters.getAfter() == null ? null : parameters.getAfter().getValue(),
 			accept,
 			_format,
 			_pretty);
 
-		return expand(request, nextUriBuilder, accept, _format, _pretty);
+		return expand(parameters, nextUriBuilder, accept, _format, _pretty);
 	}
 
 	/**
