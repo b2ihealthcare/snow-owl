@@ -31,6 +31,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -323,6 +324,18 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	public @ResponseBody ResponseEntity<byte[]> handle(final ConflictException ex, final WebRequest request) {
 		FhirException fhirException = new FhirException(ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGLOCALFAIL);
 		return toResponseEntity(HttpStatus.CONFLICT, fhirException.toOperationOutcome(), request);
+	}
+	
+	/**
+	 * Exception handler for exceptions thrown due to required but missing query parameters.
+	 * @param ex
+	 * @return
+	 */
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public @ResponseBody ResponseEntity<byte[]> handle(final MissingServletRequestParameterException ex, final WebRequest request) {
+		FhirException fhirException = new FhirException(ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGBADSYNTAX);
+		return toResponseEntity(HttpStatus.BAD_REQUEST, fhirException.toOperationOutcome(), request);
 	}
 	
 }
