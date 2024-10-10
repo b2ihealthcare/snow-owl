@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.validation.snomed;
 
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.MODULE_B2I_EXTENSION;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.MODULE_SCT_CORE;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -1263,37 +1265,50 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				.build();
 		
 		final SnomedRelationshipIndexEntry relationship1 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE)
-				.relationshipGroup(1).build();
+				.relationshipGroup(1).moduleId(MODULE_B2I_EXTENSION).build();
 		final SnomedRelationshipIndexEntry relationship2 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
-				.relationshipGroup(1).build();
+				.relationshipGroup(1).moduleId(MODULE_B2I_EXTENSION).build();
 		final SnomedRelationshipIndexEntry relationship3 = relationship(Concepts.ROOT_CONCEPT, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
-				.relationshipGroup(2).build();
+				.relationshipGroup(2).moduleId(MODULE_B2I_EXTENSION).build();
 		final SnomedRelationshipIndexEntry relationship4 = relationship(Concepts.ROOT_CONCEPT, ASSOCIATED_PROCEDURE, OBSERVABLE_ENTITY)
-				.relationshipGroup(2).build();
+				.relationshipGroup(2).moduleId(MODULE_B2I_EXTENSION).build();
 		final SnomedRelationshipIndexEntry relationship5 = relationship(Concepts.ROOT_CONCEPT, ASSOCIATED_PROCEDURE, PROCEDURE)
-				.relationshipGroup(2).build();
+				.relationshipGroup(2).moduleId(MODULE_B2I_EXTENSION).build();
+		final SnomedRelationshipIndexEntry relationship6 = relationship(Concepts.ROOT_CONCEPT, ASSOCIATED_PROCEDURE, OBSERVABLE_ENTITY)
+				.relationshipGroup(2).moduleId(MODULE_SCT_CORE).build(); //Incorrect range for type, out of scope module, shouldn't be reported
 		
 		SnomedRefSetMemberIndexEntry axiomMember1 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.REFSET_OWL_AXIOM)
 				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE))
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
+				.moduleId(MODULE_B2I_EXTENSION)
 				.build();
 		
 		SnomedRefSetMemberIndexEntry axiomMember2 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.REFSET_OWL_AXIOM)
 				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT))
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
+				.moduleId(MODULE_B2I_EXTENSION)
 				.build();
 		
 		SnomedRefSetMemberIndexEntry axiomMember3 = member(Concepts.ROOT_CONCEPT, Concepts.REFSET_OWL_AXIOM)
 				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE))
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
+				.moduleId(MODULE_B2I_EXTENSION)
+				.build();
+		
+		//Incorrect range for type, out of scope module, shouldn't be reported
+		SnomedRefSetMemberIndexEntry axiomMember4 = member(Concepts.ROOT_CONCEPT, Concepts.REFSET_OWL_AXIOM)
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
+				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE))
+				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
+				.moduleId(MODULE_SCT_CORE)
 				.build();
 		
 		indexRevision(MAIN, mrcmRangeMember1, mrcmRangeMember2, mrcmRangeMember3, mrcmRangeMember4,
-				relationship1, relationship2, relationship3, relationship4, relationship5,
-				axiomMember1, axiomMember2, axiomMember3);
+				relationship1, relationship2, relationship3, relationship4, relationship5, relationship6,
+				axiomMember1, axiomMember2, axiomMember3, axiomMember4);
 		
 		ValidationIssues issues = validate(ruleId);
 		assertAffectedComponents(issues, 
@@ -1337,63 +1352,72 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				
 		//Relationships
 		final SnomedRelationshipIndexEntry relationship1 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.IS_A, Concepts.CONCEPT_MODEL_ATTRIBUTE)
-				.relationshipGroup(1).build();
+				.relationshipGroup(1).moduleId(MODULE_B2I_EXTENSION).build();
 		
 		final SnomedRelationshipIndexEntry relationship2 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
-				.relationshipGroup(1).build();
+				.relationshipGroup(1).moduleId(MODULE_B2I_EXTENSION).build();
 		
 		final SnomedRelationshipIndexEntry relationship3 = relationship(Concepts.ROOT_CONCEPT, Concepts.TEXT_DEFINITION, Concepts.PHYSICAL_OBJECT)
-				.relationshipGroup(2).build();
+				.relationshipGroup(2).moduleId(MODULE_B2I_EXTENSION).build();
 		
 		final SnomedRelationshipIndexEntry relationship4 = relationship(Concepts.PHYSICAL_OBJECT, Concepts.FINDING_SITE, Concepts.TEXT_DEFINITION)
-				.relationshipGroup(0).build();
+				.relationshipGroup(0).moduleId(MODULE_B2I_EXTENSION).build();
 		
 		final SnomedRelationshipIndexEntry relationship5 = relationship(Concepts.PHYSICAL_OBJECT, Concepts.HAS_ACTIVE_INGREDIENT, Concepts.PHYSICAL_OBJECT)
-				.relationshipGroup(3).build();
+				.relationshipGroup(3).moduleId(MODULE_B2I_EXTENSION).build();
 		
-		final SnomedRelationshipIndexEntry relationship6 = concreteValue(Concepts.PHYSICAL_OBJECT, Concepts.HAS_ACTIVE_INGREDIENT, new RelationshipValue(Integer.valueOf(5))).build();
-		final SnomedRelationshipIndexEntry relationship7 = concreteValue(Concepts.PHYSICAL_OBJECT, Concepts.FINDING_SITE, new RelationshipValue(Integer.valueOf(15))).build();
-		final SnomedRelationshipIndexEntry relationship8 = concreteValue(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.HAS_ACTIVE_INGREDIENT, new RelationshipValue(Integer.valueOf(20))).build();
+		final SnomedRelationshipIndexEntry relationship6 = concreteValue(Concepts.PHYSICAL_OBJECT, Concepts.HAS_ACTIVE_INGREDIENT, new RelationshipValue(Integer.valueOf(5)))
+				.moduleId(MODULE_B2I_EXTENSION).build();
+		final SnomedRelationshipIndexEntry relationship7 = concreteValue(Concepts.PHYSICAL_OBJECT, Concepts.FINDING_SITE, new RelationshipValue(Integer.valueOf(15)))
+				.moduleId(MODULE_B2I_EXTENSION).build();
+		final SnomedRelationshipIndexEntry relationship8 = concreteValue(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.HAS_ACTIVE_INGREDIENT, new RelationshipValue(Integer.valueOf(20)))
+				.moduleId(MODULE_B2I_EXTENSION).build();
+		final SnomedRelationshipIndexEntry relationship9 = concreteValue(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.HAS_ACTIVE_INGREDIENT, new RelationshipValue(Integer.valueOf(20)))
+				.moduleId(MODULE_SCT_CORE).build(); //Incorrect type, out of scope module, shouldn't be reported
 		
 		// OWL axioms
 		SnomedRefSetMemberIndexEntry axiomMember1 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.REFSET_OWL_AXIOM)
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE))
+				.moduleId(MODULE_B2I_EXTENSION)
 				.build();
 		
 		SnomedRefSetMemberIndexEntry axiomMember2 = member(Concepts.PHYSICAL_OBJECT, Concepts.REFSET_OWL_AXIOM)
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT))
+				.moduleId(MODULE_B2I_EXTENSION)
 				.build();
 		
 		SnomedRefSetMemberIndexEntry axiomMember3 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.REFSET_OWL_AXIOM)
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.PHYSICAL_OBJECT, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.PHYSICAL_OBJECT, Concepts.CONCEPT_MODEL_ATTRIBUTE))
+				.moduleId(MODULE_B2I_EXTENSION)
+				.build();
+		
+		//Incorrect type, out of scope module, shouldn't be reported
+		SnomedRefSetMemberIndexEntry axiomMember4 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.REFSET_OWL_AXIOM)
+				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.PHYSICAL_OBJECT, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
+				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.PHYSICAL_OBJECT, Concepts.CONCEPT_MODEL_ATTRIBUTE))
+				.moduleId(MODULE_SCT_CORE)
 				.build();
 		
 		indexRevision(MAIN, mrcmDomainMember1, mrcmAttributeDomainMember1, mrcmDomainMember2, mrcmAttributeDomainMember2,
 			relationship1, relationship2, relationship3, relationship4, relationship5, relationship6, relationship7, relationship8,
-			axiomMember1, axiomMember2,	axiomMember3);
+			relationship9, axiomMember1, axiomMember2,	axiomMember3, axiomMember4);
 		
 		ValidationIssues issues = validate(ruleId);
 		Assertions.assertThat(issues.stream().map(ValidationIssue::getAffectedComponent).collect(Collectors.toSet()))
-			.contains(
+			.containsOnly(
 				ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, axiomMember2.getId()),
 				ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, axiomMember3.getId()),
 				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship3.getId()),
 				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship4.getId()),
 				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship7.getId()),
 				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship8.getId())
-			)
-			.doesNotContain(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, axiomMember1.getId()),
-				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship1.getId()),
-				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship2.getId()),
-				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship5.getId()),
-				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship5.getId()),
-				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship6.getId())
 			);
 	}
 	
