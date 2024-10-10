@@ -31,6 +31,7 @@ import com.b2international.snowowl.fhir.rest.tests.FhirRestTest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
  * CodeSystem $lookup operation for FHIR code systems REST end-point test cases
@@ -70,13 +71,45 @@ public class FhirSnomedCodeSystemLookupTest extends FhirRestTest {
 			.body("issue.code", hasItem("not-found"))
 			.body("issue.diagnostics", hasItem("Concept with identifier '12345' could not be found."));
 	}
-	
+
 	@Test
-	public void GET_CodeSystem_$lookup_Existing() throws Exception {
+	public void GET_CodeSystem_$lookup_Existing_R4() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.queryParam("system", SNOMEDCT_URL)
 			.queryParam("code", Concepts.ROOT_CONCEPT)
-			.queryParam("_format", "json")
+			.queryParam("_format", RestExtensions.encodeQueryParameter("application/fhir+json;fhirVersion=4.0.1"))
+			.when().get(CODESYSTEM_LOOKUP)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Parameters"))
+			.body("parameter[0].name", equalTo("name"))
+			.body("parameter[0].valueString", equalTo("SNOMEDCT"))
+			.body("parameter[1].name", equalTo("display"))
+			.body("parameter[1].valueString", equalTo("SNOMED CT Concept"));
+	}
+	
+	@Test
+	public void GET_CodeSystem_$lookup_Existing_R4B() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("system", SNOMEDCT_URL)
+			.queryParam("code", Concepts.ROOT_CONCEPT)
+			.queryParam("_format", RestExtensions.encodeQueryParameter("application/fhir+json;fhirVersion=4.3.0"))
+			.when().get(CODESYSTEM_LOOKUP)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Parameters"))
+			.body("parameter[0].name", equalTo("name"))
+			.body("parameter[0].valueString", equalTo("SNOMEDCT"))
+			.body("parameter[1].name", equalTo("display"))
+			.body("parameter[1].valueString", equalTo("SNOMED CT Concept"));
+	}
+	
+	@Test
+	public void GET_CodeSystem_$lookup_Existing_R5() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("system", SNOMEDCT_URL)
+			.queryParam("code", Concepts.ROOT_CONCEPT)
+			.queryParam("_format", RestExtensions.encodeQueryParameter("application/fhir+json;fhirVersion=5.0.0"))
 			.when().get(CODESYSTEM_LOOKUP)
 			.then().assertThat()
 			.statusCode(200)

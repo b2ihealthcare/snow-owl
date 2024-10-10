@@ -81,13 +81,50 @@ public class FhirSnomedCodeSystemValidateCodeTest extends FhirRestTest {
 	}
 	
 	@Test
-	public void POST_CodeSystem_$validate_code_Existing() throws Exception {
+	public void POST_CodeSystem_$validate_code_Existing_R4() throws Exception {
 		var parameters = new CodeSystemValidateCodeParameters()
 				.setUrl(SNOMEDCT_URL)
 				.setCoding(new Coding().setSystem(SNOMEDCT_URL).setCode(Concepts.ROOT_CONCEPT));
 
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.contentType(APPLICATION_FHIR_JSON)
+			.contentType("application/fhir+json;fhirVersion=4.0.1")
+			.accept("application/fhir+json;fhirVersion=4.0.1")
+			.body(toJson(parameters.getParameters()))
+			.when().post(CODESYSTEM_VALIDATE_CODE)
+			.then().assertThat()
+			.statusCode(200)
+			.body("parameter[0].name", equalTo("result"))
+			.body("parameter[0].valueBoolean", equalTo(true))
+			.body("parameter[1]", nullValue());
+	}
+	
+	@Test
+	public void POST_CodeSystem_$validate_code_Existing_R4B() throws Exception {
+		var parameters = new CodeSystemValidateCodeParameters()
+				.setUrl(SNOMEDCT_URL)
+				.setCoding(new Coding().setSystem(SNOMEDCT_URL).setCode(Concepts.ROOT_CONCEPT));
+
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.contentType("application/fhir+json;fhirVersion=4.3.0")
+			.accept("application/fhir+json;fhirVersion=4.3.0")
+			.body(toJson(parameters.getParameters()))
+			.when().post(CODESYSTEM_VALIDATE_CODE)
+			.then().assertThat()
+			.statusCode(200)
+			.body("parameter[0].name", equalTo("result"))
+			.body("parameter[0].valueBoolean", equalTo(true))
+			.body("parameter[1]", nullValue());
+	}
+	
+	@Test
+	public void POST_CodeSystem_$validate_code_Existing_R5() throws Exception {
+		var parameters = new CodeSystemValidateCodeParameters()
+				.setUrl(SNOMEDCT_URL)
+				.setCoding(new Coding().setSystem(SNOMEDCT_URL).setCode(Concepts.ROOT_CONCEPT));
+
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.contentType("application/fhir+json;fhirVersion=5.0.0")
+			.accept("application/fhir+json;fhirVersion=5.0.0")
 			.body(toJson(parameters.getParameters()))
 			.when().post(CODESYSTEM_VALIDATE_CODE)
 			.then().assertThat()
