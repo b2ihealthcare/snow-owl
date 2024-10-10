@@ -350,12 +350,19 @@ public class FhirCodeSystemController extends AbstractFhirController {
 		final String accept,
 
 		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_5_0_0_VALUE,
+			APPLICATION_FHIR_JSON_4_3_0_VALUE,
+			APPLICATION_FHIR_JSON_4_0_1_VALUE,
 			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
 			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			TEXT_JSON_VALUE,
+			
+			APPLICATION_FHIR_XML_5_0_0_VALUE,
+			APPLICATION_FHIR_XML_4_3_0_VALUE,
+			APPLICATION_FHIR_XML_4_0_1_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			APPLICATION_XML_VALUE,
+			TEXT_XML_VALUE
 		})))
 		@RequestParam(value = "_format", required = false)
 		final String _format,
@@ -455,12 +462,19 @@ public class FhirCodeSystemController extends AbstractFhirController {
 		final String accept,
 
 		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+			APPLICATION_FHIR_JSON_5_0_0_VALUE,
+			APPLICATION_FHIR_JSON_4_3_0_VALUE,
+			APPLICATION_FHIR_JSON_4_0_1_VALUE,
 			APPLICATION_FHIR_JSON_VALUE,
-			APPLICATION_FHIR_XML_VALUE,
-			TEXT_JSON_VALUE,
-			TEXT_XML_VALUE,
 			APPLICATION_JSON_VALUE,
-			APPLICATION_XML_VALUE
+			TEXT_JSON_VALUE,
+			
+			APPLICATION_FHIR_XML_5_0_0_VALUE,
+			APPLICATION_FHIR_XML_4_3_0_VALUE,
+			APPLICATION_FHIR_XML_4_0_1_VALUE,
+			APPLICATION_FHIR_XML_VALUE,
+			APPLICATION_XML_VALUE,
+			TEXT_XML_VALUE
 		})))
 		@RequestParam(value = "_format", required = false)
 		final String _format,
