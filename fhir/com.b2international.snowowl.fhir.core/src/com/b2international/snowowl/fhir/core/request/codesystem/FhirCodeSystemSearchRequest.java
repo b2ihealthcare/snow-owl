@@ -36,6 +36,7 @@ import com.b2international.snowowl.fhir.core.request.FhirResourceSearchRequest;
 final class FhirCodeSystemSearchRequest extends FhirResourceSearchRequest<CodeSystem> {
 
 	private static final long serialVersionUID = 1L;
+	
 	private static final Set<String> EXTERNAL_FHIR_CODESYSTEM_FIELDS = Set.of(
 		R5ObjectFields.CodeSystem.COUNT,
 		R5ObjectFields.CodeSystem.CONTENT,
@@ -44,6 +45,12 @@ final class FhirCodeSystemSearchRequest extends FhirResourceSearchRequest<CodeSy
 		R5ObjectFields.CodeSystem.PROPERTY,
 		R5ObjectFields.CodeSystem.IDENTIFIER
 	);
+	
+	// Identifier system URI that indicates that the identifier value represents a URI
+	private static final String SYSTEM_GLOBALLY_UNIQUE_URI = "urn:ietf:rfc:3986";
+	
+	// URI (URN) prefix for OIDs
+	private static final String OID_PREFIX = "urn:oid:";
 	
 	@Override
 	protected String getResourceType() {
@@ -66,9 +73,9 @@ final class FhirCodeSystemSearchRequest extends FhirResourceSearchRequest<CodeSy
 		includeIfFieldSelected(R5ObjectFields.CodeSystem.IDENTIFIER, () -> {
 			if (!CompareUtils.isEmpty(resource.getOid())) {
 				return new Identifier()
-						.setUse(IdentifierUse.OFFICIAL)
-						.setSystem(resource.getUrl())
-						.setValue(resource.getOid());
+					.setUse(IdentifierUse.OFFICIAL)
+					.setSystem(SYSTEM_GLOBALLY_UNIQUE_URI)
+					.setValue(OID_PREFIX + resource.getOid());
 			} else {
 				return null;
 			}
