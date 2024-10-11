@@ -79,7 +79,7 @@ public class FhirMetadataController extends AbstractFhirController {
 	private FhirApiConfig config; 
 	
 	private static record Metadata (
-		CapabilityStatement capabilityStatement,
+		Map<FHIRVersion, CapabilityStatement> capabilityStatementMap,
 		TerminologyCapabilities terminologyCapabilities,
 		Map<String, OperationDefinition> operationMap
 	) { 
@@ -159,7 +159,12 @@ public class FhirMetadataController extends AbstractFhirController {
 			var terminologyCapabilities = metadataSupplier.get().terminologyCapabilities();
 			return toResponseEntity(terminologyCapabilities, accept, _format, _pretty); 
 		} else {
-			var capabilityStatement = metadataSupplier.get().capabilityStatement();
+			FhirMediaType fhirMediaType = FhirMediaType.parse(accept, _format);
+			FHIRVersion fhirVersion = fhirMediaType.getFhirVersion();
+			
+			var capabilityStatement = metadataSupplier.get()
+				.capabilityStatementMap()
+				.get(fhirVersion);
 			
 			// override/set URL values
 			capabilityStatement.setUrl(resourceUrl);
@@ -260,9 +265,17 @@ public class FhirMetadataController extends AbstractFhirController {
 
 		final String description = getServiceForClass(SnowOwlConfiguration.class).getDescription();
 
-		final CapabilityStatement capabilityStatement = createCapabilityStatement(rest, softwareVersion, date, description);
 		final TerminologyCapabilities terminologyCapabilities = createTerminologyCapabilities(softwareVersion, date, description);
-		return new Metadata(capabilityStatement, terminologyCapabilities, operationMap);
+		final CapabilityStatement capabilityStatement = createCapabilityStatement(rest, softwareVersion, date, description);
+
+		// Set the fhirVersion property in each instance accordingly 
+		final Map<FHIRVersion, CapabilityStatement> capabilityStatementMap = FhirMediaType.SUPPORTED_FHIR_VERSIONS
+			.stream()
+			.collect(Collectors.toMap(v -> v, v -> {
+				return capabilityStatement.copy().setFhirVersion(v);
+			}));
+		
+		return new Metadata(capabilityStatementMap, terminologyCapabilities, operationMap);
 	}
 
 	private List<CapabilityStatement.CapabilityStatementRestResourceComponent> collectResources(final OpenAPI openAPI, final Map<String, OperationDefinition> operationMap) {
