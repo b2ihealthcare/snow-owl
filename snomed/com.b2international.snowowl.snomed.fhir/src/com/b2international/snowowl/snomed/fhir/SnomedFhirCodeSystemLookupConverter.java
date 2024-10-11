@@ -112,7 +112,7 @@ public final class SnomedFhirCodeSystemLookupConverter implements FhirCodeSystem
 		if (parameters.isPropertyRequested(SnomedFhirConstants.SNOMED_PROPERTY_EFFECTIVE_TIME.getCode())) {
 			properties.add(new CodeSystemLookupResultParameters.Property()
 					.setCode(SnomedFhirConstants.SNOMED_PROPERTY_EFFECTIVE_TIME.getCode())
-					.setValue(new DateType(EffectiveTimes.format(snomedConcept.getEffectiveTime(), DateFormats.SHORT))));
+					.setValue(new DateTimeType(EffectiveTimes.format(snomedConcept.getEffectiveTime(), DateFormats.SHORT))));
 		}
 		
 		// Optionally requested properties
