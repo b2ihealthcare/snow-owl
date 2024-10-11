@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.fhir.core.R5ObjectFields;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 /**
@@ -33,10 +34,14 @@ final class FhirConceptMapTranslateRequest implements Request<ServiceProvider, C
 
 	private static final long serialVersionUID = 1L;
 	
-	private ConceptMapTranslateParameters parameters;
+	private final ConceptMapTranslateParameters parameters;
 
 	public FhirConceptMapTranslateRequest(ConceptMapTranslateParameters parameters) {
 		this.parameters = parameters;
+		
+		if (this.parameters.getUrl() == null) {
+			throw new BadRequestException("'url' parameter is required");
+		}
 	}
 	
 	@Override
