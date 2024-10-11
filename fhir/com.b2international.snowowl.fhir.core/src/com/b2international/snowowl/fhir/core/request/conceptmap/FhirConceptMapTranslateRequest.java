@@ -15,7 +15,9 @@
  */
 package com.b2international.snowowl.fhir.core.request.conceptmap;
 
-import org.elasticsearch.core.List;
+import java.util.List;
+
+import org.hl7.fhir.r5.model.Bundle.BundleEntryComponent;
 import org.hl7.fhir.r5.model.ConceptMap;
 
 import com.b2international.fhir.r5.operations.ConceptMapTranslateParameters;
@@ -39,21 +41,40 @@ final class FhirConceptMapTranslateRequest implements Request<ServiceProvider, C
 	public FhirConceptMapTranslateRequest(ConceptMapTranslateParameters parameters) {
 		this.parameters = parameters;
 		
-		if (this.parameters.getUrl() == null) {
-			throw new BadRequestException("'url' parameter is required");
+		// One (and only one) of the in parameters (sourceCode, sourceCoding, sourceCodeableConcept, targetCode, targetCoding, or targetCodeableConcept) SHALL be provided, to identify the code that is to be translated.
+		if (parameters.getSourceCode() == null || parameters.getSourceCoding() == null || parameters.getSourceCodeableConcept() == null || parameters.getTargetCode() == null || parameters.getTargetCoding() == null || parameters.getTargetCodeableConcept() == null) {
+			throw new BadRequestException("One (and only one) of the in parameters (sourceCode, sourceCoding, sourceCodeableConcept, targetCode, targetCoding, targetCodeableConcept) must be provided to identify the code that is to be translated.");
 		}
 	}
 	
 	@Override
 	public ConceptMapTranslateResultParameters execute(ServiceProvider context) {
-		ConceptMap conceptMap = FhirRequests.conceptMaps().prepareGet(parameters.getUrl().getValue())
-				.setElements(List.copyOf(R5ObjectFields.ConceptMap.MANDATORY))
-				.buildAsync().execute(context);
+		ConceptMap conceptMap = lookupConceptMaps(context);
 		return context.service(RepositoryManager.class)
 				.get(conceptMap.getUserString("toolingId"))
 				.optionalService(FhirConceptMapTranslator.class)
 				.orElse(FhirConceptMapTranslator.NOOP)
 				.translate(context, conceptMap, parameters);
+	}
+
+	// TODO make this consider source/target scopes to find appropriate ConceptMaps when URL is not defined, for now we basically need the URL parameter to be able to translate using a dedicated map
+	private ConceptMap lookupConceptMaps(ServiceProvider context) {
+		if (parameters.getUrl() == null) {
+			throw new BadRequestException("'url' is required to reduce the scope of the translate operation to a single ConceptMap");
+		}
+		return FhirRequests.conceptMaps().prepareSearch()
+			.filterByUrl(parameters.getUrl().getValue())
+			.setElements(List.copyOf(R5ObjectFields.ConceptMap.MANDATORY))
+			.setCount(1)
+			.buildAsync()
+			.execute(context)
+			.getEntry()
+			.stream()
+			.map(BundleEntryComponent::getResource)
+			.filter(ConceptMap.class::isInstance)
+			.map(ConceptMap.class::cast)
+			.findFirst()
+			.orElse(null);
 	}
 
 }

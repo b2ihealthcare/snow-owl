@@ -30,9 +30,9 @@ public interface FhirConceptMapTranslator {
 	FhirConceptMapTranslator NOOP = (context, conceptMap, request) -> new ConceptMapTranslateResultParameters().setResult(false).setMessage("N/A"); 
 	
 	/**
-	 * @param context
-	 * @param conceptMap
-	 * @param parameters
+	 * @param context - the service context where to execute the operation
+	 * @param conceptMap - restricts the scope of the translate operation into a single map
+	 * @param parameters - translate in parameters
 	 * @return
 	 */
 	ConceptMapTranslateResultParameters translate(ServiceProvider context, ConceptMap conceptMap, ConceptMapTranslateParameters parameters);
