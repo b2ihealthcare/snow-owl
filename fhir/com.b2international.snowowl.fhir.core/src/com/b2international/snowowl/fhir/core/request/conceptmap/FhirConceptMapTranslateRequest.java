@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.request.conceptmap;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.hl7.fhir.r5.model.Bundle.BundleEntryComponent;
 import org.hl7.fhir.r5.model.ConceptMap;
@@ -42,8 +43,19 @@ final class FhirConceptMapTranslateRequest implements Request<ServiceProvider, C
 		this.parameters = parameters;
 		
 		// One (and only one) of the in parameters (sourceCode, sourceCoding, sourceCodeableConcept, targetCode, targetCoding, or targetCodeableConcept) SHALL be provided, to identify the code that is to be translated.
-		if (parameters.getSourceCode() == null || parameters.getSourceCoding() == null || parameters.getSourceCodeableConcept() == null || parameters.getTargetCode() == null || parameters.getTargetCoding() == null || parameters.getTargetCodeableConcept() == null) {
-			throw new BadRequestException("One (and only one) of the in parameters (sourceCode, sourceCoding, sourceCodeableConcept, targetCode, targetCoding, targetCodeableConcept) must be provided to identify the code that is to be translated.");
+		final long nonNullInputs = Stream.of(
+			parameters.getSourceCode(), 
+			parameters.getSourceCoding(), 
+			parameters.getSourceCodeableConcept(),
+			parameters.getTargetCode(),
+			parameters.getTargetCoding(),
+			parameters.getTargetCodeableConcept()
+		)
+		.filter(p -> p != null)
+		.count();
+		
+		if (nonNullInputs != 1L) {
+			throw new BadRequestException("One (and only one) of the 'in' parameters (sourceCode, sourceCoding, sourceCodeableConcept, targetCode, targetCoding, targetCodeableConcept) must be provided to identify the code that is to be translated.");
 		}
 	}
 	
