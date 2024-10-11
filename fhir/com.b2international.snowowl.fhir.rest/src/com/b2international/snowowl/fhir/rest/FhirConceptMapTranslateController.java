@@ -88,33 +88,33 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 	})
 	public Promise<ResponseEntity<byte[]>> translateType(
 			
-		@Parameter(description = "The code to translate") 
-		@RequestParam(value = "code") 
-		final String code,
+		@Parameter(description = "The code that is to be translated.") 
+		@RequestParam(value = "sourceCode") 
+		final String sourceCode,
 		
-		@Parameter(description = "The code system's uri") 
+		@Parameter(description = "The system for the code that is to be translated.") 
 		@RequestParam(value = "system") 
 		final String system,
 		
-		@Parameter(description = "The code system's version, if null latest is used") 
+		@Parameter(description = "The code system's version, if null latest is used.") 
 		@RequestParam(value = "version") 
 		final Optional<String> version,
 		
-		@Parameter(description = "The source value set") 
-		@RequestParam(value = "source") 
-		final Optional<String> source,
+		@Parameter(description = "Limits the scope of the $translate operation to source codes.") 
+		@RequestParam(value = "sourceScope") 
+		final Optional<String> sourceScope,
 		
-		@Parameter(description = "Value set in which a translation is sought") 
-		@RequestParam(value = "target") 
-		final Optional<String> target,
+		@Parameter(description = "The target code that is to be translated to. If a code is provided, a system must be provided") 
+		@RequestParam(value = "targetCode")
+		final Optional<String> targetCode,
 		
-		@Parameter(description = "Target code system") 
-		@RequestParam(value = "targetsystem") 
+		@Parameter(description = "Identifies a target code system in which a mapping is sought. ") 
+		@RequestParam(value = "targetSystem") 
 		final Optional<String> targetSystem,
 		
-		@Parameter(description = "If true, the mapping is reversed") 
-		@RequestParam(value = "reverse") 
-		final Optional<Boolean> isReverse,
+		@Parameter(description = "Limits the scope of the $translate operation to target codes.") 
+		@RequestParam(value = "targetScope") 
+		final Optional<String> targetScope,
 		
 		@Parameter(hidden = true)
 		@RequestHeader(value = HttpHeaders.ACCEPT)
@@ -144,16 +144,16 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 		
 	) {
 		
-		// TODO fix R4 parameters and replace them with R5 (reintroduce R4, R4B support via dedicated versioned paths)
 		var parameters = new ConceptMapTranslateParameters()
-			.setSourceCode(code)
+			.setSourceCode(sourceCode)
 			.setSystem(system);
 		
-//		version.ifPresent(parameters::setVersion);
-//		source.ifPresent(parameters::setSource);
-//		target.ifPresent(parameters::setTarget);
-//		targetSystem.ifPresent(parameters::setTargetSystem);
-//		isReverse.ifPresent(parameters::setIsReverse);
+		version.ifPresent(parameters::setVersion);
+		sourceScope.ifPresent(parameters::setSourceScope);
+		
+		targetCode.ifPresent(parameters::setTargetCode);
+		targetSystem.ifPresent(parameters::setTargetSystem);
+		targetScope.ifPresent(parameters::setTargetScope);
 		
 		return translate(parameters, accept, _format, _pretty);
 	}
@@ -310,33 +310,33 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 		@PathVariable("id") 
 		String conceptMapId,
 		
-		@Parameter(description = "The code to translate") 
-		@RequestParam(value = "code") 
-		final String code,
+		@Parameter(description = "The code that is to be translated.") 
+		@RequestParam(value = "sourceCode") 
+		final String sourceCode,
 		
-		@Parameter(description = "The code system's uri") 
+		@Parameter(description = "The system for the code that is to be translated.") 
 		@RequestParam(value = "system") 
 		final String system,
 		
-		@Parameter(description = "The code system's version") 
+		@Parameter(description = "The code system's version, if null latest is used.") 
 		@RequestParam(value = "version") 
 		final Optional<String> version,
 		
-		@Parameter(description = "The source value set") 
-		@RequestParam(value = "source") 
-		final Optional<String> source,
+		@Parameter(description = "Limits the scope of the $translate operation to source codes.") 
+		@RequestParam(value = "sourceScope") 
+		final Optional<String> sourceScope,
 		
-		@Parameter(description = "Value set in which a translation is sought") 
-		@RequestParam(value = "target") 
-		final Optional<String> target,
+		@Parameter(description = "The target code that is to be translated to. If a code is provided, a system must be provided") 
+		@RequestParam(value = "targetCode")
+		final Optional<String> targetCode,
 		
-		@Parameter(description = "Target code system") 
-		@RequestParam(value = "targetsystem") 
+		@Parameter(description = "Identifies a target code system in which a mapping is sought. ") 
+		@RequestParam(value = "targetSystem") 
 		final Optional<String> targetSystem,
 		
-		@Parameter(description = "If true, the mapping is reversed") 
-		@RequestParam(value = "reverse") 
-		final Optional<Boolean> isReverse,
+		@Parameter(description = "Limits the scope of the $translate operation to target codes.") 
+		@RequestParam(value = "targetScope") 
+		final Optional<String> targetScope,
 		
 		@Parameter(hidden = true)
 		@RequestHeader(value = HttpHeaders.ACCEPT)
@@ -367,16 +367,17 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 	) {
 		
 		var parameters = new ConceptMapTranslateParameters()
-			.setSourceCode(code)
+			.setSourceCode(sourceCode)
 			.setSystem(system)
 			// XXX: Using a concept map ID as the URL here
 			.setUrl(conceptMapId);
 		
-//		version.ifPresent(parameters::setVersion);
-//		source.ifPresent(parameters::setSource);
-//		target.ifPresent(parameters::setTarget);
-//		targetSystem.ifPresent(parameters::setTargetSystem);
-//		isReverse.ifPresent(parameters::setIsReverse);
+		version.ifPresent(parameters::setVersion);
+		sourceScope.ifPresent(parameters::setSourceScope);
+		
+		targetCode.ifPresent(parameters::setTargetCode);
+		targetSystem.ifPresent(parameters::setTargetSystem);
+		targetScope.ifPresent(parameters::setTargetScope);
 		
 		return translate(parameters, accept, _format, _pretty);
 	}
