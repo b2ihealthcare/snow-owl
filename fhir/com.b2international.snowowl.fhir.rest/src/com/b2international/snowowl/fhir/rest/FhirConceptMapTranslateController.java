@@ -214,8 +214,19 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 	public Promise<ResponseEntity<byte[]>> translate(
 			
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The operation's input parameters", content = { 
+			@Content(mediaType = APPLICATION_FHIR_JSON_5_0_0_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = APPLICATION_FHIR_JSON_4_3_0_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = APPLICATION_FHIR_JSON_4_0_1_VALUE, schema = @Schema(type = "object")),
 			@Content(mediaType = APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
-			@Content(mediaType = APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
+			@Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = TEXT_JSON_VALUE, schema = @Schema(type = "object")),
+
+			@Content(mediaType = APPLICATION_FHIR_XML_5_0_0_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = APPLICATION_FHIR_XML_4_3_0_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = APPLICATION_FHIR_XML_4_0_1_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = APPLICATION_XML_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = TEXT_XML_VALUE, schema = @Schema(type = "object"))
 		})
 		final InputStream requestBody,
 		
@@ -432,8 +443,19 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 		String conceptMapId,
 		
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The operation's input parameters", content = { 
+			@Content(mediaType = APPLICATION_FHIR_JSON_5_0_0_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = APPLICATION_FHIR_JSON_4_3_0_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = APPLICATION_FHIR_JSON_4_0_1_VALUE, schema = @Schema(type = "object")),
 			@Content(mediaType = APPLICATION_FHIR_JSON_VALUE, schema = @Schema(type = "object")),
-			@Content(mediaType = APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object"))
+			@Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = TEXT_JSON_VALUE, schema = @Schema(type = "object")),
+
+			@Content(mediaType = APPLICATION_FHIR_XML_5_0_0_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = APPLICATION_FHIR_XML_4_3_0_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = APPLICATION_FHIR_XML_4_0_1_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = APPLICATION_FHIR_XML_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = APPLICATION_XML_VALUE, schema = @Schema(type = "object")),
+			@Content(mediaType = TEXT_XML_VALUE, schema = @Schema(type = "object"))
 		})
 		final InputStream requestBody,
 		
