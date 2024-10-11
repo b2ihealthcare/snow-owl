@@ -128,7 +128,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 		@RequestHeader(value = HttpHeaders.ACCEPT)
 		final String accept,
 
-		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+		@Parameter(description = "Alternative response format", schema = @Schema(allowableValues = {
 			APPLICATION_FHIR_JSON_5_0_0_VALUE,
 			APPLICATION_FHIR_JSON_4_3_0_VALUE,
 			APPLICATION_FHIR_JSON_4_0_1_VALUE,
@@ -142,7 +142,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 			APPLICATION_FHIR_XML_VALUE,
 			APPLICATION_XML_VALUE,
 			TEXT_XML_VALUE
-		})))
+		}))
 		@RequestParam(value = "_format", required = false)
 		final String _format,
 		
@@ -255,7 +255,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 		@RequestHeader(value = HttpHeaders.ACCEPT)
 		final String accept,
 
-		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+		@Parameter(description = "Alternative response format", schema = @Schema(allowableValues = {
 			APPLICATION_FHIR_JSON_5_0_0_VALUE,
 			APPLICATION_FHIR_JSON_4_3_0_VALUE,
 			APPLICATION_FHIR_JSON_4_0_1_VALUE,
@@ -269,7 +269,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 			APPLICATION_FHIR_XML_VALUE,
 			APPLICATION_XML_VALUE,
 			TEXT_XML_VALUE
-		})))
+		}))
 		@RequestParam(value = "_format", required = false)
 		final String _format,
 		
@@ -390,7 +390,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 		@RequestHeader(value = HttpHeaders.ACCEPT)
 		final String accept,
 
-		@Parameter(description = "Alternative response format", array = @ArraySchema(schema = @Schema(allowableValues = {
+		@Parameter(description = "Alternative response format", schema = @Schema(allowableValues = {
 			APPLICATION_FHIR_JSON_5_0_0_VALUE,
 			APPLICATION_FHIR_JSON_4_3_0_VALUE,
 			APPLICATION_FHIR_JSON_4_0_1_VALUE,
@@ -404,7 +404,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 			APPLICATION_FHIR_XML_VALUE,
 			APPLICATION_XML_VALUE,
 			TEXT_XML_VALUE
-		})))
+		}))
 		@RequestParam(value = "_format", required = false)
 		final String _format,
 		
