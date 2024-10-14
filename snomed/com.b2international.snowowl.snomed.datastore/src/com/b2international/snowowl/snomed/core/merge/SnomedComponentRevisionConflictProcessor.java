@@ -146,6 +146,7 @@ public final class SnomedComponentRevisionConflictProcessor extends ComponentRev
 		}
 		
 		final Multimap<Class<?>, String> donatedComponentsByType = HashMultimap.create();
+		final Set<String> componentIdsToSkip = Sets.newHashSet();
 		
 		// collect components from known donation conflicts
 		for (Conflict conflict : conflicts) {
@@ -159,6 +160,11 @@ public final class SnomedComponentRevisionConflictProcessor extends ComponentRev
 				if (SnomedRf2Headers.FIELD_EFFECTIVE_TIME.equals(changedInSourceAndTarget.getSourceChange().getProperty()) 
 						|| SnomedRf2Headers.FIELD_MODULE_ID.equals(changedInSourceAndTarget.getSourceChange().getProperty())) {
 					donatedComponentsByType.put(DocumentMapping.getClass(objectId.type()), objectId.id());
+				}
+				
+				if (SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME.equals(changedInSourceAndTarget.getSourceChange().getProperty())
+						|| SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME.equals(changedInSourceAndTarget.getSourceChange().getProperty())) {
+					componentIdsToSkip.add(objectId.id());
 				}
 			}
 		}
@@ -174,14 +180,13 @@ public final class SnomedComponentRevisionConflictProcessor extends ComponentRev
 				.stream()
 				.filter(conflict -> {
 					ObjectId objectId = conflict.getObjectId();
-					if (donatedComponentIds.contains(objectId.id())) {
+					if (donatedComponentIds.contains(objectId.id()) || componentIdsToSkip.contains(objectId.id())) {
 						// filter out all conflicts reported around donated content
 						// revise all donated content on merge source, so new parent revision will take place instead
 						staging.reviseOnMergeSource(DocumentMapping.getClass(objectId.type()), objectId.id());
 						return false;
-					} else {
-						return true;
 					}
+					return true;
 				})
 				.collect(Collectors.toList());
 	}
