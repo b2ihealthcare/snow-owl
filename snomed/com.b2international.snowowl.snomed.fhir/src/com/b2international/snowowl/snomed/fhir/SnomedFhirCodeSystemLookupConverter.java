@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.snomed.fhir;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.hl7.fhir.r5.model.*;
@@ -35,6 +32,7 @@ import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.SnomedDisplayTermType;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -45,6 +43,8 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
  * @since 8.0
  */
 public final class SnomedFhirCodeSystemLookupConverter implements FhirCodeSystemLookupConverter {
+	
+	private static final String SNOMED_SYSTEM_URL = "http://snomed.info/sct";
 
 	@Override
 	public String configureConceptExpand(CodeSystemLookupParameters request) {
@@ -70,13 +70,61 @@ public final class SnomedFhirCodeSystemLookupConverter implements FhirCodeSystem
 					.setCode(snomedDescription.getTypeId())
 					.setDisplay(SnomedDisplayTermType.PT.getLabel(snomedDescription.getType()));
 				
-				designations.add(
-					new CodeSystemLookupResultParameters.Designation()
-						// term and language code comes from the generated alternative term generic model
-						.setValue(description.getTerm())
-						.setLanguage(description.getLanguage())
-						.setUse(use)
-				);
+				Map<String,Acceptability> acceptabilityMap = snomedDescription.getAcceptabilityMap();
+				
+				List<Extension> designationExtensions = new ArrayList<>(acceptabilityMap.size());
+				
+				for (String refsetId : acceptabilityMap.keySet().stream().sorted().toList()) {
+					
+					var acceptability = acceptabilityMap.get(refsetId);
+					
+					Extension useContextExtension = new Extension("http://snomed.info/fhir/StructureDefinition/designation-use-context");
+					
+					// Set code
+					Extension code = new Extension("context");
+					
+					Coding codeCoding = new Coding()
+							.setSystem(SNOMED_SYSTEM_URL)
+							.setCode(refsetId);
+					code.setValue(codeCoding);
+					
+					useContextExtension.addExtension(code);
+					
+					// Set role
+					Extension role = new Extension("role");
+					
+					Coding roleCoding = new Coding()
+							.setSystem(SNOMED_SYSTEM_URL)
+							.setCode(acceptability.getConceptId())
+							.setDisplay(acceptability.name());
+					role.setValue(roleCoding);
+					
+					useContextExtension.addExtension(role);
+					
+					// Set type
+					Extension type = new Extension("type");
+					
+					Coding typeCoding = new Coding()
+							.setSystem(SNOMED_SYSTEM_URL)
+							.setCode(snomedDescription.getTypeId())
+							.setDisplay(SnomedDisplayTermType.PT.getLabel(snomedDescription.getType()));
+					type.setValue(typeCoding);
+					
+					useContextExtension.addExtension(type);
+					
+					designationExtensions.add(useContextExtension);
+				}
+				
+				var designation = new CodeSystemLookupResultParameters.Designation();
+				
+				designation
+					// term and language code comes from the generated alternative term generic model
+					.setValue(description.getTerm())
+					.setLanguage(description.getLanguage())
+					.setUse(use)
+					.setExtension(designationExtensions);
+				
+				designations.add(designation);
 			}
 			return designations;
 		} else {
