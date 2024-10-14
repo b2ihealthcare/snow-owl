@@ -41,6 +41,10 @@ final class FhirConceptMapTranslateRequest implements Request<ServiceProvider, C
 
 	public FhirConceptMapTranslateRequest(ConceptMapTranslateParameters parameters) {
 		this.parameters = parameters;
+
+		if (parameters.getUrl() == null) {
+			throw new BadRequestException("'url' is required to reduce the scope of the translate operation to a single ConceptMap");
+		}
 		
 		// One (and only one) of the in parameters (sourceCode, sourceCoding, sourceCodeableConcept, targetCode, targetCoding, or targetCodeableConcept) SHALL be provided, to identify the code that is to be translated.
 		final long nonNullInputs = Stream.of(
@@ -62,6 +66,11 @@ final class FhirConceptMapTranslateRequest implements Request<ServiceProvider, C
 	@Override
 	public ConceptMapTranslateResultParameters execute(ServiceProvider context) {
 		ConceptMap conceptMap = lookupConceptMaps(context);
+		if (conceptMap == null) {
+			return new ConceptMapTranslateResultParameters()
+					.setResult(false)
+					.setMessage(String.format("ConceptMap '%s' does not exist and/or not yet created.", parameters.getUrl().getValue()));
+		}
 		return context.service(RepositoryManager.class)
 				.get(conceptMap.getUserString("toolingId"))
 				.optionalService(FhirConceptMapTranslator.class)
@@ -71,22 +80,19 @@ final class FhirConceptMapTranslateRequest implements Request<ServiceProvider, C
 
 	// TODO make this consider source/target scopes to find appropriate ConceptMaps when URL is not defined, for now we basically need the URL parameter to be able to translate using a dedicated map
 	private ConceptMap lookupConceptMaps(ServiceProvider context) {
-		if (parameters.getUrl() == null) {
-			throw new BadRequestException("'url' is required to reduce the scope of the translate operation to a single ConceptMap");
-		}
 		return FhirRequests.conceptMaps().prepareSearch()
-			.filterByUrl(parameters.getUrl().getValue())
-			.setElements(List.copyOf(R5ObjectFields.ConceptMap.MANDATORY))
-			.setCount(1)
-			.buildAsync()
-			.execute(context)
-			.getEntry()
-			.stream()
-			.map(BundleEntryComponent::getResource)
-			.filter(ConceptMap.class::isInstance)
-			.map(ConceptMap.class::cast)
-			.findFirst()
-			.orElse(null);
+				.filterById(parameters.getUrl().getValue())
+				.setElements(List.copyOf(R5ObjectFields.ConceptMap.MANDATORY))
+				.setCount(1)
+				.buildAsync()
+				.execute(context)
+				.getEntry()
+				.stream()
+				.map(BundleEntryComponent::getResource)
+				.filter(ConceptMap.class::isInstance)
+				.map(ConceptMap.class::cast)
+				.findFirst()
+				.orElse(null);
 	}
 
 }
