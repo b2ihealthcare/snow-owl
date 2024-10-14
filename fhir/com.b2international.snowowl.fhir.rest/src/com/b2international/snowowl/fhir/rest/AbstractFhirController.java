@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.exceptions.FHIRFormatError;
 import org.hl7.fhir.r5.model.Bundle;
 import org.hl7.fhir.r5.model.OperationOutcome;
 import org.hl7.fhir.r5.model.OperationOutcome.IssueSeverity;
@@ -95,10 +97,11 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected final <T extends BaseParameters> T toFhirParameters(final InputStream requestBody, final String contentType, OperationParametersFactory factory) {
+	protected final <T extends BaseParameters> T toFhirParameters(final InputStream requestBody, final String contentType, final String preferHeader, final OperationParametersFactory factory) {
 		try {
 			final FhirMediaType mediaType = FhirMediaType.parse(contentType, null /* format is not supported yet when sending data */);
-			return (T) mediaType.parseParameters(requestBody, factory);
+			final boolean strict = "strict".equals(preferHeader);
+			return (T) mediaType.parseParameters(requestBody, factory, strict);
 		} catch (IOException e) {
 			throw new BadRequestException(String.format("Failed to parse request body as a complete Parameters resource: %s", e.getMessage()));
 		}
@@ -337,5 +340,20 @@ public abstract class AbstractFhirController extends AbstractRestService {
 		FhirException fhirException = new FhirException(ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGBADSYNTAX);
 		return toResponseEntity(HttpStatus.BAD_REQUEST, fhirException.toOperationOutcome(), request);
 	}
+	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	public @ResponseBody ResponseEntity<byte[]> handle(FHIRException e, final WebRequest request) {
+		FhirException fhirException = new FhirException(e.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGBADSYNTAX);
+		return toResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, fhirException.toOperationOutcome(), request);
+	}
+	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public @ResponseBody ResponseEntity<byte[]> handle(FHIRFormatError e, final WebRequest request) {
+		FhirException fhirException = new FhirException(e.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGBADFORMAT);
+		return toResponseEntity(HttpStatus.BAD_REQUEST, fhirException.toOperationOutcome(), request);
+	}
+
 	
 }
