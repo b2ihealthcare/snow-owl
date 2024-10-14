@@ -1,6 +1,35 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 9.4.0
+
+### FHIR
+- Complete support for R4, R4B and R5 formats (#1323, #1332)
+  * Implementation is now based on the official HL7 Java model libraries and convertors through a thin wrapper (https://github.com/b2ihealthcare/fhir-core)
+  * New `GET CapabilityStatement$versions` operations endpoint to list the available supported FHIR versions
+  * Support for `fhirVersion=4.0.1|4.3.0|5.0.0` mime-type parameter in `Accept`, `Content-Type` headers
+  * Support all accepted mime-type variants in the `_format` query parameter as well (including versioned forms)
+  * Default format is R5 for all media types
+- SNOMED CT concept lookups now include a Designation extension that describes additional contexts where the Designation can be used (#1334)
+  * Define in https://confluence.ihtsdotools.org/display/FHIR/Designation+extension
+
+### SNOMED CT
+- Upgrade ECL to 2.2 (#1331)
+  - Support the complete ECL 2.2 syntax
+  - Support evaluation of Top and Bottom operators
+
+### Security
+- Replace CRA with Vite to mitigate all API site security vulnerabilities (df334fe)
+- Mitigate CVE-2024-43788, CVE-2024-4067, CVE-2024-38816, CVE-2024-45296, CVE-2024-43796, CVE-2024-45590, CVE-2024-43800, CVE-2024-43799, CVE-2024-47068, CVE-2022-22978
+
+### Bugs/Improvements
+- [mrcm] validation rule evaluation now properly considers the current set of modules (#1333)
+
+### Dependencies
+- Upgrade Spring to 6.1.3
+- Upgrade Spring Security to 6.3.3
+- Upgrade Rapidoc libraries to 9.3.6
+
 ## 9.3.0
 
 ### Core
