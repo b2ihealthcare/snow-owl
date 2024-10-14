@@ -703,11 +703,11 @@
 	  			<version>3.0.2</version>
 	  			<type>jar</type>
 			</dependency>
-			<!-- FHIR Terminology Service Module -->
+			<!-- FHIR Core Module -->
 			<dependency>
 	  			<groupId>com.b2international</groupId>
 	  			<artifactId>fhir-core</artifactId>
-	  			<version>0.1.0-SNAPSHOT</version>
+	  			<version>0.1.0</version>
 	  			<type>jar</type>
 			</dependency>
 		</dependencies>
