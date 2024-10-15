@@ -56,18 +56,19 @@ public class CapabilityStatementApiTest extends FhirRestTest {
 	public void operationDefinitionTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.when()
-			.get("OperationDefinition/CodeSystem$lookup")
+			.get("OperationDefinition/CodeSystem-it-lookup")
 			.then()
 			.assertThat()
 			.statusCode(200)
-			.body("resourceType", equalTo("OperationDefinition"));
+			.body("resourceType", equalTo("OperationDefinition"))
+			.body("base", equalTo("http://hl7.org/fhir/OperationDefinition/CodeSystem-lookup"));
 	}
 
 	@Test
 	public void nonExistentOperationDefinitionTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.when()
-			.get("OperationDefinition/CodeSystem$invalid")
+			.get("OperationDefinition/CodeSystem-it-invalid")
 			.then()
 			.assertThat()
 			.statusCode(404)
