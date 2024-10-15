@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>commons-parent</artifactId>
-		<version>9.3.1-SNAPSHOT</version>
+		<version>9.4.0</version>
 	</parent>
 	<artifactId>com.b2international.index.tests</artifactId>
 	<packaging>eclipse-test-plugin</packaging>
