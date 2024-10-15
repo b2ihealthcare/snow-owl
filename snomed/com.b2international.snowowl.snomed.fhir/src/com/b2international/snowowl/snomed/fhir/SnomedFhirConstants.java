@@ -25,7 +25,7 @@ import org.hl7.fhir.r5.model.Enumerations.FilterOperator;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 
 /**
- * @since 9.3
+ * @since 9.4.0
  */
 public class SnomedFhirConstants {
 

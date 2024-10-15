@@ -41,7 +41,7 @@ import com.b2international.fhir.r5.operations.BaseParameters;
 import com.google.common.collect.Maps;
 
 /**
- * @since 9.4
+ * @since 9.4.0
  */
 public final class FhirMediaType {
 

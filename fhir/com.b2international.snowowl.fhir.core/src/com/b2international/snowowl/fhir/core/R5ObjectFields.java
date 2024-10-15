@@ -20,7 +20,7 @@ import java.util.Set;
 import com.google.common.collect.ImmutableSet;
 
 /**
- * @since 9.2.0
+ * @since 9.4.0
  */
 public final class R5ObjectFields {
 
