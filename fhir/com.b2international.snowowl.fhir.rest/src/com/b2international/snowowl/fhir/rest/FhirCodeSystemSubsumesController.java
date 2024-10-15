@@ -300,6 +300,10 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 		@Parameter(hidden = true)
 		@RequestHeader(value = HttpHeaders.ACCEPT)
 		final String accept,
+		
+		@Parameter(description = "Prefer header", schema = @Schema(allowableValues = {"strict", "lenient"}, defaultValue = "lenient"))
+		@RequestHeader(value = "Prefer", required = false)
+		final String prefer,
 
 		@Parameter(description = "Alternative response format", schema = @Schema(allowableValues = {
 			APPLICATION_FHIR_JSON_5_0_0_VALUE,
@@ -325,7 +329,7 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 				
 	) {
 		
-		final CodeSystemSubsumptionParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.CodeSystemSubsumptionParametersFactory.INSTANCE);
+		final CodeSystemSubsumptionParameters parameters = toFhirParameters(requestBody, contentType, prefer, OperationParametersFactory.CodeSystemSubsumptionParametersFactory.INSTANCE);
 		
 		validateSubsumptionRequest(parameters);
 		
@@ -413,6 +417,10 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 		@Parameter(hidden = true)
 		@RequestHeader(value = HttpHeaders.ACCEPT)
 		final String accept,
+		
+		@Parameter(description = "Prefer header", schema = @Schema(allowableValues = {"strict", "lenient"}, defaultValue = "lenient"))
+		@RequestHeader(value = "Prefer", required = false)
+		final String prefer,
 
 		@Parameter(description = "Alternative response format", schema = @Schema(allowableValues = {
 			APPLICATION_FHIR_JSON_5_0_0_VALUE,
@@ -438,7 +446,7 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 		
 	) {
 		
-		final CodeSystemSubsumptionParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.CodeSystemSubsumptionParametersFactory.INSTANCE);
+		final CodeSystemSubsumptionParameters parameters = toFhirParameters(requestBody, contentType, prefer, OperationParametersFactory.CodeSystemSubsumptionParametersFactory.INSTANCE);
 		
 		validateSubsumptionRequest(codeSystemId, parameters);
 		

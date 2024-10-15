@@ -99,11 +99,11 @@ public class FhirCodeSystemLookupController extends AbstractFhirController {
 		final String system,
 		
 		@Parameter(description = "The code system version") 
-		@RequestParam(value = "version") 
+		@RequestParam(value = "version", required = false) 
 		final Optional<String> version,
 		
 		@Parameter(description = "Lookup date in datetime format") 
-		@RequestParam(value = "date") 
+		@RequestParam(value = "date", required = false) 
 		final Optional<String> date,
 		
 		@Parameter(description = "Language code for display") 
@@ -115,9 +115,9 @@ public class FhirCodeSystemLookupController extends AbstractFhirController {
 		final List<String> properties,
 		
 		@Parameter(hidden = true)
-		@RequestHeader(value = HttpHeaders.ACCEPT)
+		@RequestHeader(value = HttpHeaders.ACCEPT, required = false)
 		final String accept,
-
+		
 		@Parameter(description = "Alternative response format", schema = @Schema(allowableValues = {
 			APPLICATION_FHIR_JSON_5_0_0_VALUE,
 			APPLICATION_FHIR_JSON_4_3_0_VALUE,
@@ -238,6 +238,10 @@ public class FhirCodeSystemLookupController extends AbstractFhirController {
 		@Parameter(hidden = true)
 		@RequestHeader(value = HttpHeaders.ACCEPT)
 		final String accept,
+		
+		@Parameter(description = "Prefer header", schema = @Schema(allowableValues = {"strict", "lenient"}, defaultValue = "lenient"))
+		@RequestHeader(value = "Prefer", required = false)
+		final String prefer,
 
 		@Parameter(description = "Alternative response format", schema = @Schema(allowableValues = {
 			APPLICATION_FHIR_JSON_5_0_0_VALUE,
@@ -263,7 +267,7 @@ public class FhirCodeSystemLookupController extends AbstractFhirController {
 
 	) {
 		
-		final CodeSystemLookupParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.CodeSystemLookupParametersFactory.INSTANCE);
+		final CodeSystemLookupParameters parameters = toFhirParameters(requestBody, contentType, prefer, OperationParametersFactory.CodeSystemLookupParametersFactory.INSTANCE);
 		
 		return lookup(parameters, accept, _format, _pretty);
 	}

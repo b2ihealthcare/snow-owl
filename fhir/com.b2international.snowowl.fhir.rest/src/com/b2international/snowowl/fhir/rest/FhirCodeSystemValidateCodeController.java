@@ -236,6 +236,10 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 		@Parameter(hidden = true)
 		@RequestHeader(value = HttpHeaders.ACCEPT)
 		final String accept,
+		
+		@Parameter(description = "Prefer header", schema = @Schema(allowableValues = {"strict", "lenient"}, defaultValue = "lenient"))
+		@RequestHeader(value = "Prefer", required = false)
+		final String prefer,
 
 		@Parameter(description = "Alternative response format", schema = @Schema(allowableValues = {
 			APPLICATION_FHIR_JSON_5_0_0_VALUE,
@@ -260,7 +264,7 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 		final Boolean _pretty
 			
 	) {
-		final CodeSystemValidateCodeParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.CodeSystemValidateCodeParametersFactory.INSTANCE);
+		final CodeSystemValidateCodeParameters parameters = toFhirParameters(requestBody, contentType, prefer, OperationParametersFactory.CodeSystemValidateCodeParametersFactory.INSTANCE);
 		return validateCode(parameters, accept, _format, _pretty);
 	}
 
@@ -465,6 +469,10 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 		@Parameter(hidden = true)
 		@RequestHeader(value = HttpHeaders.ACCEPT)
 		final String accept,
+		
+		@Parameter(description = "Prefer header", schema = @Schema(allowableValues = {"strict", "lenient"}, defaultValue = "lenient"))
+		@RequestHeader(value = "Prefer", required = false)
+		final String prefer,
 
 		@Parameter(description = "Alternative response format", schema = @Schema(allowableValues = {
 			APPLICATION_FHIR_JSON_5_0_0_VALUE,
@@ -490,7 +498,7 @@ public class FhirCodeSystemValidateCodeController extends AbstractFhirController
 		
 	) {
 		
-		final CodeSystemValidateCodeParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.CodeSystemValidateCodeParametersFactory.INSTANCE);
+		final CodeSystemValidateCodeParameters parameters = toFhirParameters(requestBody, contentType, prefer, OperationParametersFactory.CodeSystemValidateCodeParametersFactory.INSTANCE);
 		
 		// Validate parameters that are not allowed on the instance level
 		if (parameters.getUrl() != null) {

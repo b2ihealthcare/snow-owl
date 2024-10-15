@@ -236,6 +236,10 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 		@Parameter(hidden = true)
 		@RequestHeader(value = HttpHeaders.ACCEPT)
 		final String accept,
+		
+		@Parameter(description = "Prefer header", schema = @Schema(allowableValues = {"strict", "lenient"}, defaultValue = "lenient"))
+		@RequestHeader(value = "Prefer", required = false)
+		final String prefer,
 
 		@Parameter(description = "Alternative response format", schema = @Schema(allowableValues = {
 			APPLICATION_FHIR_JSON_5_0_0_VALUE,
@@ -261,7 +265,7 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 				
 	) {
 		
-		final ConceptMapTranslateParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.ConceptMapTranslateParametersFactory.INSTANCE);
+		final ConceptMapTranslateParameters parameters = toFhirParameters(requestBody, contentType, prefer, OperationParametersFactory.ConceptMapTranslateParametersFactory.INSTANCE);
 		
 		return translate(parameters, accept, _format, _pretty);
 	}
@@ -466,6 +470,10 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 		@Parameter(hidden = true)
 		@RequestHeader(value = HttpHeaders.ACCEPT)
 		final String accept,
+		
+		@Parameter(description = "Prefer header", schema = @Schema(allowableValues = {"strict", "lenient"}, defaultValue = "lenient"))
+		@RequestHeader(value = "Prefer", required = false)
+		final String prefer,
 
 		@Parameter(description = "Alternative response format", schema = @Schema(allowableValues = {
 			APPLICATION_FHIR_JSON_5_0_0_VALUE,
@@ -491,7 +499,7 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 		
 	) {
 
-		final ConceptMapTranslateParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.ConceptMapTranslateParametersFactory.INSTANCE);
+		final ConceptMapTranslateParameters parameters = toFhirParameters(requestBody, contentType, prefer, OperationParametersFactory.ConceptMapTranslateParametersFactory.INSTANCE);
 		
 		// Before execution set the URI to match the path variable
 		parameters.setUrl(conceptMapId);

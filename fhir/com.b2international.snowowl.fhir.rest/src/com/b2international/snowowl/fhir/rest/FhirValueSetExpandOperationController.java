@@ -253,6 +253,10 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 		@Parameter(hidden = true)
 		@RequestHeader(value = HttpHeaders.ACCEPT)
 		final String accept,
+		
+		@Parameter(description = "Prefer header", schema = @Schema(allowableValues = {"strict", "lenient"}, defaultValue = "lenient"))
+		@RequestHeader(value = "Prefer", required = false)
+		final String prefer,
 
 		@Parameter(description = "Alternative response format", schema = @Schema(allowableValues = {
 			APPLICATION_FHIR_JSON_5_0_0_VALUE,
@@ -278,7 +282,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 			
 	) {
 		
-		final ValueSetExpandParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.ValueSetExpandParametersFactory.INSTANCE);
+		final ValueSetExpandParameters parameters = toFhirParameters(requestBody, contentType, prefer, OperationParametersFactory.ValueSetExpandParametersFactory.INSTANCE);
 		
 		if (parameters.getUrl() == null && parameters.getValueSet() == null) {
 			throw new BadRequestException("Both URL and ValueSet parameters are null.", "ExpandValueSetRequest");
