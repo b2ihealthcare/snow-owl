@@ -26,7 +26,9 @@ import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirCodeSystemApiT
 import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirSnomedCodeSystemLookupTest;
 import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirSnomedCodeSystemSubsumesTest;
 import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirSnomedCodeSystemValidateCodeTest;
+import com.b2international.snowowl.fhir.rest.tests.conceptmap.FhirConceptMapApiTest;
 import com.b2international.snowowl.fhir.rest.tests.valueset.FhirSnomedValueSetExpandTest;
+import com.b2international.snowowl.fhir.rest.tests.valueset.FhirValueSetApiTest;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.test.commons.Resources;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
@@ -41,8 +43,10 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	// Helpers
 	SnomedUriParsingTest.class,
 	
-	// CodeSystem API
+	// Resource types
 	FhirCodeSystemApiTest.class,
+	FhirValueSetApiTest.class,
+//	FhirConceptMapApiTest.class,
 	
 	// SNOMED on FHIR tests
 	FhirSnomedCodeSystemLookupTest.class,

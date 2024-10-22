@@ -50,6 +50,10 @@ public abstract class FhirRestTest extends FhirTest {
 		public static final String CODESYSTEM_LOOKUP = "/CodeSystem/$lookup";
 		public static final String CODESYSTEM_SUBSUMES = "/CodeSystem/$subsumes";
 		public static final String CODESYSTEM_VALIDATE_CODE = "/CodeSystem/$validate-code";
+
+		public static final String VALUESET = "/ValueSet";
+		public static final String VALUESET_ID = "/ValueSet/{id}";
+
 	}
 	
 	protected final String getTestCodeSystemId() {

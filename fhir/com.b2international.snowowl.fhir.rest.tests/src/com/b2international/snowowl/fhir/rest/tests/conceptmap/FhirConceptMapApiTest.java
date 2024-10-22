@@ -16,10 +16,7 @@
 package com.b2international.snowowl.fhir.rest.tests.conceptmap;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.CoreMatchers.*;
 
 import java.util.List;
 
@@ -105,6 +102,19 @@ public class FhirConceptMapApiTest extends FhirRestTest {
 			.body("target[0].equivalence", equalTo("equivalent"));
 	}
 	
+	@Test
+	public void conceptMapsUnsupportedParam() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("unsupportedParam", "value")
+			.header("Prefer", "handling=strict")
+			.when().get("/ConceptMap")
+			.then().assertThat()
+			.statusCode(400)
+			.body("resourceType", equalTo("OperationOutcome"))
+			.body("issue.severity", hasItem("error"))
+			.body("issue.code", hasItem("exception"));
+	}
+
 	@Ignore
 	@Test
 	public void getSimpleMapTypeConceptMapTest() {
