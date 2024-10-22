@@ -23,6 +23,7 @@ All notable changes to this project will be documented in this file.
 - Mitigate CVE-2024-43788, CVE-2024-4067, CVE-2024-38816, CVE-2024-45296, CVE-2024-43796, CVE-2024-45590, CVE-2024-43800, CVE-2024-43799, CVE-2024-47068, CVE-2022-22978
 
 ### Bugs/Improvements
+- [fhir] generate correct FHIR CapabilityStatement operation definition resources (12ab565)
 - [mrcm] validation rule evaluation now properly considers the current set of modules (#1333)
 
 ### Dependencies

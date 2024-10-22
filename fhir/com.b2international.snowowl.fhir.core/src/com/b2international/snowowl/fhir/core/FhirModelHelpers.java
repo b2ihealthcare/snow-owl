@@ -26,7 +26,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ResourceURI;
 
 /**
- * @since 9.3
+ * @since 9.4.0
  */
 public class FhirModelHelpers {
 

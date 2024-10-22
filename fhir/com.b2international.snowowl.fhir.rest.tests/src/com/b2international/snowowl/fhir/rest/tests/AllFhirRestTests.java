@@ -22,7 +22,10 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.snowowl.fhir.rest.tests.capabilitystatement.CapabilityStatementApiTest;
-import com.b2international.snowowl.fhir.rest.tests.codesystem.*;
+import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirCodeSystemApiTest;
+import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirSnomedCodeSystemLookupTest;
+import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirSnomedCodeSystemSubsumesTest;
+import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirSnomedCodeSystemValidateCodeTest;
 import com.b2international.snowowl.fhir.rest.tests.valueset.FhirSnomedValueSetExpandTest;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.test.commons.Resources;
@@ -46,10 +49,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	FhirSnomedCodeSystemValidateCodeTest.class,
 	FhirSnomedCodeSystemSubsumesTest.class,
 	FhirSnomedValueSetExpandTest.class,
-	
-	// ConceptMap API
-//	FhirConceptMapApiTest.class,
-//	TranslateSnomedConceptMapRestTest.class,
+	// TODO enable ConceptMap test cases
+//	FhirSnomedConceptMapTranslateTest.class,
 	
 	// CapabilityStatement
 	CapabilityStatementApiTest.class

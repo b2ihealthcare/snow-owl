@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2024 B2i Healthcare, https://b2ihealthcare.com
+ * Copyright 2024 B2i Healthcare, https://b2ihealthcare.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
 
 /**
- * @since 8.0
+ * @since 9.4.0
  */
 public final class FhirCodeSystemSubsumesRequestBuilder 
 		extends BaseRequestBuilder<FhirCodeSystemSubsumesRequestBuilder, ServiceProvider, CodeSystemSubsumptionResultParameters>

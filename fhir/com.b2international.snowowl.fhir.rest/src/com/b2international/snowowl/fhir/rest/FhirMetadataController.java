@@ -15,11 +15,11 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
-import static com.b2international.snowowl.fhir.rest.FhirMediaType.*;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_PROFILE;
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_X_INTERACTION;
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.B2I_OPENAPI_X_NAME;
+import static com.b2international.snowowl.fhir.rest.FhirMediaType.*;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.*;
@@ -55,7 +55,6 @@ import com.google.common.collect.Iterables;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -72,6 +71,8 @@ import io.swagger.v3.oas.models.Paths;
 @RestController
 public class FhirMetadataController extends AbstractFhirController {
 	
+	private static final String OPERATION_SEPARATOR = "-it-";
+
 	@Autowired
 	private SnowOwlOpenApiWebMvcResource openApiResource;
 	
@@ -332,15 +333,14 @@ public class FhirMetadataController extends AbstractFhirController {
 					&& key.contains("$")
 					&& (value.getGet() != null);
 			})
-			// "$" is part of the operation name
-			.map(e -> resourceType + getOperationName(e.getKey()))
+			.map(e -> String.join(OPERATION_SEPARATOR, resourceType, getOperationName(e.getKey())))
 			.distinct()
-			.forEachOrdered(definitionKey -> {
-				final OperationDefinition operationDefinition = operationMap.get(definitionKey);
+			.forEachOrdered(operation -> {
+				final OperationDefinition operationDefinition = operationMap.get(operation);
 				if (operationDefinition != null) {
 					resource.addOperation(new CapabilityStatement.CapabilityStatementRestResourceOperationComponent()
 						.setName(operationDefinition.getName())
-						.setDefinition(buildOperationUrl(new CodeType(resourceType), operationDefinition))
+						.setDefinition(buildOperationUrl(operation))
 					);
 				}
 			});
@@ -370,8 +370,7 @@ public class FhirMetadataController extends AbstractFhirController {
 
 		for (final OperationDefinition operationDefinition : operationDefinitions) {
 			for (final Enumeration<VersionIndependentResourceTypesAll> code : operationDefinition.getResource()) {
-				// The "$" separator is already built in
-				final String key = code.getCode() + operationDefinition.getName();
+				final String key = String.join(OPERATION_SEPARATOR, code.getCode(), operationDefinition.getName());
 				operationMap.put(key, operationDefinition);
 			}
 		}
@@ -402,16 +401,9 @@ public class FhirMetadataController extends AbstractFhirController {
 				.setDescription(description)
 			)
 			.setFormat(List.of(
-				new CodeType(APPLICATION_FHIR_JSON_5_0_0_VALUE),
-				new CodeType(APPLICATION_FHIR_JSON_4_3_0_VALUE),
-				new CodeType(APPLICATION_FHIR_JSON_4_0_1_VALUE),
 				new CodeType(APPLICATION_FHIR_JSON_VALUE),
 				new CodeType(APPLICATION_JSON_VALUE),
 				new CodeType(TEXT_JSON_VALUE),
-				
-				new CodeType(APPLICATION_FHIR_XML_5_0_0_VALUE),
-				new CodeType(APPLICATION_FHIR_XML_4_3_0_VALUE),
-				new CodeType(APPLICATION_FHIR_XML_4_0_1_VALUE),
 				new CodeType(APPLICATION_FHIR_XML_VALUE),
 				new CodeType(APPLICATION_XML_VALUE),
 				new CodeType(TEXT_XML_VALUE)
@@ -431,23 +423,23 @@ public class FhirMetadataController extends AbstractFhirController {
 		}
 	}
 
-	private String buildOperationUrl(final CodeType code, final OperationDefinition operationDefinition) {
+	private String buildOperationUrl(final String operation) {
 		return MvcUriComponentsBuilder.fromMethodName(FhirMetadataController.class, "operationDefinition", "{operation}", null, null, null)
-			.buildAndExpand(Map.of("operation", code.getValue() + operationDefinition.getName()))
+			.buildAndExpand(Map.of("operation", operation))
 			.toUriString();
 	}
 
-	private OperationDefinition buildOperationDefinition(String key, PathItem pathItem) {
-		final String name = getOperationName(key);
+	private OperationDefinition buildOperationDefinition(String endpoint, PathItem pathItem) {
 		final io.swagger.v3.oas.models.Operation getOperation = pathItem.getGet();
 		final boolean isInstance = getOperation.getParameters().stream()
 			.filter(p -> "path".equals(p.getIn()))
 			.findFirst()
 			.isPresent();
 
+		String operationName = getOperationName(endpoint);
 		final OperationDefinition operationDefinition = new OperationDefinition()
-			.setName(name)
-			.setCode(name)
+			.setName(operationName)
+			.setCode(operationName)
 			.setKind(OperationKind.OPERATION)
 			.setAffectsState(false)
 			.setStatus(PublicationStatus.ACTIVE)
@@ -456,6 +448,10 @@ public class FhirMetadataController extends AbstractFhirController {
 			.setType(true);
 		
 		getOperation.getTags().forEach(tag -> operationDefinition.addResource(VersionIndependentResourceTypesAll.fromCode(tag)));
+		
+		// add base definition reference
+		String resourceType = Iterables.getFirst(operationDefinition.getResource(), null).getCode();
+		operationDefinition.setBase(String.format("http://hl7.org/fhir/OperationDefinition/%s-%s", resourceType, operationName));
 		
 		// Only interested in 'query' type parameters
 		getOperation.getParameters()
@@ -502,7 +498,7 @@ public class FhirMetadataController extends AbstractFhirController {
 
 	private String getOperationName(String key) {
 		final UriComponents uriComponents = UriComponentsBuilder.fromPath(key).build();
-		return Iterables.getLast(uriComponents.getPathSegments());
+		return Iterables.getLast(uriComponents.getPathSegments()).replace("$", "");
 	}
 
 	private TerminologyCapabilities createTerminologyCapabilities(String softwareVersion, Date date, String description) {

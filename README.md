@@ -4,7 +4,7 @@ Snow Owl<sup>&reg;</sup> is a highly scalable, open source terminology server wi
 If you’d like to see Snow Owl in action, the [Snowray Terminology Service™](https://snowray.app) provides a managed terminology server and high-quality terminology content management from your web browser.
 
 [![build status](https://img.shields.io/github/actions/workflow/status/b2ihealthcare/snow-owl/maven.yml?branch=9.x&style=flat-square)](https://github.com/b2ihealthcare/snow-owl/actions)
-[![latest release](https://img.shields.io/github/v/release/b2ihealthcare/snow-owl?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/tag/v9.2.3)
+[![latest release](https://img.shields.io/github/v/release/b2ihealthcare/snow-owl?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/tag/v9.4.0)
 [![downloads](https://img.shields.io/github/downloads/b2ihealthcare/snow-owl/total.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/)
 [![Docker](https://img.shields.io/docker/pulls/b2ihealthcare/snow-owl-oss?style=flat-square)](https://hub.docker.com/r/b2ihealthcare/snow-owl-oss)
 [![GitHub](https://img.shields.io/github/license/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/blob/9.x/LICENSE)
@@ -19,16 +19,17 @@ Features include:
     * Independent work branches offer work-in-process isolation, external business workflow integration and team collaboration
 * SNOMED CT and others
     * SNOMED CT terminology support
-        * RF2 Release File Specification as of 2024-05-01
+        * RF2 Release File Specification as of 2024-10-01
         * Support for Relationships with concrete values
         * Official and Custom Reference Sets
-        * Expression Constraint Language v2.1.0 [spec](https://confluence.ihtsdotools.org/download/attachments/33493263/doc_ExpressionConstraintLanguage_v2.1-en-US_INT_20220824.pdf?api=v2), [implementation](https://github.com/b2ihealthcare/snomed-ecl)
+        * Expression Constraint Language v2.2.0 [spec](https://confluence.ihtsdotools.org/download/attachments/33493263/doc_ExpressionConstraintLanguage_v2.2-en-US_INT_20231122.pdf?api=v2), [implementation](https://github.com/b2ihealthcare/snomed-ecl)
         * Compositional Grammar 2.3.1 [spec](https://confluence.ihtsdotools.org/download/attachments/33496020/doc_CompositionalGrammar_v2.3.1-en-US_INT_20161118.pdf?api=v2), [implementation](https://github.com/b2ihealthcare/snomed-scg)
         * Expression Template Language 1.0.0 [spec](https://confluence.ihtsdotools.org/download/attachments/45529301/doc_TemplateSyntax_v1.0-en-US_INT_20170726.pdf?api=v2), [implementation](https://github.com/b2ihealthcare/snomed-etl)
+    * LOINC, ICD-10 (+ modifications) and Custom CodeSystems are available when licensed
     * With its modular design, the server can maintain multiple terminologies (including local codes, mapping sets, value sets)
-* Various set of APIs
-    * SNOMED CT API (RESTful and native Java API)
-    * FHIR Terminology Service API R4/R4B/R5 [spec](https://hl7.org/fhir/R4/index.html)
+* Various sets of APIs
+    * FHIR Terminology Service API supporting R4/R4B/R5 formats [spec](https://hl7.org/fhir/R4/index.html)
+    * RESTful and native Java APIs for advanced use cases
     * CIS API 1.0 [see reference implementation](https://github.com/IHTSDO/component-identifier-service)
 * Highly extensible and configurable
     * Simple to use plug-in system makes it easy to develop and add new terminology tooling/API or any other functionality
@@ -38,16 +39,16 @@ Features include:
 
 # Download
 
-* [WINDOWS](https://artifacts.b2ihealthcare.com/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.2.3/com.b2international.snowowl.server.update-9.2.3-oss.zip) - [sha](https://artifacts.b2ihealthcare.com/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.2.3/com.b2international.snowowl.server.update-9.2.3-oss.zip.sha1)
-* [LINUX](https://artifacts.b2ihealthcare.com/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.2.3/com.b2international.snowowl.server.update-9.2.3-oss.tar.gz) - [sha](https://artifacts.b2ihealthcare.com/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.2.3/com.b2international.snowowl.server.update-9.2.3-oss.tar.gz.sha1) 
-* [RPM](https://artifacts.b2ihealthcare.com/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.2.3/com.b2international.snowowl.server.update-9.2.3-rpm.rpm) - [sha](https://artifacts.b2ihealthcare.com/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.2.3/com.b2international.snowowl.server.update-9.2.3-rpm.rpm.sha1)
-* [DEB](https://artifacts.b2ihealthcare.com/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.2.3/com.b2international.snowowl.server.update-9.2.3-deb.deb) - [sha](https://artifacts.b2ihealthcare.com/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.2.3/com.b2international.snowowl.server.update-9.2.3-deb.deb.sha1)
+* [WINDOWS](https://artifacts.b2ihealthcare.com/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.4.0/com.b2international.snowowl.server.update-9.4.0-oss.zip) - [sha](https://artifacts.b2ihealthcare.com/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.4.0/com.b2international.snowowl.server.update-9.4.0-oss.zip.sha1)
+* [LINUX](https://artifacts.b2ihealthcare.com/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.4.0/com.b2international.snowowl.server.update-9.4.0-oss.tar.gz) - [sha](https://artifacts.b2ihealthcare.com/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.4.0/com.b2international.snowowl.server.update-9.4.0-oss.tar.gz.sha1) 
+* [RPM](https://artifacts.b2ihealthcare.com/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.4.0/com.b2international.snowowl.server.update-9.4.0-rpm.rpm) - [sha](https://artifacts.b2ihealthcare.com/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.4.0/com.b2international.snowowl.server.update-9.4.0-rpm.rpm.sha1)
+* [DEB](https://artifacts.b2ihealthcare.com/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.4.0/com.b2international.snowowl.server.update-9.4.0-deb.deb) - [sha](https://artifacts.b2ihealthcare.com/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/9.4.0/com.b2international.snowowl.server.update-9.4.0-deb.deb.sha1)
 
 {% hint style="info" %}
 This distribution only includes features licensed under the Apache 2.0 license. To get access to the full set of features, please contact [B2i Healthcare](mailto:info@b2ihealthcare.com).
 {% endhint %}
 
-View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v9.2.3).
+View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v9.4.0).
 
 Not the version you're looking for? View [past releases](https://github.com/b2ihealthcare/snow-owl/releases).
 
