@@ -22,7 +22,7 @@ Features include:
         * RF2 Release File Specification as of 2024-05-01
         * Support for Relationships with concrete values
         * Official and Custom Reference Sets
-        * Expression Constraint Language v2.1.0 [spec](https://confluence.ihtsdotools.org/download/attachments/33493263/doc_ExpressionConstraintLanguage_v2.1-en-US_INT_20220824.pdf?api=v2), [implementation](https://github.com/b2ihealthcare/snomed-ecl)
+        * Expression Constraint Language v2.2.0 [spec](https://confluence.ihtsdotools.org/download/attachments/33493263/doc_ExpressionConstraintLanguage_v2.2-en-US_INT_20231122.pdf?api=v2), [implementation](https://github.com/b2ihealthcare/snomed-ecl)
         * Compositional Grammar 2.3.1 [spec](https://confluence.ihtsdotools.org/download/attachments/33496020/doc_CompositionalGrammar_v2.3.1-en-US_INT_20161118.pdf?api=v2), [implementation](https://github.com/b2ihealthcare/snomed-scg)
         * Expression Template Language 1.0.0 [spec](https://confluence.ihtsdotools.org/download/attachments/45529301/doc_TemplateSyntax_v1.0-en-US_INT_20170726.pdf?api=v2), [implementation](https://github.com/b2ihealthcare/snomed-etl)
     * With its modular design, the server can maintain multiple terminologies (including local codes, mapping sets, value sets)
