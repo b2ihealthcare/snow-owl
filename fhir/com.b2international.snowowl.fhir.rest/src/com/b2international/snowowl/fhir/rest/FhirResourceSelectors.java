@@ -24,6 +24,9 @@ import io.swagger.v3.oas.annotations.Parameter;
  */
 public class FhirResourceSelectors {
 
+	protected static final String PARAM_SUMMARY = "_summary";
+	protected static final String PARAM_ELEMENTS = "_elements";
+	
 	// content selectors
 	@Parameter
 	private String _summary;

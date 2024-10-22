@@ -69,6 +69,15 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	protected static final String X_OWNER_PROFILE_NAME = "X-Owner-Profile-Name";
 	protected static final String X_BUNDLE_ID = "X-Bundle-Id";
 
+	// Header used in search requests
+	protected static final String PREFER = "Prefer";
+	protected static final String PREFER_HANDLING_STRICT = "handling=strict";
+	protected static final String PREFER_HANDLING_LENIENT = "handling=lenient";
+	
+	protected final boolean isStrict(final String preferHeader) {
+		return PREFER_HANDLING_STRICT.equals(preferHeader);
+	}
+	
 	protected final <T extends Resource> T toFhirResource(
 		final InputStream requestBody, 
 		final String contentType, 
@@ -100,7 +109,7 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	protected final <T extends BaseParameters> T toFhirParameters(final InputStream requestBody, final String contentType, final String preferHeader, final OperationParametersFactory factory) {
 		try {
 			final FhirMediaType mediaType = FhirMediaType.parse(contentType, null /* format is not supported yet when sending data */);
-			final boolean strict = "strict".equals(preferHeader);
+			final boolean strict = isStrict(preferHeader);
 			return (T) mediaType.parseParameters(requestBody, factory, strict);
 		} catch (IOException e) {
 			throw new BadRequestException(String.format("Failed to parse request body as a complete Parameters resource: %s", e.getMessage()));

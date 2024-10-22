@@ -15,12 +15,13 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
-import static com.b2international.snowowl.fhir.rest.FhirMediaType.*;
 import static com.b2international.snowowl.core.rest.OpenAPIExtensions.*;
+import static com.b2international.snowowl.fhir.rest.FhirMediaType.*;
 
 import java.io.InputStream;
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.Map;
 
 import org.hl7.fhir.r5.model.ValueSet;
 import org.springdoc.core.annotations.ParameterObject;
@@ -46,7 +47,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.extensions.Extension;
 import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -397,8 +397,24 @@ public class FhirValueSetController extends AbstractFhirController {
 
 		@Parameter(description = "Accepted language tags, in order of preference", example = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER)
 		@RequestHeader(value = HttpHeaders.ACCEPT_LANGUAGE, defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required = false) 
-		final String acceptLanguage
+		final String acceptLanguage,
+
+		@Parameter(description = "Prefer header", schema = @Schema(
+			allowableValues = { PREFER_HANDLING_STRICT, PREFER_HANDLING_LENIENT }, 
+			defaultValue = PREFER_HANDLING_LENIENT
+		))
+		@RequestHeader(value = PREFER, required = false)
+		final String prefer,
+
+		@Parameter(hidden = true)
+		@RequestParam(required = false)
+		final Map<String, String> additionalParameters
 	) {
+		if (isStrict(prefer)) {
+			// Emulate JsonAnySetter behavior for GET requests
+			additionalParameters.forEach((k, v) -> params.setAdditionalParameter(k, v));
+			params.checkParameters();
+		}
 			
 		// XXX: We are using "{id}" as the placeholder for the "id" path parameter and expand it later
 		final UriComponentsBuilder fullUrlBuilder = MvcUriComponentsBuilder.fromMethodName(FhirValueSetController.class, "getValueSet", 

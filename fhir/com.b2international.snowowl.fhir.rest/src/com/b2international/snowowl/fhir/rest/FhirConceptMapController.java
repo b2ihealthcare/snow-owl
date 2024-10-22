@@ -21,6 +21,7 @@ import static com.b2international.snowowl.fhir.rest.FhirMediaType.*;
 import java.io.InputStream;
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.Map;
 
 import org.hl7.fhir.r5.model.ConceptMap;
 import org.springdoc.core.annotations.ParameterObject;
@@ -395,8 +396,24 @@ public class FhirConceptMapController extends AbstractFhirController {
 
 		@Parameter(description = "Accepted language tags, in order of preference", example = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER)
 		@RequestHeader(value = HttpHeaders.ACCEPT_LANGUAGE, defaultValue = AcceptLanguageHeader.DEFAULT_ACCEPT_LANGUAGE_HEADER, required = false) 
-		final String acceptLanguage
+		final String acceptLanguage,
+
+		@Parameter(description = "Prefer header", schema = @Schema(
+			allowableValues = { PREFER_HANDLING_STRICT, PREFER_HANDLING_LENIENT }, 
+			defaultValue = PREFER_HANDLING_LENIENT
+		))
+		@RequestHeader(value = PREFER, required = false)
+		final String prefer,
+
+		@Parameter(hidden = true)
+		@RequestParam(required = false)
+		final Map<String, String> additionalParameters
 	) {
+		if (isStrict(prefer)) {
+			// Emulate JsonAnySetter behavior for GET requests
+			additionalParameters.forEach((k, v) -> params.setAdditionalParameter(k, v));
+			params.checkParameters();
+		}
 			
 		// XXX: We are using "{id}" as the placeholder for the "id" path parameter and expand it later
 		final UriComponentsBuilder fullUrlBuilder = MvcUriComponentsBuilder.fromMethodName(FhirConceptMapController.class, "getConceptMap", 
