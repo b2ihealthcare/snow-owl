@@ -254,8 +254,11 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 		@RequestHeader(value = HttpHeaders.ACCEPT)
 		final String accept,
 		
-		@Parameter(description = "Prefer header", schema = @Schema(allowableValues = {"strict", "lenient"}, defaultValue = "lenient"))
-		@RequestHeader(value = "Prefer", required = false)
+		@Parameter(description = "Prefer header", schema = @Schema(
+			allowableValues = { PREFER_HANDLING_STRICT, PREFER_HANDLING_LENIENT }, 
+			defaultValue = PREFER_HANDLING_LENIENT
+		))
+		@RequestHeader(value = PREFER, required = false)
 		final String prefer,
 
 		@Parameter(description = "Alternative response format", schema = @Schema(allowableValues = {
