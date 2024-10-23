@@ -54,10 +54,7 @@ import org.springframework.web.method.HandlerTypePredicate;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
-import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
-import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
-import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
+import org.springframework.web.servlet.config.annotation.*;
 import org.springframework.web.servlet.mvc.condition.RequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo.BuilderConfiguration;
@@ -416,4 +413,9 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 		};
 	}
 
+	@Override
+	protected void addInterceptors(InterceptorRegistry registry) {
+		super.addInterceptors(registry);
+		registry.addInterceptor(new PreferHandlingInterceptor());
+	}
 }
