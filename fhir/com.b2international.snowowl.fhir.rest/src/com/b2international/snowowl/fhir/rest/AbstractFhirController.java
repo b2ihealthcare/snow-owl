@@ -363,6 +363,12 @@ public abstract class AbstractFhirController extends AbstractRestService {
 		FhirException fhirException = new FhirException(e.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGBADFORMAT);
 		return toResponseEntity(HttpStatus.BAD_REQUEST, fhirException.toOperationOutcome(), request);
 	}
-
+	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public @ResponseBody ResponseEntity<byte[]> handle(com.b2international.commons.exceptions.BadRequestException e, final WebRequest request) {
+		FhirException fhirException = new FhirException(e.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGBADSYNTAX);
+		return toResponseEntity(HttpStatus.BAD_REQUEST, fhirException.toOperationOutcome(), request);
+	}
 	
 }

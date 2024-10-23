@@ -21,7 +21,6 @@ import static com.b2international.snowowl.fhir.rest.FhirMediaType.*;
 import java.io.InputStream;
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.Map;
 
 import org.hl7.fhir.r5.model.CodeSystem;
 import org.springdoc.core.annotations.ParameterObject;
@@ -402,18 +401,8 @@ public class FhirCodeSystemController extends AbstractFhirController {
 			defaultValue = PREFER_HANDLING_LENIENT
 		))
 		@RequestHeader(value = PREFER, required = false)
-		final String prefer,
-
-		@Parameter(hidden = true)
-		@RequestParam(required = false)
-		final Map<String, String> additionalParameters
+		final String prefer
 	) {
-		if (isStrict(prefer)) {
-			// Emulate JsonAnySetter behavior for GET requests
-			additionalParameters.forEach((k, v) -> params.setAdditionalParameter(k, v));
-			params.checkParameters();
-		}
-		
 		// XXX: We are using "{id}" as the placeholder for the "id" path parameter and expand it later
 		final UriComponentsBuilder fullUrlBuilder = MvcUriComponentsBuilder.fromMethodName(FhirCodeSystemController.class, "getCodeSystem", 
 			"{id}", 
