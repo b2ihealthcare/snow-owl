@@ -41,9 +41,9 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 public class PreferHandlingInterceptor implements HandlerInterceptor {
 
-	private static final String PREFER_HEADER = "Prefer";
-	private static final String PREFER_HANDLING_STRICT = "handling=strict";
-	private static final String PREFER_HANDLING_LENIENT = "handling=lenient";
+	public static final String PREFER_HEADER = "Prefer";
+	public static final String PREFER_HANDLING_STRICT = "handling=strict";
+	public static final String PREFER_HANDLING_LENIENT = "handling=lenient";
 
 	@Override
 	public boolean preHandle(

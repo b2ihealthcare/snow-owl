@@ -29,6 +29,7 @@ import com.b2international.fhir.operations.OperationParametersFactory;
 import com.b2international.fhir.r5.operations.CodeSystemSubsumptionParameters;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
+import com.b2international.snowowl.core.rest.PreferHandlingInterceptor;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
@@ -302,10 +303,10 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 		final String accept,
 		
 		@Parameter(description = "Prefer header", schema = @Schema(
-			allowableValues = { PREFER_HANDLING_STRICT, PREFER_HANDLING_LENIENT }, 
-			defaultValue = PREFER_HANDLING_LENIENT
+			allowableValues = { PreferHandlingInterceptor.PREFER_HANDLING_STRICT, PreferHandlingInterceptor.PREFER_HANDLING_LENIENT }, 
+			defaultValue = PreferHandlingInterceptor.PREFER_HANDLING_LENIENT
 		))
-		@RequestHeader(value = PREFER, required = false)
+		@RequestHeader(value = PreferHandlingInterceptor.PREFER_HEADER, required = false)
 		final String prefer,
 
 		@Parameter(description = "Alternative response format", schema = @Schema(allowableValues = {
@@ -422,10 +423,10 @@ public class FhirCodeSystemSubsumesController extends AbstractFhirController {
 		final String accept,
 		
 		@Parameter(description = "Prefer header", schema = @Schema(
-			allowableValues = { PREFER_HANDLING_STRICT, PREFER_HANDLING_LENIENT }, 
-			defaultValue = PREFER_HANDLING_LENIENT
+			allowableValues = { PreferHandlingInterceptor.PREFER_HANDLING_STRICT, PreferHandlingInterceptor.PREFER_HANDLING_LENIENT }, 
+			defaultValue = PreferHandlingInterceptor.PREFER_HANDLING_LENIENT
 		))
-		@RequestHeader(value = PREFER, required = false)
+		@RequestHeader(value = PreferHandlingInterceptor.PREFER_HEADER, required = false)
 		final String prefer,
 
 		@Parameter(description = "Alternative response format", schema = @Schema(allowableValues = {

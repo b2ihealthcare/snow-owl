@@ -44,6 +44,7 @@ import com.b2international.commons.exceptions.*;
 import com.b2international.fhir.operations.OperationParametersFactory;
 import com.b2international.fhir.r5.operations.BaseParameters;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.PreferHandlingInterceptor;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
@@ -69,13 +70,8 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	protected static final String X_OWNER_PROFILE_NAME = "X-Owner-Profile-Name";
 	protected static final String X_BUNDLE_ID = "X-Bundle-Id";
 
-	// Header used in search requests
-	protected static final String PREFER = "Prefer";
-	protected static final String PREFER_HANDLING_STRICT = "handling=strict";
-	protected static final String PREFER_HANDLING_LENIENT = "handling=lenient";
-	
 	protected final boolean isStrict(final String preferHeader) {
-		return PREFER_HANDLING_STRICT.equals(preferHeader);
+		return PreferHandlingInterceptor.PREFER_HANDLING_STRICT.equals(preferHeader);
 	}
 	
 	protected final <T extends Resource> T toFhirResource(
