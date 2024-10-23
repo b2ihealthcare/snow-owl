@@ -31,6 +31,7 @@ import com.b2international.fhir.operations.OperationParametersFactory;
 import com.b2international.fhir.r5.operations.ValueSetExpandParameters;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
+import com.b2international.snowowl.core.rest.PreferHandlingInterceptor;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.b2international.snowowl.fhir.core.request.valueset.FhirValueSetExpander;
@@ -253,6 +254,13 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 		@Parameter(hidden = true)
 		@RequestHeader(value = HttpHeaders.ACCEPT)
 		final String accept,
+		
+		@Parameter(description = "Prefer header", schema = @Schema(
+			allowableValues = { PreferHandlingInterceptor.PREFER_HANDLING_STRICT, PreferHandlingInterceptor.PREFER_HANDLING_LENIENT }, 
+			defaultValue = PreferHandlingInterceptor.PREFER_HANDLING_LENIENT
+		))
+		@RequestHeader(value = PreferHandlingInterceptor.PREFER_HEADER, required = false)
+		final String prefer,
 
 		@Parameter(description = "Alternative response format", schema = @Schema(allowableValues = {
 			APPLICATION_FHIR_JSON_5_0_0_VALUE,
@@ -278,7 +286,7 @@ public class FhirValueSetExpandOperationController extends AbstractFhirControlle
 			
 	) {
 		
-		final ValueSetExpandParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.ValueSetExpandParametersFactory.INSTANCE);
+		final ValueSetExpandParameters parameters = toFhirParameters(requestBody, contentType, prefer, OperationParametersFactory.ValueSetExpandParametersFactory.INSTANCE);
 		
 		if (parameters.getUrl() == null && parameters.getValueSet() == null) {
 			throw new BadRequestException("Both URL and ValueSet parameters are null.", "ExpandValueSetRequest");

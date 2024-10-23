@@ -54,6 +54,19 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 	}
 	
 	@Test
+	public void GET_CodeSystem_Strict() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("unsupportedParam", "value")
+			.header("Prefer", "handling=strict")
+			.when().get(CODESYSTEM)
+			.then().assertThat()
+			.statusCode(400)
+			.body("resourceType", equalTo("OperationOutcome"))
+			.body("issue.severity", hasItem("error"))
+			.body("issue.code", hasItem("exception"));
+	}
+	
+	@Test
 	public void GET_CodeSystem_IdFilter_NoMatch() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.queryParam("_id", "non-existent")

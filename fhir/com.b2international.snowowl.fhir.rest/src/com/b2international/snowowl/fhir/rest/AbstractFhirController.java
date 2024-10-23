@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.exceptions.FHIRFormatError;
 import org.hl7.fhir.r5.model.Bundle;
 import org.hl7.fhir.r5.model.OperationOutcome;
 import org.hl7.fhir.r5.model.OperationOutcome.IssueSeverity;
@@ -42,6 +44,7 @@ import com.b2international.commons.exceptions.*;
 import com.b2international.fhir.operations.OperationParametersFactory;
 import com.b2international.fhir.r5.operations.BaseParameters;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.PreferHandlingInterceptor;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
@@ -67,6 +70,10 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	protected static final String X_OWNER_PROFILE_NAME = "X-Owner-Profile-Name";
 	protected static final String X_BUNDLE_ID = "X-Bundle-Id";
 
+	protected final boolean isStrict(final String preferHeader) {
+		return PreferHandlingInterceptor.PREFER_HANDLING_STRICT.equals(preferHeader);
+	}
+	
 	protected final <T extends Resource> T toFhirResource(
 		final InputStream requestBody, 
 		final String contentType, 
@@ -95,10 +102,11 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected final <T extends BaseParameters> T toFhirParameters(final InputStream requestBody, final String contentType, OperationParametersFactory factory) {
+	protected final <T extends BaseParameters> T toFhirParameters(final InputStream requestBody, final String contentType, final String preferHeader, final OperationParametersFactory factory) {
 		try {
 			final FhirMediaType mediaType = FhirMediaType.parse(contentType, null /* format is not supported yet when sending data */);
-			return (T) mediaType.parseParameters(requestBody, factory);
+			final boolean strict = isStrict(preferHeader);
+			return (T) mediaType.parseParameters(requestBody, factory, strict);
 		} catch (IOException e) {
 			throw new BadRequestException(String.format("Failed to parse request body as a complete Parameters resource: %s", e.getMessage()));
 		}
@@ -335,6 +343,27 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public @ResponseBody ResponseEntity<byte[]> handle(final MissingServletRequestParameterException ex, final WebRequest request) {
 		FhirException fhirException = new FhirException(ex.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGBADSYNTAX);
+		return toResponseEntity(HttpStatus.BAD_REQUEST, fhirException.toOperationOutcome(), request);
+	}
+	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	public @ResponseBody ResponseEntity<byte[]> handle(FHIRException e, final WebRequest request) {
+		FhirException fhirException = new FhirException(e.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGBADSYNTAX);
+		return toResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, fhirException.toOperationOutcome(), request);
+	}
+	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public @ResponseBody ResponseEntity<byte[]> handle(FHIRFormatError e, final WebRequest request) {
+		FhirException fhirException = new FhirException(e.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGBADFORMAT);
+		return toResponseEntity(HttpStatus.BAD_REQUEST, fhirException.toOperationOutcome(), request);
+	}
+	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public @ResponseBody ResponseEntity<byte[]> handle(com.b2international.commons.exceptions.BadRequestException e, final WebRequest request) {
+		FhirException fhirException = new FhirException(e.getMessage(), org.hl7.fhir.r4.model.codesystems.OperationOutcome.MSGBADSYNTAX);
 		return toResponseEntity(HttpStatus.BAD_REQUEST, fhirException.toOperationOutcome(), request);
 	}
 	

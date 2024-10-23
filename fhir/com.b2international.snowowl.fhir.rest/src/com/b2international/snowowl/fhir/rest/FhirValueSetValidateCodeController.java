@@ -28,6 +28,7 @@ import com.b2international.fhir.operations.OperationParametersFactory;
 import com.b2international.fhir.r5.operations.ValueSetValidateCodeParameters;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
+import com.b2international.snowowl.core.rest.PreferHandlingInterceptor;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -248,6 +249,13 @@ public class FhirValueSetValidateCodeController extends AbstractFhirController {
 		@Parameter(hidden = true)
 		@RequestHeader(value = HttpHeaders.ACCEPT)
 		final String accept,
+		
+		@Parameter(description = "Prefer header", schema = @Schema(
+			allowableValues = { PreferHandlingInterceptor.PREFER_HANDLING_STRICT, PreferHandlingInterceptor.PREFER_HANDLING_LENIENT }, 
+			defaultValue = PreferHandlingInterceptor.PREFER_HANDLING_LENIENT
+		))
+		@RequestHeader(value = PreferHandlingInterceptor.PREFER_HEADER, required = false)
+		final String prefer,
 
 		@Parameter(description = "Alternative response format", schema = @Schema(allowableValues = {
 			APPLICATION_FHIR_JSON_5_0_0_VALUE,
@@ -272,7 +280,7 @@ public class FhirValueSetValidateCodeController extends AbstractFhirController {
 		final Boolean _pretty		
 			
 	) {
-		final ValueSetValidateCodeParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.ValueSetValidateCodeParametersFactory.INSTANCE);
+		final ValueSetValidateCodeParameters parameters = toFhirParameters(requestBody, contentType, prefer, OperationParametersFactory.ValueSetValidateCodeParametersFactory.INSTANCE);
 		
 		return validateCode(parameters, accept, _format, _pretty);
 	}
@@ -491,6 +499,13 @@ public class FhirValueSetValidateCodeController extends AbstractFhirController {
 		@RequestHeader(value = HttpHeaders.ACCEPT)
 		final String accept,
 
+		@Parameter(description = "Prefer header", schema = @Schema(
+			allowableValues = { PreferHandlingInterceptor.PREFER_HANDLING_STRICT, PreferHandlingInterceptor.PREFER_HANDLING_LENIENT }, 
+			defaultValue = PreferHandlingInterceptor.PREFER_HANDLING_LENIENT
+		))
+		@RequestHeader(value = PreferHandlingInterceptor.PREFER_HEADER, required = false)
+		final String prefer,
+		
 		@Parameter(description = "Alternative response format", schema = @Schema(allowableValues = {
 			APPLICATION_FHIR_JSON_5_0_0_VALUE,
 			APPLICATION_FHIR_JSON_4_3_0_VALUE,
@@ -515,7 +530,7 @@ public class FhirValueSetValidateCodeController extends AbstractFhirController {
 		
 	) {
 		
-		final ValueSetValidateCodeParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.ValueSetValidateCodeParametersFactory.INSTANCE);
+		final ValueSetValidateCodeParameters parameters = toFhirParameters(requestBody, contentType, prefer, OperationParametersFactory.ValueSetValidateCodeParametersFactory.INSTANCE);
 		
 		// Before execution set the URI to match the path variable
 		parameters.setUrl(valueSetId);

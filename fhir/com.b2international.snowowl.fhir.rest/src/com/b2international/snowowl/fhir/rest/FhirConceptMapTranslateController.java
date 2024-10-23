@@ -28,6 +28,7 @@ import com.b2international.fhir.operations.OperationParametersFactory;
 import com.b2international.fhir.r5.operations.ConceptMapTranslateParameters;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.FhirApiConfig;
+import com.b2international.snowowl.core.rest.PreferHandlingInterceptor;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -236,6 +237,13 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 		@Parameter(hidden = true)
 		@RequestHeader(value = HttpHeaders.ACCEPT)
 		final String accept,
+		
+		@Parameter(description = "Prefer header", schema = @Schema(
+			allowableValues = { PreferHandlingInterceptor.PREFER_HANDLING_STRICT, PreferHandlingInterceptor.PREFER_HANDLING_LENIENT }, 
+			defaultValue = PreferHandlingInterceptor.PREFER_HANDLING_LENIENT
+		))
+		@RequestHeader(value = PreferHandlingInterceptor.PREFER_HEADER, required = false)
+		final String prefer,
 
 		@Parameter(description = "Alternative response format", schema = @Schema(allowableValues = {
 			APPLICATION_FHIR_JSON_5_0_0_VALUE,
@@ -261,7 +269,7 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 				
 	) {
 		
-		final ConceptMapTranslateParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.ConceptMapTranslateParametersFactory.INSTANCE);
+		final ConceptMapTranslateParameters parameters = toFhirParameters(requestBody, contentType, prefer, OperationParametersFactory.ConceptMapTranslateParametersFactory.INSTANCE);
 		
 		return translate(parameters, accept, _format, _pretty);
 	}
@@ -466,6 +474,13 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 		@Parameter(hidden = true)
 		@RequestHeader(value = HttpHeaders.ACCEPT)
 		final String accept,
+		
+		@Parameter(description = "Prefer header", schema = @Schema(
+			allowableValues = { PreferHandlingInterceptor.PREFER_HANDLING_STRICT, PreferHandlingInterceptor.PREFER_HANDLING_LENIENT }, 
+			defaultValue = PreferHandlingInterceptor.PREFER_HANDLING_LENIENT
+		))
+		@RequestHeader(value = PreferHandlingInterceptor.PREFER_HEADER, required = false)
+		final String prefer,
 
 		@Parameter(description = "Alternative response format", schema = @Schema(allowableValues = {
 			APPLICATION_FHIR_JSON_5_0_0_VALUE,
@@ -491,7 +506,7 @@ public class FhirConceptMapTranslateController extends AbstractFhirController {
 		
 	) {
 
-		final ConceptMapTranslateParameters parameters = toFhirParameters(requestBody, contentType, OperationParametersFactory.ConceptMapTranslateParametersFactory.INSTANCE);
+		final ConceptMapTranslateParameters parameters = toFhirParameters(requestBody, contentType, prefer, OperationParametersFactory.ConceptMapTranslateParametersFactory.INSTANCE);
 		
 		// Before execution set the URI to match the path variable
 		parameters.setUrl(conceptMapId);
