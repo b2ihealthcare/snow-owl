@@ -42,7 +42,28 @@ import com.google.common.collect.Iterables;
  * @since 7.9.2
  */
 public class SnomedComponentInactivationApiTest extends AbstractSnomedApiTest {
-
+	
+	@Test
+	public void descriptionInactivationIndicatorInactivation() {
+		String conceptId = createNewConcept(branchPath);
+		SnomedConcept concept = getConcept(conceptId, "descriptions()");
+		String descriptionId = concept.getDescriptions().getItems().get(0).getId();
+		
+		Map<?, ?> pendingMoveUpdate = ImmutableMap.of(
+				"inactivationProperties", new InactivationProperties(Concepts.PENDING_MOVE, null),
+				"commitComment", "Set to Pending Move");
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, pendingMoveUpdate).statusCode(204);
+		SnomedDescription description = getDescription(descriptionId, "members()");
+		assertEquals(true, getIndicatorMember(description, Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR).isActive());
+		
+		Map<?, ?> indicatorStatusUpdate = ImmutableMap.of(
+				"inactivationProperties", new InactivationProperties(Concepts.PENDING_MOVE, null, false),
+				"commitComment", "Inactivate Inactivation Indicator");
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, indicatorStatusUpdate).statusCode(204);
+		SnomedDescription updatedDescription = getDescription(descriptionId, "members()");
+		assertEquals(false, getIndicatorMember(updatedDescription, Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR).isActive());
+	}
+	
 	@Test
 	public void reuseConceptAndDescriptionInactivationIndicators() throws Exception {
 		// create a concept
