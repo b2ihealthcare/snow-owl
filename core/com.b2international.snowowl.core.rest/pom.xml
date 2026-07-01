@@ -13,7 +13,7 @@
 
 	<properties>
 		<spring.version>6.2.18</spring.version>
-		<spring.security.version>6.5.10</spring.security.version>
+		<spring.security.version>6.5.11</spring.security.version>
 		<springdoc.version>2.8.17</springdoc.version>
 		<!-- Ensure that Spring Boot version matches the version supported by SpringDoc -->
 		<spring.boot.version>3.5.14</spring.boot.version>
